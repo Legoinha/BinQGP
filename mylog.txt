@@ -1,0 +1,421 @@
+
+Processing bmesons.C++...
+Info in <TUnixSystem::ACLiC>: creating shared library /home/t3cms/u20mcarolina/work2/BinQGP/./bmesons_C.so
+In file included from input_line_12:6:
+././bmesons.C:833:49: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+  TH1D* histo_variable = (TH1D*)f_wei->Get(Form("weights_"+variable));
+                                                ^~~~~~~~~~~~~~~~~~~
+././bmesons.C:833:49: note: treat the string as an argument to avoid this
+  TH1D* histo_variable = (TH1D*)f_wei->Get(Form("weights_"+variable));
+                                                ^
+                                                "%s", 
+
+[1mRooFit v3.60 -- Developed by Wouter Verkerke and David Kirkby[0m 
+                Copyright (C) 2000-2013 NIKHEF, University of California & Stanford University
+                All rights reserved, please read http://roofit.sourceforge.net/license.txt
+
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmass
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::By
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bpt
+[#1] INFO:Eval -- RooAbsReal::attachToTree(Bmass) TTree Float_t branch Bmass will be converted to double precision
+[#1] INFO:Eval -- RooAbsReal::attachToTree(By) TTree Float_t branch By will be converted to double precision
+[#1] INFO:Eval -- RooAbsReal::attachToTree(Bpt) TTree Float_t branch Bpt will be converted to double precision
+[#1] INFO:Eval -- RooTreeDataStore::loadValues(data) Ignored 11 out of range events
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing dataset data
+[#1] INFO:ObjectHandling -- RooWorkSpace::import(ws) changing name of dataset from  data to data
+choice nominal
+buid pdf 0 nominal
+buid pdf 1 nominal
+buid pdf 2 nominal
+buid pdf 3 nominal
+[#1] INFO:Eval -- RooRealVar::setRange(Bmass) new range named 'all' created with bounds [5,6]
+[#1] INFO:Eval -- RooRealVar::setRange(Bmass) new range named 'right' created with bounds [5.45,6]
+[#1] INFO:Eval -- RooRealVar::setRange(Bmass) new range named 'left' created with bounds [5,5.3]
+[#1] INFO:Eval -- RooRealVar::setRange(Bmass) new range named 'peak' created with bounds [5.3,5.45]
+[#1] INFO:Eval -- RooRealVar::setRange(Bmass) new range named 'peakright' created with bounds [5.3,6]
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooAddPdf::model
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooAddPdf::signal
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooGaussian::signal1
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::mean
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::sigma1
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::cofs
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooGaussian::signal2
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::sigma2
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::n_signal
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooExponential::fit_side
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::lambda
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::n_combinatorial
+[#1] INFO:Minization -- p.d.f. provides expected number of events, including extended term in likelihood.
+[#1] INFO:Fitting -- RooAbsOptTestStatistic::ctor(nll_model_data) constructing test statistic for sub-range named all
+[#1] INFO:Eval -- RooRealVar::setRange(Bmass) new range named 'NormalizationRangeForall' created with bounds [5,6]
+[#1] INFO:Eval -- RooRealVar::setRange(Bmass) new range named 'fit_nll_model_data' created with bounds [5,6]
+[#1] INFO:Fitting -- RooAbsOptTestStatistic::ctor(nll_model_data) fixing interpretation of coefficients of any RooAddPdf to full domain of observables 
+[#1] INFO:Minization -- createNLL: caching constraint set under name CONSTR_OF_PDF_model_FOR_OBS_Bmass:Bpt:By with 0 entries
+[#1] INFO:Minization -- RooMinimizer::optimizeConst: activating const optimization
+[#1] INFO:Minization --  The following expressions will be evaluated in cache-and-track mode: (signal1,signal2,fit_side)
+ **********
+ **    1 **SET PRINT           1
+ **********
+ **********
+ **    2 **SET NOGRAD
+ **********
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+     1 cofs         3.17000e-01  1.00000e-01    0.00000e+00  1.00000e+00
+     2 lambda      -2.00000e+00  5.00000e-01   -5.00000e+00  0.00000e+00
+     3 mean         5.36600e+00  2.00000e-02    5.26600e+00  5.46600e+00
+     4 n_combinatorial   2.62000e+03  3.99100e+02    0.00000e+00  3.99100e+03
+     5 n_signal     1.37100e+03  3.99100e+02    0.00000e+00  3.99100e+03
+     6 sigma1       2.52000e-02  1.00000e-03    2.00000e-02  3.00000e-02
+     7 sigma2       1.05200e-02  2.60000e-04    1.00000e-02  2.00000e-02
+ **********
+ **    3 **SET ERR         0.5
+ **********
+ **********
+ **    4 **SET PRINT           1
+ **********
+ **********
+ **    5 **SET STR           1
+ **********
+ NOW USING STRATEGY  1: TRY TO BALANCE SPEED AGAINST RELIABILITY
+ **********
+ **    6 **MIGRAD        3500           1
+ **********
+ FIRST CALL TO USER FUNCTION AT NEW START POINT, WITH IFLAG=4.
+ START MIGRAD MINIMIZATION.  STRATEGY  1.  CONVERGENCE WHEN EDM .LT. 1.00e-03
+ FCN=-31274.7 FROM MIGRAD    STATUS=INITIATE       28 CALLS          29 TOTAL
+                     EDM= unknown      STRATEGY= 1      NO ERROR MATRIX       
+  EXT PARAMETER               CURRENT GUESS       STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  cofs         3.17000e-01   1.00000e-01   2.17437e-01  -2.92869e+01
+   2  lambda      -2.00000e+00   5.00000e-01   2.05758e-01  -1.78025e+02
+   3  mean         5.36600e+00   2.00000e-02   2.01358e-01  -4.31373e+02
+   4  n_combinatorial   2.62000e+03   3.99100e+02   2.12713e-01   2.47171e+01
+   5  n_signal     1.37100e+03   3.99100e+02   2.12713e-01  -4.72498e+01
+   6  sigma1       2.52000e-02   1.00000e-03   2.01528e-01  -7.50779e-01
+   7  sigma2       1.05200e-02   2.60000e-04   1.21097e-01  -1.01713e+01
+                               ERR DEF= 0.5
+ MIGRAD MINIMIZATION HAS CONVERGED.
+ MIGRAD WILL VERIFY CONVERGENCE AND ERROR MATRIX.
+ COVARIANCE MATRIX CALCULATED SUCCESSFULLY
+ FCN=-31295.9 FROM MIGRAD    STATUS=CONVERGED     253 CALLS         254 TOTAL
+                     EDM=2.3987e-05    STRATEGY= 1      ERROR MATRIX ACCURATE 
+  EXT PARAMETER                                   STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  cofs         4.92648e-01   5.90922e-02   8.96046e-03   6.21236e-03
+   2  lambda      -1.60681e+00   7.27960e-02   3.80925e-03  -5.61208e-02
+   3  mean         5.36681e+00   4.55343e-04   5.56068e-04  -1.77086e-01
+   4  n_combinatorial   2.56630e+03   5.50576e+01   3.37545e-03  -3.97380e-02
+   5  n_signal     1.42462e+03   4.34877e+01   2.61040e-03  -4.06106e-02
+   6  sigma1       2.16648e-02   1.89200e-03   3.87943e-02   1.82283e-03
+   7  sigma2       1.00000e-02   3.88632e-04   4.78881e-02   1.07949e-02
+                               ERR DEF= 0.5
+ EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  7    ERR DEF=0.5
+  3.508e-03  7.093e-06 -2.655e-07  2.575e-01 -2.587e-01 -9.086e-05 -1.706e-08 
+  7.093e-06  5.301e-03 -4.730e-07 -8.294e-03  8.291e-03 -3.335e-08 -1.333e-11 
+ -2.655e-07 -4.730e-07  2.073e-07 -1.284e-04  1.288e-04  2.103e-08  3.072e-13 
+  2.575e-01 -8.294e-03 -1.284e-04  3.032e+03 -4.657e+02 -2.344e-02 -1.055e-06 
+ -2.587e-01  8.291e-03  1.288e-04 -4.657e+02  1.892e+03  2.350e-02  1.058e-06 
+ -9.086e-05 -3.335e-08  2.103e-08 -2.344e-02  2.350e-02  3.938e-06  3.261e-10 
+ -1.706e-08 -1.333e-11  3.072e-13 -1.055e-06  1.058e-06  3.261e-10  1.133e-11 
+ PARAMETER  CORRELATION COEFFICIENTS  
+       NO.  GLOBAL      1      2      3      4      5      6      7
+        1  0.78622   1.000  0.002 -0.010  0.079 -0.100 -0.773 -0.086
+        2  0.01476   0.002  1.000 -0.014 -0.002  0.003 -0.000 -0.000
+        3  0.03029  -0.010 -0.014  1.000 -0.005  0.007  0.023  0.000
+        4  0.28077   0.079 -0.002 -0.005  1.000 -0.194 -0.214 -0.006
+        5  0.34311  -0.100  0.003  0.007 -0.194  1.000  0.272  0.007
+        6  0.80649  -0.773 -0.000  0.023 -0.214  0.272  1.000  0.049
+        7  0.09025  -0.086 -0.000  0.000 -0.006  0.007  0.049  1.000
+ **********
+ **    7 **SET ERR         0.5
+ **********
+ **********
+ **    8 **SET PRINT           1
+ **********
+ **********
+ **    9 **HESSE        3500
+ **********
+ COVARIANCE MATRIX CALCULATED SUCCESSFULLY
+ FCN=-31295.9 FROM HESSE     STATUS=OK             50 CALLS         304 TOTAL
+                     EDM=2.40247e-05    STRATEGY= 1      ERROR MATRIX ACCURATE 
+  EXT PARAMETER                                INTERNAL      INTERNAL  
+  NO.   NAME      VALUE            ERROR       STEP SIZE       VALUE   
+   1  cofs         4.92648e-01   5.66377e-02   3.58418e-04  -1.47038e-02
+   2  lambda      -1.60681e+00   7.27958e-02   7.61850e-04   3.65351e-01
+   3  mean         5.36681e+00   4.55327e-04   1.11214e-04   8.07000e-03
+   4  n_combinatorial   2.56630e+03   5.49647e+01   1.35018e-04   2.90095e-01
+   5  n_signal     1.42462e+03   4.33595e+01   1.04416e-04  -2.90138e-01
+   6  sigma1       2.16648e-02   1.82042e-03   1.55177e-03  -7.30227e-01
+   7  sigma2       1.00000e-02   3.88001e-04   9.57762e-03  -1.56910e+00
+                               ERR DEF= 0.5
+ EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  7    ERR DEF=0.5
+  3.222e-03  7.155e-06 -2.491e-07  1.977e-01 -1.978e-01 -8.106e-05 -4.088e-09 
+  7.155e-06  5.301e-03 -4.733e-07 -7.777e-03  7.777e-03 -5.020e-08 -3.470e-12 
+ -2.491e-07 -4.733e-07  2.073e-07 -1.194e-04  1.194e-04  1.963e-08 -2.910e-15 
+  1.977e-01 -7.777e-03 -1.194e-04  3.022e+03 -4.557e+02 -2.153e-02 -2.053e-07 
+ -1.978e-01  7.777e-03  1.194e-04 -4.557e+02  1.880e+03  2.153e-02  2.053e-07 
+ -8.106e-05 -5.020e-08  1.963e-08 -2.153e-02  2.153e-02  3.618e-06  7.355e-11 
+ -4.088e-09 -3.470e-12 -2.910e-15 -2.053e-07  2.053e-07  7.355e-11  1.131e-11 
+ PARAMETER  CORRELATION COEFFICIENTS  
+       NO.  GLOBAL      1      2      3      4      5      6      7
+        1  0.76431   1.000  0.002 -0.010  0.063 -0.080 -0.751 -0.021
+        2  0.01472   0.002  1.000 -0.014 -0.002  0.002 -0.000 -0.000
+        3  0.02912  -0.010 -0.014  1.000 -0.005  0.006  0.023 -0.000
+        4  0.27516   0.063 -0.002 -0.005  1.000 -0.191 -0.206 -0.001
+        5  0.33541  -0.080  0.002  0.006 -0.191  1.000  0.261  0.001
+        6  0.78719  -0.751 -0.000  0.023 -0.206  0.261  1.000  0.011
+        7  0.02262  -0.021 -0.000 -0.000 -0.001  0.001  0.011  1.000
+[#1] INFO:Minization -- RooMinimizer::optimizeConst: deactivating const optimization
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'all'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'all'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) directly selected PDF components: (fit_side)
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) indirectly selected PDF components: ()
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'all'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) directly selected PDF components: (signal)
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) indirectly selected PDF components: (signal1,signal2)
+
+Integral right band: 5.74569e-05
+Integral left band: 7.71802e-05
+
+Factor: 0.198223
+bins: 20
+bins: 20
+n in create_histogram = 20
+name: By
+histo name: By
+Info in <TCanvas::Print>: pdf file ./results/Bs/sideband_sub/Bysideband_sub_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/sideband_sub/Bysideband_sub_Bs.gif has been created
+n in create_histogram = 20
+name: Bpt
+histo name: Bpt
+Info in <TCanvas::Print>: pdf file ./results/Bs/sideband_sub/Bptsideband_sub_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/sideband_sub/Bptsideband_sub_Bs.gif has been created
+[#1] INFO:Minization -- createNLL picked up cached consraints from workspace with 0 entries
+[#1] INFO:Minization -- RooMinimizer::optimizeConst: activating const optimization
+[#1] INFO:Minization --  The following expressions will be evaluated in cache-and-track mode: (signal1,signal2,fit_side)
+ **********
+ **   10 **SET PRINT           1
+ **********
+ **********
+ **   11 **SET NOGRAD
+ **********
+ PARAMETER DEFINITIONS:
+    NO.   NAME         VALUE      STEP SIZE      LIMITS
+     1 cofs         4.92648e-01  5.66377e-02    0.00000e+00  1.00000e+00
+     2 lambda      -1.60681e+00  7.27958e-02   -5.00000e+00  0.00000e+00
+     3 mean         5.36681e+00  4.55327e-04    5.26600e+00  5.46600e+00
+     4 n_combinatorial   2.56630e+03  5.49647e+01    0.00000e+00  3.99100e+03
+     5 n_signal     1.42462e+03  4.33595e+01    0.00000e+00  3.99100e+03
+     6 sigma1       2.16648e-02  1.82042e-03    2.00000e-02  3.00000e-02
+ MINUIT WARNING IN PARAMETR
+ ============== VARIABLE6 BROUGHT BACK INSIDE LIMITS.
+     7 sigma2       1.00000e-02  3.88001e-04    1.00000e-02  2.00000e-02
+ MINUIT WARNING IN PARAMETR
+ ============== VARIABLE7 BROUGHT BACK INSIDE LIMITS.
+ **********
+ **   12 **SET ERR         0.5
+ **********
+ **********
+ **   13 **SET PRINT           1
+ **********
+ **********
+ **   14 **SET STR           1
+ **********
+ NOW USING STRATEGY  1: TRY TO BALANCE SPEED AGAINST RELIABILITY
+ **********
+ **   15 **MIGRAD        3500           1
+ **********
+ FIRST CALL TO USER FUNCTION AT NEW START POINT, WITH IFLAG=4.
+ START MIGRAD MINIMIZATION.  STRATEGY  1.  CONVERGENCE WHEN EDM .LT. 1.00e-03
+ FCN=-31295.9 FROM MIGRAD    STATUS=INITIATE       20 CALLS          21 TOTAL
+                     EDM= unknown      STRATEGY= 1      NO ERROR MATRIX       
+  EXT PARAMETER               CURRENT GUESS       STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  cofs         4.92648e-01   5.66377e-02   1.13532e-01   5.53065e-03
+   2  lambda      -1.60681e+00   7.27958e-02   3.11832e-02  -5.80351e-02
+   3  mean         5.36681e+00   4.55327e-04   4.55343e-03  -1.77340e-01
+   4  n_combinatorial   2.56630e+03   5.49647e+01   2.87504e-02  -4.60487e-02
+   5  n_signal     1.42462e+03   4.33595e+01   2.26789e-02  -4.46923e-02
+   6  sigma1       2.16648e-02   1.82042e-03   6.30526e-01   6.55671e-03
+   7  sigma2       1.00000e-02   3.88001e-04   1.97556e-01   1.09281e-02
+                               ERR DEF= 0.5
+ MIGRAD MINIMIZATION HAS CONVERGED.
+ MIGRAD WILL VERIFY CONVERGENCE AND ERROR MATRIX.
+ COVARIANCE MATRIX CALCULATED SUCCESSFULLY
+ FCN=-31295.9 FROM MIGRAD    STATUS=CONVERGED      95 CALLS          96 TOTAL
+                     EDM=2.75113e-06    STRATEGY= 1      ERROR MATRIX ACCURATE 
+  EXT PARAMETER                                   STEP         FIRST   
+  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
+   1  cofs         4.92636e-01   5.90702e-02   8.94355e-03  -1.65167e-02
+   2  lambda      -1.60670e+00   7.27958e-02   3.80870e-03  -7.64705e-03
+   3  mean         5.36681e+00   4.55332e-04   5.56016e-04  -1.63530e-02
+   4  n_combinatorial   2.56635e+03   5.50589e+01   3.37647e-03  -1.16108e-02
+   5  n_signal     1.42465e+03   4.34890e+01   2.60992e-03   2.67930e-02
+   6  sigma1       2.16628e-02   1.89167e-03   3.84786e-02  -4.50732e-03
+   7  sigma2       1.00000e-02   3.88766e-04   4.82815e-02** at limit **
+                               ERR DEF= 0.5
+ EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  7    ERR DEF=0.5
+  3.506e-03  7.073e-06 -2.649e-07  2.573e-01 -2.585e-01 -9.080e-05 -2.714e-09 
+  7.073e-06  5.301e-03 -4.730e-07 -8.317e-03  8.313e-03 -3.196e-08 -2.112e-12 
+ -2.649e-07 -4.730e-07  2.073e-07 -1.284e-04  1.288e-04  2.102e-08  4.899e-14 
+  2.573e-01 -8.317e-03 -1.284e-04  3.032e+03 -4.658e+02 -2.344e-02 -1.677e-07 
+ -2.585e-01  8.313e-03  1.288e-04 -4.658e+02  1.892e+03  2.350e-02  1.682e-07 
+ -9.080e-05 -3.196e-08  2.102e-08 -2.344e-02  2.350e-02  3.937e-06  5.186e-11 
+ -2.714e-09 -2.112e-12  4.899e-14 -1.677e-07  1.682e-07  5.186e-11  3.160e-13 
+ PARAMETER  CORRELATION COEFFICIENTS  
+       NO.  GLOBAL      1      2      3      4      5      6      7
+        1  0.78600   1.000  0.002 -0.010  0.079 -0.100 -0.773 -0.082
+        2  0.01476   0.002  1.000 -0.014 -0.002  0.003 -0.000 -0.000
+        3  0.03029  -0.010 -0.014  1.000 -0.005  0.007  0.023  0.000
+        4  0.28079   0.079 -0.002 -0.005  1.000 -0.194 -0.214 -0.005
+        5  0.34314  -0.100  0.003  0.007 -0.194  1.000  0.272  0.007
+        6  0.80640  -0.773 -0.000  0.023 -0.214  0.272  1.000  0.046
+        7  0.08602  -0.082 -0.000  0.000 -0.005  0.007  0.046  1.000
+ **********
+ **   16 **SET ERR         0.5
+ **********
+ **********
+ **   17 **SET PRINT           1
+ **********
+ **********
+ **   18 **HESSE        3500
+ **********
+ COVARIANCE MATRIX CALCULATED SUCCESSFULLY
+ FCN=-31295.9 FROM HESSE     STATUS=OK             50 CALLS         146 TOTAL
+                     EDM=2.70366e-06    STRATEGY= 1      ERROR MATRIX ACCURATE 
+  EXT PARAMETER                                INTERNAL      INTERNAL  
+  NO.   NAME      VALUE            ERROR       STEP SIZE       VALUE   
+   1  cofs         4.92636e-01   5.67434e-02   1.78871e-03  -1.47283e-02
+   2  lambda      -1.60670e+00   7.27956e-02   1.52348e-04   3.65398e-01
+   3  mean         5.36681e+00   4.55316e-04   1.11203e-04   8.07304e-03
+   4  n_combinatorial   2.56635e+03   5.49690e+01   1.35059e-04   2.90124e-01
+   5  n_signal     1.42465e+03   4.33646e+01   1.04397e-04  -2.90121e-01
+   6  sigma1       2.16628e-02   1.82366e-03   1.53914e-03  -7.30766e-01
+   7  sigma2       1.00000e-02   3.88389e-04   9.65630e-03  -1.57051e+00
+                                 WARNING -   - ABOVE PARAMETER IS AT LIMIT.
+                               ERR DEF= 0.5
+ EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  7    ERR DEF=0.5
+  3.234e-03  7.205e-06 -2.509e-07  2.005e-01 -2.005e-01 -8.149e-05 -5.391e-10 
+  7.205e-06  5.301e-03 -4.734e-07 -7.668e-03  7.667e-03 -5.554e-08 -4.630e-13 
+ -2.509e-07 -4.734e-07  2.073e-07 -1.197e-04  1.197e-04  1.970e-08 -8.945e-17 
+  2.005e-01 -7.668e-03 -1.197e-04  3.022e+03 -4.561e+02 -2.161e-02 -2.738e-08 
+ -2.005e-01  7.667e-03  1.197e-04 -4.561e+02  1.881e+03  2.162e-02  2.738e-08 
+ -8.149e-05 -5.554e-08  1.970e-08 -2.161e-02  2.162e-02  3.632e-06  9.722e-12 
+ -5.391e-10 -4.630e-13 -8.945e-17 -2.738e-08  2.738e-08  9.722e-12  3.157e-13 
+ PARAMETER  CORRELATION COEFFICIENTS  
+       NO.  GLOBAL      1      2      3      4      5      6      7
+        1  0.76529   1.000  0.002 -0.010  0.064 -0.081 -0.752 -0.017
+        2  0.01472   0.002  1.000 -0.014 -0.002  0.002 -0.000 -0.000
+        3  0.02915  -0.010 -0.014  1.000 -0.005  0.006  0.023 -0.000
+        4  0.27536   0.064 -0.002 -0.005  1.000 -0.191 -0.206 -0.001
+        5  0.33567  -0.081  0.002  0.006 -0.191  1.000  0.262  0.001
+        6  0.78812  -0.752 -0.000  0.023 -0.206  0.262  1.000  0.009
+        7  0.01783  -0.017 -0.000 -0.000 -0.001  0.001  0.009  1.000
+[#1] INFO:Minization -- RooMinimizer::optimizeConst: deactivating const optimization
+[#1] INFO:Minization -- createNLL picked up cached consraints from workspace with 0 entries
+[#1] INFO:Minization -- RooMinimizer::optimizeConst: activating const optimization
+[#1] INFO:Minization --  The following expressions have been identified as constant and will be precalculated and cached: (signal,fit_side)
+[#1] INFO:Fitting -- RooAbsPdf::fitTo(model) Calculating sum-of-weights-squared correction matrix for covariance matrix
+[#1] INFO:Minization -- RooMinimizer::optimizeConst: deactivating const optimization
+[#1] INFO:InputArguments -- Printing Yields
+RooArgList:: = (n_signal,n_combinatorial)
+[#1] INFO:InputArguments -- yield in pdf: n_signal 1424.63
+[#1] INFO:InputArguments -- yield in pdf: n_combinatorial 2566.38
+[#1] INFO:Eval -- Checking Likelihood normalization:  
+[#1] INFO:Eval -- Yield of specie  Sum of Row in Matrix   Norm
+[#1] INFO:Eval -- 1424.63 1424.63 0.999998
+[#1] INFO:Eval -- 2566.38 2566.38 0.999999
+[#1] INFO:Eval -- Calculating sWeight
+
+Yield of B+ is 1424.63.  From sWeights it is 1424.63
+Yield of background is 2566.38.  From sWeights it is 2566.38
+
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing dataset data
+[#1] INFO:ObjectHandling -- RooWorkSpace::import(ws) changing name of dataset from  data to dataWithSWeights
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::n_signal_sw
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::L_n_signal
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::n_combinatorial_sw
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::L_n_combinatorial
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit plot,norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit plot,norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) directly selected PDF components: (signal)
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) indirectly selected PDF components: (signal1,signal2)
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit plot,norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) directly selected PDF components: (fit_side)
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) indirectly selected PDF components: ()
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing dataset dataWithSWeights
+[#1] INFO:ObjectHandling -- RooWorkSpace::import(ws) changing name of dataset from  dataWithSWeights to dataWBp
+Info in <TCanvas::Print>: gif file ./results/Bs/splot/Bmass/BysPlot_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/splot/Bmass/BysPlot_Bs.pdf has been created
+Warning in <TFile::Append>: Replacing existing TH1: dataWithSWeights__By (Potential memory leak).
+Info in <TCanvas::Print>: gif file ./results/Bs/splot/sig/BysPlot_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/splot/sig/BysPlot_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/splot/bkg/BysPlot_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/splot/bkg/BysPlot_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/splot/sig_bkg/BysPlot_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/splot/sig_bkg/BysPlot_Bs.pdf has been created
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit plot,norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit plot,norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) directly selected PDF components: (signal)
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) indirectly selected PDF components: (signal1,signal2)
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit plot,norm range was specified, using fit range as default
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f. curve is normalized using explicit choice of ranges 'fit_nll_model_data'
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) directly selected PDF components: (fit_side)
+[#1] INFO:Plotting -- RooAbsPdf::plotOn(model) indirectly selected PDF components: ()
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing dataset dataWithSWeights
+[#0] ERROR:ObjectHandling -- RooWorkspace::import(ws) ERROR dataset with name dataWBp already exists in workspace, import aborted
+Info in <TCanvas::Print>: gif file ./results/Bs/splot/Bmass/BptsPlot_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/splot/Bmass/BptsPlot_Bs.pdf has been created
+Warning in <TFile::Append>: Replacing existing TH1: dataWithSWeights__Bpt (Potential memory leak).
+Info in <TCanvas::Print>: gif file ./results/Bs/splot/sig/BptsPlot_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/splot/sig/BptsPlot_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/splot/bkg/BptsPlot_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/splot/bkg/BptsPlot_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/splot/sig_bkg/BptsPlot_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/splot/sig_bkg/BptsPlot_Bs.pdf has been created
+Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
+Warning in <TFile::Append>: Replacing existing TH1: htemp (Potential memory leak).
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/weights//By_weights.gif has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/weights//Bpt_weights.gif has been created
+TFile**		./results/Bs/mc_validation_plots/weights//weights.root	
+ TFile*		./results/Bs/mc_validation_plots/weights//weights.root	
+  OBJ: TH1F	weights_By	 : 0 at: 0x4c4ead0
+  OBJ: TH1F	weights_Bpt	 : 0 at: 0x34467380
+  KEY: TH1F	weights_By;2	
+  KEY: TH1F	weights_By;1	
+  KEY: TH1F	weights_Bpt;2	
+  KEY: TH1F	weights_Bpt;1	
+Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_mc/By_mc_validation_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_mc/By_mc_validation_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_mc/Bpt_mc_validation_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_mc/Bpt_mc_validation_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_sp/By_mc_validation_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_sp/By_mc_validation_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_sp/Bpt_mc_validation_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_sp/Bpt_mc_validation_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/mc_sp/By_mc_validation_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/mc_sp/By_mc_validation_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/mc_sp/Bpt_mc_validation_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/mc_sp/Bpt_mc_validation_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_mc_sp/By_mc_validation_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_mc_sp/By_mc_validation_Bs.gif has been created
+Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_mc_sp/Bpt_mc_validation_Bs.pdf has been created
+Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_mc_sp/Bpt_mc_validation_Bs.gif has been created
