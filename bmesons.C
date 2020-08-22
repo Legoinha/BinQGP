@@ -102,8 +102,8 @@ void bmesons(){
   
   int n_var;
   
-  TString input_file_data = particle ? "/lstore/cms/nuno/ppdata2017/000814/BsData.root" : "/lstore/cms/nuno/ppdata2017/000814/BPData.root";
-  TString input_file_mc   = particle ? "/lstore/cms/nuno/ppdata2017/000814/BsMC.root" : "/lstore/cms/nuno/ppdata2017/000814/BPMC.root";
+  TString input_file_data = particle ? "/lstore/cms/nuno/ppdata2017/000821/BsData.root" : "/lstore/cms/nuno/ppdata2017/000821/BPData.root";
+  TString input_file_mc   = particle ? "/lstore/cms/nuno/ppdata2017/000821/BsMC.root" : "/lstore/cms/nuno/ppdata2017/000821/BPMC.root";
 
   //  TString input_file_data = particle ? "/lstore/cms/ev19u032/prefiltered_trees_final/selected_data_ntphi_PbPb_2018_corrected_test_train.root" : "/lstore/cms/ev19u032/prefiltered_trees_final/selected_data_ntKp_PbPb_2018_corrected_test_train.root";
 
@@ -122,7 +122,7 @@ void bmesons(){
 
     //TString variables[] = {"Bsize", "By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt"} ;
 
-    TString variables[] = {"Bd0"};    
+    TString variables[] = {"Bmumueta"};    
 
 #elif particle == 1
   //int n_bins[] = {20, 10, 10, 10, 10, 10, 10, 10, 10, 20, 10, 10, 10, 20, 20};//, 20, 20, 20, 20};
@@ -180,9 +180,7 @@ void bmesons(){
   //get the ratio between the data (splot method) and the MC
   if(DATA_CUT == 1){
 
-    get_ratio(histos_splot, histos_mc,names,"weights.root");
-
-   
+    get_ratio(histos_splot, histos_mc,names,"weights.root");   
   }
 
   //if(!DATA_CUT == 0){pT_analysis(*ws,n_bins[0], "pT.root", input_file_data);}
@@ -864,7 +862,7 @@ void read_data(RooWorkspace& w, TString f_input){
   RooArgList arg_list ("arg_list");
 
   arg_list.add(*(w.var("Bmass")));
-  arg_list.add(*(w.var("Bd0")));
+  arg_list.add(*(w.var("Bmumueta")));
 
   /*
   arg_list.add(*(w.var("By")));
@@ -1377,7 +1375,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
   vector<RooRealVar> variables;
   
   variables.push_back(*(w->var("Bmass")));
-  variables.push_back(*(w->var("Bd0")));
+  variables.push_back(*(w->var("Bmumueta")));
 
   /* 
   variables.push_back(*(w->var("By")));
@@ -1443,7 +1441,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
   double right = particle ? 5.45 : 5.4;
 
 
-  reduceddata_side = particle ? (RooDataSet*)data->reduce(Form("Bmass>%lf || Bmass<%lf", right, left)) : (RooDataSet*)data->reduce(Form("Bmass>%lf",right));
+  reduceddata_side = particle ? (RooDataSet*)data->reduce(Form("Bmass>%lf",right)) : (RooDataSet*)data->reduce(Form("Bmass>%lf || Bmass<%lf", right, left)) ;
   reduceddata_central = (RooDataSet*)data->reduce(Form("Bmass>%lf",left));
   reduceddata_central = (RooDataSet*)reduceddata_central->reduce(Form("Bmass<%lf",right));
 
@@ -1458,7 +1456,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
     cout << "Integral left band: " << int_fit_side_left->getVal() << endl;
   }
 
-  double factor = particle ? (int_fit_peak->getVal())/(int_fit_side_right->getVal() + int_fit_side_left->getVal()) : (int_fit_peak->getVal())/(int_fit_side_right->getVal());
+  double factor = particle ? (int_fit_peak->getVal())/(int_fit_side_right->getVal()) : (int_fit_peak->getVal())/(int_fit_side_right->getVal() + int_fit_side_left->getVal()) ;
 
   std::cout << std::endl << "Factor: " << factor << std::endl;
 
@@ -1469,7 +1467,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
   std::vector<TH1D*> histos;
 
   if(particle == 0){
-    histos.push_back(create_histogram(variables[1], "Bd0",factor, reduceddata_side, reduceddata_central, data, n[0]));
+    histos.push_back(create_histogram(variables[1], "Bmumueta",factor, reduceddata_side, reduceddata_central, data, n[0]));
     /* 
     histos.push_back(create_histogram(variables[1],"Bsize", factor, reduceddata_side, reduceddata_central, data, n[0]));
     histos.push_back(create_histogram(variables[2], "By",factor, reduceddata_side, reduceddata_central, data, n[1]));
@@ -2101,8 +2099,7 @@ void set_up_workspace_variables(RooWorkspace& w)
 
 
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
-    RooRealVar Bd0("Bd0", "Bd0", d0_min, d0_max);
-
+    RooRealVar Bmumueta("Bmumueta", "Bmumueta", mumueta_min, mumueta_max);
 
     /*
     RooRealVar Bsize("Bsize","Bsize",size_min,size_max);
@@ -2138,7 +2135,7 @@ void set_up_workspace_variables(RooWorkspace& w)
 
     
     w.import(Bmass);
-    w.import(Bd0);
+    w.import(Bmumueta); 
 
     /*
     w.import(Bsize);
