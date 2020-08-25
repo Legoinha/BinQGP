@@ -1,11 +1,11 @@
 
 Processing bmesons.C++...
-Info in <TUnixSystem::ACLiC>: creating shared library /home/t3cms/u20mcarolina/work2/BinQGP/./bmesons_C.so
+Info in <TUnixSystem::ACLiC>: creating shared library /home/t3cms/u20mcarolina/work3/BinQGP/./bmesons_C.so
 In file included from input_line_12:6:
-././bmesons.C:833:49: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+././bmesons.C:458:49: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
   TH1D* histo_variable = (TH1D*)f_wei->Get(Form("weights_"+variable));
                                                 ^~~~~~~~~~~~~~~~~~~
-././bmesons.C:833:49: note: treat the string as an argument to avoid this
+././bmesons.C:458:49: note: treat the string as an argument to avoid this
   TH1D* histo_variable = (TH1D*)f_wei->Get(Form("weights_"+variable));
                                                 ^
                                                 "%s", 
@@ -17,6 +17,36 @@ In file included from input_line_12:6:
 [#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmass
 [#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::By
 [#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bpt
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Btrk1Pt
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Btrk1Eta
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Btrk1PtErr
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bchi2cl
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::BsvpvDistance
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::BsvpvDisErr
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmumumass
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmu1eta
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmu2eta
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmu1pt
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmu2pt
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmu1dxyPV
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmu2dxyPV
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmu1dzPV
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmu2dzPV
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bd0
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bd0Err
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bdtheta
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Balpha
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Btrk1Dz1
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Btrk1DzError1
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Btrk1Dxy1
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Btrk1DxyError1
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmumueta
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmumuphi
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::Bmumupt
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::BDT_pt_5_10
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::BDT_pt_10_15
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::BDT_pt_15_20
+[#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing RooRealVar::BDT_pt_20_50
 [#1] INFO:Eval -- RooAbsReal::attachToTree(Bmass) TTree Float_t branch Bmass will be converted to double precision
 [#1] INFO:Eval -- RooAbsReal::attachToTree(By) TTree Float_t branch By will be converted to double precision
 [#1] INFO:Eval -- RooAbsReal::attachToTree(Bpt) TTree Float_t branch Bpt will be converted to double precision
@@ -62,12 +92,12 @@ buid pdf 3 nominal
  PARAMETER DEFINITIONS:
     NO.   NAME         VALUE      STEP SIZE      LIMITS
      1 cofs         3.17000e-01  1.00000e-01    0.00000e+00  1.00000e+00
-     2 lambda      -2.00000e+00  5.00000e-01   -5.00000e+00  0.00000e+00
+     2 lambda      -2.00000e+00  6.00000e-01   -5.00000e+00  1.00000e+00
      3 mean         5.36600e+00  2.00000e-02    5.26600e+00  5.46600e+00
      4 n_combinatorial   2.62000e+03  3.99100e+02    0.00000e+00  3.99100e+03
      5 n_signal     1.37100e+03  3.99100e+02    0.00000e+00  3.99100e+03
-     6 sigma1       2.52000e-02  1.00000e-03    2.00000e-02  3.00000e-02
-     7 sigma2       1.05200e-02  2.60000e-04    1.00000e-02  2.00000e-02
+     6 sigma1       2.52000e-02  2.40000e-03    5.00000e-03  3.00000e-02
+     7 sigma2       1.05200e-02  1.50000e-03    5.00000e-03  2.00000e-02
  **********
  **    3 **SET ERR         0.5
  **********
@@ -83,50 +113,50 @@ buid pdf 3 nominal
  **********
  FIRST CALL TO USER FUNCTION AT NEW START POINT, WITH IFLAG=4.
  START MIGRAD MINIMIZATION.  STRATEGY  1.  CONVERGENCE WHEN EDM .LT. 1.00e-03
- FCN=-31274.7 FROM MIGRAD    STATUS=INITIATE       28 CALLS          29 TOTAL
+ FCN=-31274.7 FROM MIGRAD    STATUS=INITIATE       26 CALLS          27 TOTAL
                      EDM= unknown      STRATEGY= 1      NO ERROR MATRIX       
   EXT PARAMETER               CURRENT GUESS       STEP         FIRST   
   NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
    1  cofs         3.17000e-01   1.00000e-01   2.17437e-01  -2.92869e+01
-   2  lambda      -2.00000e+00   5.00000e-01   2.05758e-01  -1.78025e+02
+   2  lambda      -2.00000e+00   6.00000e-01   2.01358e-01  -2.18033e+02
    3  mean         5.36600e+00   2.00000e-02   2.01358e-01  -4.31373e+02
    4  n_combinatorial   2.62000e+03   3.99100e+02   2.12713e-01   2.47171e+01
    5  n_signal     1.37100e+03   3.99100e+02   2.12713e-01  -4.72498e+01
-   6  sigma1       2.52000e-02   1.00000e-03   2.01528e-01  -7.50779e-01
-   7  sigma2       1.05200e-02   2.60000e-04   1.21097e-01  -1.01713e+01
+   6  sigma1       2.52000e-02   2.40000e-03   2.51446e-01  -1.48442e+00
+   7  sigma2       1.05200e-02   1.50000e-03   2.09231e-01  -3.33220e+01
                                ERR DEF= 0.5
  MIGRAD MINIMIZATION HAS CONVERGED.
  MIGRAD WILL VERIFY CONVERGENCE AND ERROR MATRIX.
  COVARIANCE MATRIX CALCULATED SUCCESSFULLY
- FCN=-31295.9 FROM MIGRAD    STATUS=CONVERGED     253 CALLS         254 TOTAL
-                     EDM=2.3987e-05    STRATEGY= 1      ERROR MATRIX ACCURATE 
+ FCN=-31302.3 FROM MIGRAD    STATUS=CONVERGED     289 CALLS         290 TOTAL
+                     EDM=8.81745e-05    STRATEGY= 1      ERROR MATRIX ACCURATE 
   EXT PARAMETER                                   STEP         FIRST   
   NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
-   1  cofs         4.92648e-01   5.90922e-02   8.96046e-03   6.21236e-03
-   2  lambda      -1.60681e+00   7.27960e-02   3.80925e-03  -5.61208e-02
-   3  mean         5.36681e+00   4.55343e-04   5.56068e-04  -1.77086e-01
-   4  n_combinatorial   2.56630e+03   5.50576e+01   3.37545e-03  -3.97380e-02
-   5  n_signal     1.42462e+03   4.34877e+01   2.61040e-03  -4.06106e-02
-   6  sigma1       2.16648e-02   1.89200e-03   3.87943e-02   1.82283e-03
-   7  sigma2       1.00000e-02   3.88632e-04   4.78881e-02   1.07949e-02
+   1  cofs         7.75844e-01   4.63010e-02   7.64677e-03   9.51276e-03
+   2  lambda      -1.60631e+00   7.25754e-02   2.98123e-03   1.19469e-01
+   3  mean         5.36677e+00   4.10064e-04   4.99944e-04  -4.20430e-01
+   4  n_combinatorial   2.58121e+03   5.42592e+01   3.38760e-03  -2.62585e-01
+   5  n_signal     1.40949e+03   4.21196e+01   2.59186e-03   8.51750e-02
+   6  sigma1       1.77495e-02   9.12316e-04   6.10720e-03  -1.31477e-02
+   7  sigma2       5.39102e-03   7.28684e-04   2.46231e-02   1.49159e-02
                                ERR DEF= 0.5
  EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  7    ERR DEF=0.5
-  3.508e-03  7.093e-06 -2.655e-07  2.575e-01 -2.587e-01 -9.086e-05 -1.706e-08 
-  7.093e-06  5.301e-03 -4.730e-07 -8.294e-03  8.291e-03 -3.335e-08 -1.333e-11 
- -2.655e-07 -4.730e-07  2.073e-07 -1.284e-04  1.288e-04  2.103e-08  3.072e-13 
-  2.575e-01 -8.294e-03 -1.284e-04  3.032e+03 -4.657e+02 -2.344e-02 -1.055e-06 
- -2.587e-01  8.291e-03  1.288e-04 -4.657e+02  1.892e+03  2.350e-02  1.058e-06 
- -9.086e-05 -3.335e-08  2.103e-08 -2.344e-02  2.350e-02  3.938e-06  3.261e-10 
- -1.706e-08 -1.333e-11  3.072e-13 -1.055e-06  1.058e-06  3.261e-10  1.133e-11 
+  2.153e-03  1.700e-06 -1.155e-06  1.573e-01 -1.579e-01 -2.977e-05 -2.487e-05 
+  1.700e-06  5.268e-03 -3.720e-07 -8.974e-03  8.975e-03  1.055e-07 -2.988e-08 
+ -1.155e-06 -3.720e-07  1.682e-07 -1.072e-04  1.075e-04  1.885e-08  2.258e-08 
+  1.573e-01 -8.974e-03 -1.072e-04  2.945e+03 -3.638e+02 -8.672e-03 -2.162e-03 
+ -1.579e-01  8.975e-03  1.075e-04 -3.638e+02  1.774e+03  8.691e-03  2.168e-03 
+ -2.977e-05  1.055e-07  1.885e-08 -8.672e-03  8.691e-03  8.338e-07  3.362e-07 
+ -2.487e-05 -2.988e-08  2.258e-08 -2.162e-03  2.168e-03  3.362e-07  5.483e-07 
  PARAMETER  CORRELATION COEFFICIENTS  
        NO.  GLOBAL      1      2      3      4      5      6      7
-        1  0.78622   1.000  0.002 -0.010  0.079 -0.100 -0.773 -0.086
-        2  0.01476   0.002  1.000 -0.014 -0.002  0.003 -0.000 -0.000
-        3  0.03029  -0.010 -0.014  1.000 -0.005  0.007  0.023  0.000
-        4  0.28077   0.079 -0.002 -0.005  1.000 -0.194 -0.214 -0.006
-        5  0.34311  -0.100  0.003  0.007 -0.194  1.000  0.272  0.007
-        6  0.80649  -0.773 -0.000  0.023 -0.214  0.272  1.000  0.049
-        7  0.09025  -0.086 -0.000  0.000 -0.006  0.007  0.049  1.000
+        1  0.82763   1.000  0.001 -0.061  0.062 -0.081 -0.703 -0.724
+        2  0.01314   0.001  1.000 -0.012 -0.002  0.003  0.002 -0.001
+        3  0.07702  -0.061 -0.012  1.000 -0.005  0.006  0.050  0.074
+        4  0.22595   0.062 -0.002 -0.005  1.000 -0.159 -0.175 -0.054
+        5  0.27591  -0.081  0.003  0.006 -0.159  1.000  0.226  0.070
+        6  0.73112  -0.703  0.002  0.050 -0.175  0.226  1.000  0.497
+        7  0.72492  -0.724 -0.001  0.074 -0.054  0.070  0.497  1.000
  **********
  **    7 **SET ERR         0.5
  **********
@@ -137,35 +167,35 @@ buid pdf 3 nominal
  **    9 **HESSE        3500
  **********
  COVARIANCE MATRIX CALCULATED SUCCESSFULLY
- FCN=-31295.9 FROM HESSE     STATUS=OK             50 CALLS         304 TOTAL
-                     EDM=2.40247e-05    STRATEGY= 1      ERROR MATRIX ACCURATE 
+ FCN=-31302.3 FROM HESSE     STATUS=OK             50 CALLS         340 TOTAL
+                     EDM=8.80329e-05    STRATEGY= 1      ERROR MATRIX ACCURATE 
   EXT PARAMETER                                INTERNAL      INTERNAL  
   NO.   NAME      VALUE            ERROR       STEP SIZE       VALUE   
-   1  cofs         4.92648e-01   5.66377e-02   3.58418e-04  -1.47038e-02
-   2  lambda      -1.60681e+00   7.27958e-02   7.61850e-04   3.65351e-01
-   3  mean         5.36681e+00   4.55327e-04   1.11214e-04   8.07000e-03
-   4  n_combinatorial   2.56630e+03   5.49647e+01   1.35018e-04   2.90095e-01
-   5  n_signal     1.42462e+03   4.33595e+01   1.04416e-04  -2.90138e-01
-   6  sigma1       2.16648e-02   1.82042e-03   1.55177e-03  -7.30227e-01
-   7  sigma2       1.00000e-02   3.88001e-04   9.57762e-03  -1.56910e+00
+   1  cofs         7.75844e-01   4.61912e-02   3.05871e-04   5.84386e-01
+   2  lambda      -1.60631e+00   7.25752e-02   5.96246e-04   1.31608e-01
+   3  mean         5.36677e+00   4.10027e-04   9.99888e-05   7.73521e-03
+   4  n_combinatorial   2.58121e+03   5.42720e+01   6.77520e-04   2.97904e-01
+   5  n_signal     1.40949e+03   4.21315e+01   5.18372e-04  -2.98057e-01
+   6  sigma1       1.77495e-02   9.11852e-04   2.44288e-04   1.99600e-02
+   7  sigma2       5.39102e-03   7.27499e-04   9.84924e-04  -1.24646e+00
                                ERR DEF= 0.5
  EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  7    ERR DEF=0.5
-  3.222e-03  7.155e-06 -2.491e-07  1.977e-01 -1.978e-01 -8.106e-05 -4.088e-09 
-  7.155e-06  5.301e-03 -4.733e-07 -7.777e-03  7.777e-03 -5.020e-08 -3.470e-12 
- -2.491e-07 -4.733e-07  2.073e-07 -1.194e-04  1.194e-04  1.963e-08 -2.910e-15 
-  1.977e-01 -7.777e-03 -1.194e-04  3.022e+03 -4.557e+02 -2.153e-02 -2.053e-07 
- -1.978e-01  7.777e-03  1.194e-04 -4.557e+02  1.880e+03  2.153e-02  2.053e-07 
- -8.106e-05 -5.020e-08  1.963e-08 -2.153e-02  2.153e-02  3.618e-06  7.355e-11 
- -4.088e-09 -3.470e-12 -2.910e-15 -2.053e-07  2.053e-07  7.355e-11  1.131e-11 
+  2.142e-03  1.943e-06 -1.163e-06  1.557e-01 -1.559e-01 -2.966e-05 -2.474e-05 
+  1.943e-06  5.268e-03 -3.721e-07 -8.518e-03  8.519e-03  9.499e-08 -3.200e-08 
+ -1.163e-06 -3.721e-07  1.681e-07 -1.069e-04  1.070e-04  1.877e-08  2.212e-08 
+  1.557e-01 -8.518e-03 -1.069e-04  2.946e+03 -3.655e+02 -8.700e-03 -2.147e-03 
+ -1.559e-01  8.519e-03  1.070e-04 -3.655e+02  1.775e+03  8.706e-03  2.149e-03 
+ -2.966e-05  9.499e-08  1.877e-08 -8.700e-03  8.706e-03  8.330e-07  3.358e-07 
+ -2.474e-05 -3.200e-08  2.212e-08 -2.147e-03  2.149e-03  3.358e-07  5.465e-07 
  PARAMETER  CORRELATION COEFFICIENTS  
        NO.  GLOBAL      1      2      3      4      5      6      7
-        1  0.76431   1.000  0.002 -0.010  0.063 -0.080 -0.751 -0.021
-        2  0.01472   0.002  1.000 -0.014 -0.002  0.002 -0.000 -0.000
-        3  0.02912  -0.010 -0.014  1.000 -0.005  0.006  0.023 -0.000
-        4  0.27516   0.063 -0.002 -0.005  1.000 -0.191 -0.206 -0.001
-        5  0.33541  -0.080  0.002  0.006 -0.191  1.000  0.261  0.001
-        6  0.78719  -0.751 -0.000  0.023 -0.206  0.261  1.000  0.011
-        7  0.02262  -0.021 -0.000 -0.000 -0.001  0.001  0.011  1.000
+        1  0.82672   1.000  0.001 -0.061  0.062 -0.080 -0.702 -0.723
+        2  0.01308   0.001  1.000 -0.013 -0.002  0.003  0.001 -0.001
+        3  0.07588  -0.061 -0.013  1.000 -0.005  0.006  0.050  0.073
+        4  0.22694   0.062 -0.002 -0.005  1.000 -0.160 -0.176 -0.054
+        5  0.27685  -0.080  0.003  0.006 -0.160  1.000  0.226  0.069
+        6  0.73079  -0.702  0.001  0.050 -0.176  0.226  1.000  0.498
+        7  0.72398  -0.723 -0.001  0.073 -0.054  0.069  0.498  1.000
 [#1] INFO:Minization -- RooMinimizer::optimizeConst: deactivating const optimization
 [#1] INFO:Plotting -- RooAbsPdf::plotOn(model) p.d.f was fitted in range and no explicit norm range was specified, using fit range as default
 [#1] INFO:Plotting -- RooAbsPdf::plotOn(model) only plotting range 'all'
@@ -181,8 +211,8 @@ buid pdf 3 nominal
 [#1] INFO:Plotting -- RooAbsPdf::plotOn(model) directly selected PDF components: (signal)
 [#1] INFO:Plotting -- RooAbsPdf::plotOn(model) indirectly selected PDF components: (signal1,signal2)
 
-Integral right band: 5.74569e-05
-Integral left band: 7.71802e-05
+Integral right band: 5.76183e-05
+Integral left band: 7.73762e-05
 
 Factor: 0.198223
 bins: 20
@@ -208,15 +238,13 @@ Info in <TCanvas::Print>: gif file ./results/Bs/sideband_sub/Bptsideband_sub_Bs.
  **********
  PARAMETER DEFINITIONS:
     NO.   NAME         VALUE      STEP SIZE      LIMITS
-     1 cofs         4.92648e-01  5.66377e-02    0.00000e+00  1.00000e+00
-     2 lambda      -1.60681e+00  7.27958e-02   -5.00000e+00  0.00000e+00
-     3 mean         5.36681e+00  4.55327e-04    5.26600e+00  5.46600e+00
-     4 n_combinatorial   2.56630e+03  5.49647e+01    0.00000e+00  3.99100e+03
-     5 n_signal     1.42462e+03  4.33595e+01    0.00000e+00  3.99100e+03
-     6 sigma1       2.16648e-02  1.82042e-03    2.00000e-02  3.00000e-02
- MINUIT WARNING IN PARAMETR
- ============== VARIABLE6 BROUGHT BACK INSIDE LIMITS.
-     7 sigma2       1.00000e-02  3.88001e-04    1.00000e-02  2.00000e-02
+     1 cofs         7.75844e-01  4.61912e-02    0.00000e+00  1.00000e+00
+     2 lambda      -1.60631e+00  7.25752e-02   -5.00000e+00  1.00000e+00
+     3 mean         5.36677e+00  4.10027e-04    5.26600e+00  5.46600e+00
+     4 n_combinatorial   2.58121e+03  5.42720e+01    0.00000e+00  3.99100e+03
+     5 n_signal     1.40949e+03  4.21315e+01    0.00000e+00  3.99100e+03
+     6 sigma1       1.77495e-02  9.11852e-04    5.00000e-03  3.00000e-02
+     7 sigma2       5.39102e-03  7.27499e-04    5.00000e-03  2.00000e-02
  MINUIT WARNING IN PARAMETR
  ============== VARIABLE7 BROUGHT BACK INSIDE LIMITS.
  **********
@@ -234,50 +262,50 @@ Info in <TCanvas::Print>: gif file ./results/Bs/sideband_sub/Bptsideband_sub_Bs.
  **********
  FIRST CALL TO USER FUNCTION AT NEW START POINT, WITH IFLAG=4.
  START MIGRAD MINIMIZATION.  STRATEGY  1.  CONVERGENCE WHEN EDM .LT. 1.00e-03
- FCN=-31295.9 FROM MIGRAD    STATUS=INITIATE       20 CALLS          21 TOTAL
+ FCN=-31302.3 FROM MIGRAD    STATUS=INITIATE       18 CALLS          19 TOTAL
                      EDM= unknown      STRATEGY= 1      NO ERROR MATRIX       
   EXT PARAMETER               CURRENT GUESS       STEP         FIRST   
   NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
-   1  cofs         4.92648e-01   5.66377e-02   1.13532e-01   5.53065e-03
-   2  lambda      -1.60681e+00   7.27958e-02   3.11832e-02  -5.80351e-02
-   3  mean         5.36681e+00   4.55327e-04   4.55343e-03  -1.77340e-01
-   4  n_combinatorial   2.56630e+03   5.49647e+01   2.87504e-02  -4.60487e-02
-   5  n_signal     1.42462e+03   4.33595e+01   2.26789e-02  -4.46923e-02
-   6  sigma1       2.16648e-02   1.82042e-03   6.30526e-01   6.55671e-03
-   7  sigma2       1.00000e-02   3.88001e-04   1.97556e-01   1.09281e-02
+   1  cofs         7.75844e-01   4.61912e-02   1.11297e-01   5.20520e-03
+   2  lambda      -1.60631e+00   7.25752e-02   2.44053e-02   1.19572e-01
+   3  mean         5.36677e+00   4.10027e-04   4.10041e-03  -4.21017e-01
+   4  n_combinatorial   2.58121e+03   5.42720e+01   2.84553e-02  -2.68559e-01
+   5  n_signal     1.40949e+03   4.21315e+01   2.20894e-02   8.13924e-02
+   6  sigma1       1.77495e-02   9.11852e-04   7.30277e-02  -2.07643e-02
+   7  sigma2       5.39102e-03   7.27499e-04   2.75608e-01   4.36672e-02
                                ERR DEF= 0.5
  MIGRAD MINIMIZATION HAS CONVERGED.
  MIGRAD WILL VERIFY CONVERGENCE AND ERROR MATRIX.
  COVARIANCE MATRIX CALCULATED SUCCESSFULLY
- FCN=-31295.9 FROM MIGRAD    STATUS=CONVERGED      95 CALLS          96 TOTAL
-                     EDM=2.75113e-06    STRATEGY= 1      ERROR MATRIX ACCURATE 
+ FCN=-31302.3 FROM MIGRAD    STATUS=CONVERGED      95 CALLS          96 TOTAL
+                     EDM=2.60826e-05    STRATEGY= 1      ERROR MATRIX ACCURATE 
   EXT PARAMETER                                   STEP         FIRST   
   NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
-   1  cofs         4.92636e-01   5.90702e-02   8.94355e-03  -1.65167e-02
-   2  lambda      -1.60670e+00   7.27958e-02   3.80870e-03  -7.64705e-03
-   3  mean         5.36681e+00   4.55332e-04   5.56016e-04  -1.63530e-02
-   4  n_combinatorial   2.56635e+03   5.50589e+01   3.37647e-03  -1.16108e-02
-   5  n_signal     1.42465e+03   4.34890e+01   2.60992e-03   2.67930e-02
-   6  sigma1       2.16628e-02   1.89167e-03   3.84786e-02  -4.50732e-03
-   7  sigma2       1.00000e-02   3.88766e-04   4.82815e-02** at limit **
+   1  cofs         7.75839e-01   4.64332e-02   7.62914e-03  -3.72043e-02
+   2  lambda      -1.60645e+00   7.25755e-02   2.98141e-03   4.55394e-02
+   3  mean         5.36677e+00   4.10026e-04   4.99517e-04  -1.07267e-01
+   4  n_combinatorial   2.58146e+03   5.42661e+01   3.38564e-03  -9.87734e-02
+   5  n_signal     1.40945e+03   4.21201e+01   2.59319e-03   5.98890e-02
+   6  sigma1       1.77499e-02   9.13554e-04   6.09014e-03   1.34141e-02
+   7  sigma2       5.38805e-03   7.31547e-04   2.60782e-02  -1.26178e-02
                                ERR DEF= 0.5
  EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  7    ERR DEF=0.5
-  3.506e-03  7.073e-06 -2.649e-07  2.573e-01 -2.585e-01 -9.080e-05 -2.714e-09 
-  7.073e-06  5.301e-03 -4.730e-07 -8.317e-03  8.313e-03 -3.196e-08 -2.112e-12 
- -2.649e-07 -4.730e-07  2.073e-07 -1.284e-04  1.288e-04  2.102e-08  4.899e-14 
-  2.573e-01 -8.317e-03 -1.284e-04  3.032e+03 -4.658e+02 -2.344e-02 -1.677e-07 
- -2.585e-01  8.313e-03  1.288e-04 -4.658e+02  1.892e+03  2.350e-02  1.682e-07 
- -9.080e-05 -3.196e-08  2.102e-08 -2.344e-02  2.350e-02  3.937e-06  5.186e-11 
- -2.714e-09 -2.112e-12  4.899e-14 -1.677e-07  1.682e-07  5.186e-11  3.160e-13 
+  2.165e-03  1.729e-06 -1.168e-06  1.583e-01 -1.588e-01 -2.994e-05 -2.512e-05 
+  1.729e-06  5.268e-03 -3.719e-07 -8.956e-03  8.955e-03  1.048e-07 -3.038e-08 
+ -1.168e-06 -3.719e-07  1.681e-07 -1.083e-04  1.086e-04  1.903e-08  2.284e-08 
+  1.583e-01 -8.956e-03 -1.083e-04  2.946e+03 -3.640e+02 -8.686e-03 -2.184e-03 
+ -1.588e-01  8.955e-03  1.086e-04 -3.640e+02  1.774e+03  8.705e-03  2.190e-03 
+ -2.994e-05  1.048e-07  1.903e-08 -8.686e-03  8.705e-03  8.361e-07  3.397e-07 
+ -2.512e-05 -3.038e-08  2.284e-08 -2.184e-03  2.190e-03  3.397e-07  5.529e-07 
  PARAMETER  CORRELATION COEFFICIENTS  
        NO.  GLOBAL      1      2      3      4      5      6      7
-        1  0.78600   1.000  0.002 -0.010  0.079 -0.100 -0.773 -0.082
-        2  0.01476   0.002  1.000 -0.014 -0.002  0.003 -0.000 -0.000
-        3  0.03029  -0.010 -0.014  1.000 -0.005  0.007  0.023  0.000
-        4  0.28079   0.079 -0.002 -0.005  1.000 -0.194 -0.214 -0.005
-        5  0.34314  -0.100  0.003  0.007 -0.194  1.000  0.272  0.007
-        6  0.80640  -0.773 -0.000  0.023 -0.214  0.272  1.000  0.046
-        7  0.08602  -0.082 -0.000  0.000 -0.005  0.007  0.046  1.000
+        1  0.82886   1.000  0.001 -0.061  0.063 -0.081 -0.704 -0.726
+        2  0.01314   0.001  1.000 -0.012 -0.002  0.003  0.002 -0.001
+        3  0.07755  -0.061 -0.012  1.000 -0.005  0.006  0.051  0.075
+        4  0.22602   0.063 -0.002 -0.005  1.000 -0.159 -0.175 -0.054
+        5  0.27599  -0.081  0.003  0.006 -0.159  1.000  0.226  0.070
+        6  0.73196  -0.704  0.002  0.051 -0.175  0.226  1.000  0.500
+        7  0.72723  -0.726 -0.001  0.075 -0.054  0.070  0.500  1.000
  **********
  **   16 **SET ERR         0.5
  **********
@@ -288,36 +316,35 @@ Info in <TCanvas::Print>: gif file ./results/Bs/sideband_sub/Bptsideband_sub_Bs.
  **   18 **HESSE        3500
  **********
  COVARIANCE MATRIX CALCULATED SUCCESSFULLY
- FCN=-31295.9 FROM HESSE     STATUS=OK             50 CALLS         146 TOTAL
-                     EDM=2.70366e-06    STRATEGY= 1      ERROR MATRIX ACCURATE 
+ FCN=-31302.3 FROM HESSE     STATUS=OK             50 CALLS         146 TOTAL
+                     EDM=2.60556e-05    STRATEGY= 1      ERROR MATRIX ACCURATE 
   EXT PARAMETER                                INTERNAL      INTERNAL  
   NO.   NAME      VALUE            ERROR       STEP SIZE       VALUE   
-   1  cofs         4.92636e-01   5.67434e-02   1.78871e-03  -1.47283e-02
-   2  lambda      -1.60670e+00   7.27956e-02   1.52348e-04   3.65398e-01
-   3  mean         5.36681e+00   4.55316e-04   1.11203e-04   8.07304e-03
-   4  n_combinatorial   2.56635e+03   5.49690e+01   1.35059e-04   2.90124e-01
-   5  n_signal     1.42465e+03   4.33646e+01   1.04397e-04  -2.90121e-01
-   6  sigma1       2.16628e-02   1.82366e-03   1.53914e-03  -7.30766e-01
-   7  sigma2       1.00000e-02   3.88389e-04   9.65630e-03  -1.57051e+00
-                                 WARNING -   - ABOVE PARAMETER IS AT LIMIT.
+   1  cofs         7.75839e-01   4.62728e-02   3.05165e-04   5.84374e-01
+   2  lambda      -1.60645e+00   7.25754e-02   5.96283e-04   1.31564e-01
+   3  mean         5.36677e+00   4.09985e-04   9.99034e-05   7.73962e-03
+   4  n_combinatorial   2.58146e+03   5.42801e+01   1.35425e-04   2.98033e-01
+   5  n_signal     1.40945e+03   4.21324e+01   1.03727e-04  -2.98080e-01
+   6  sigma1       1.77499e-02   9.12738e-04   2.43606e-04   1.99923e-02
+   7  sigma2       5.38805e-03   7.29561e-04   1.04313e-03  -1.24771e+00
                                ERR DEF= 0.5
  EXTERNAL ERROR MATRIX.    NDIM=  25    NPAR=  7    ERR DEF=0.5
-  3.234e-03  7.205e-06 -2.509e-07  2.005e-01 -2.005e-01 -8.149e-05 -5.391e-10 
-  7.205e-06  5.301e-03 -4.734e-07 -7.668e-03  7.667e-03 -5.554e-08 -4.630e-13 
- -2.509e-07 -4.734e-07  2.073e-07 -1.197e-04  1.197e-04  1.970e-08 -8.945e-17 
-  2.005e-01 -7.668e-03 -1.197e-04  3.022e+03 -4.561e+02 -2.161e-02 -2.738e-08 
- -2.005e-01  7.667e-03  1.197e-04 -4.561e+02  1.881e+03  2.162e-02  2.738e-08 
- -8.149e-05 -5.554e-08  1.970e-08 -2.161e-02  2.162e-02  3.632e-06  9.722e-12 
- -5.391e-10 -4.630e-13 -8.945e-17 -2.738e-08  2.738e-08  9.722e-12  3.157e-13 
+  2.150e-03  1.967e-06 -1.172e-06  1.565e-01 -1.565e-01 -2.977e-05 -2.491e-05 
+  1.967e-06  5.268e-03 -3.720e-07 -8.502e-03  8.503e-03  9.433e-08 -3.243e-08 
+ -1.172e-06 -3.720e-07  1.681e-07 -1.078e-04  1.078e-04  1.890e-08  2.233e-08 
+  1.565e-01 -8.502e-03 -1.078e-04  2.947e+03 -3.659e+02 -8.715e-03 -2.165e-03 
+ -1.565e-01  8.503e-03  1.078e-04 -3.659e+02  1.775e+03  8.716e-03  2.165e-03 
+ -2.977e-05  9.433e-08  1.890e-08 -8.715e-03  8.716e-03  8.346e-07  3.384e-07 
+ -2.491e-05 -3.243e-08  2.233e-08 -2.165e-03  2.165e-03  3.384e-07  5.498e-07 
  PARAMETER  CORRELATION COEFFICIENTS  
        NO.  GLOBAL      1      2      3      4      5      6      7
-        1  0.76529   1.000  0.002 -0.010  0.064 -0.081 -0.752 -0.017
-        2  0.01472   0.002  1.000 -0.014 -0.002  0.002 -0.000 -0.000
-        3  0.02915  -0.010 -0.014  1.000 -0.005  0.006  0.023 -0.000
-        4  0.27536   0.064 -0.002 -0.005  1.000 -0.191 -0.206 -0.001
-        5  0.33567  -0.081  0.002  0.006 -0.191  1.000  0.262  0.001
-        6  0.78812  -0.752 -0.000  0.023 -0.206  0.262  1.000  0.009
-        7  0.01783  -0.017 -0.000 -0.000 -0.001  0.001  0.009  1.000
+        1  0.82755   1.000  0.001 -0.062  0.062 -0.080 -0.703 -0.725
+        2  0.01308   0.001  1.000 -0.013 -0.002  0.003  0.001 -0.001
+        3  0.07631  -0.062 -0.013  1.000 -0.005  0.006  0.050  0.073
+        4  0.22709   0.062 -0.002 -0.005  1.000 -0.160 -0.176 -0.054
+        5  0.27697  -0.080  0.003  0.006 -0.160  1.000  0.226  0.069
+        6  0.73138  -0.703  0.001  0.050 -0.176  0.226  1.000  0.500
+        7  0.72558  -0.725 -0.001  0.073 -0.054  0.069  0.500  1.000
 [#1] INFO:Minization -- RooMinimizer::optimizeConst: deactivating const optimization
 [#1] INFO:Minization -- createNLL picked up cached consraints from workspace with 0 entries
 [#1] INFO:Minization -- RooMinimizer::optimizeConst: activating const optimization
@@ -326,16 +353,16 @@ Info in <TCanvas::Print>: gif file ./results/Bs/sideband_sub/Bptsideband_sub_Bs.
 [#1] INFO:Minization -- RooMinimizer::optimizeConst: deactivating const optimization
 [#1] INFO:InputArguments -- Printing Yields
 RooArgList:: = (n_signal,n_combinatorial)
-[#1] INFO:InputArguments -- yield in pdf: n_signal 1424.63
-[#1] INFO:InputArguments -- yield in pdf: n_combinatorial 2566.38
+[#1] INFO:InputArguments -- yield in pdf: n_signal 1409.4
+[#1] INFO:InputArguments -- yield in pdf: n_combinatorial 2581.61
 [#1] INFO:Eval -- Checking Likelihood normalization:  
 [#1] INFO:Eval -- Yield of specie  Sum of Row in Matrix   Norm
-[#1] INFO:Eval -- 1424.63 1424.63 0.999998
-[#1] INFO:Eval -- 2566.38 2566.38 0.999999
+[#1] INFO:Eval -- 1409.4 1409.42 0.999991
+[#1] INFO:Eval -- 2581.61 2581.6 1
 [#1] INFO:Eval -- Calculating sWeight
 
-Yield of B+ is 1424.63.  From sWeights it is 1424.63
-Yield of background is 2566.38.  From sWeights it is 2566.38
+Yield of B+ is 1409.4.  From sWeights it is 1409.4
+Yield of background is 2581.61.  From sWeights it is 2581.61
 
 [#1] INFO:ObjectHandling -- RooWorkspace::import(ws) importing dataset data
 [#1] INFO:ObjectHandling -- RooWorkSpace::import(ws) changing name of dataset from  data to dataWithSWeights
@@ -397,25 +424,84 @@ Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/weights//By_
 Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/weights//Bpt_weights.gif has been created
 TFile**		./results/Bs/mc_validation_plots/weights//weights.root	
  TFile*		./results/Bs/mc_validation_plots/weights//weights.root	
-  OBJ: TH1F	weights_By	 : 0 at: 0x4c4ead0
-  OBJ: TH1F	weights_Bpt	 : 0 at: 0x34467380
+  OBJ: TH1F	weights_By	 : 0 at: 0x1fd6b560
+  OBJ: TH1F	weights_Bpt	 : 0 at: 0x21b39340
   KEY: TH1F	weights_By;2	
   KEY: TH1F	weights_By;1	
   KEY: TH1F	weights_Bpt;2	
   KEY: TH1F	weights_Bpt;1	
-Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_mc/By_mc_validation_Bs.pdf has been created
-Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_mc/By_mc_validation_Bs.gif has been created
-Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_mc/Bpt_mc_validation_Bs.pdf has been created
-Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_mc/Bpt_mc_validation_Bs.gif has been created
-Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_sp/By_mc_validation_Bs.pdf has been created
-Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_sp/By_mc_validation_Bs.gif has been created
-Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_sp/Bpt_mc_validation_Bs.pdf has been created
-Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_sp/Bpt_mc_validation_Bs.gif has been created
-Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/mc_sp/By_mc_validation_Bs.pdf has been created
-Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/mc_sp/By_mc_validation_Bs.gif has been created
-Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/mc_sp/Bpt_mc_validation_Bs.pdf has been created
-Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/mc_sp/Bpt_mc_validation_Bs.gif has been created
-Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_mc_sp/By_mc_validation_Bs.pdf has been created
-Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_mc_sp/By_mc_validation_Bs.gif has been created
-Info in <TCanvas::Print>: pdf file ./results/Bs/mc_validation_plots/ss_mc_sp/Bpt_mc_validation_Bs.pdf has been created
-Info in <TCanvas::Print>: gif file ./results/Bs/mc_validation_plots/ss_mc_sp/Bpt_mc_validation_Bs.gif has been created
+
+ *** Break *** segmentation violation
+
+
+
+===========================================================
+There was a crash.
+This is the entire stack trace of all threads:
+===========================================================
+#0  0x00007f26e931c46c in waitpid () from /lib64/libc.so.6
+#1  0x00007f26e9299f62 in do_system () from /lib64/libc.so.6
+#2  0x00007f26ea428f37 in Exec (shellcmd=<optimized out>, this=0x7543f0) at /cache/root/root-6.18.04/core/unix/src/TUnixSystem.cxx:2106
+#3  TUnixSystem::StackTrace (this=0x7543f0) at /cache/root/root-6.18.04/core/unix/src/TUnixSystem.cxx:2400
+#4  0x00007f26ea42b684 in TUnixSystem::DispatchSignals (this=0x7543f0, sig=kSigSegmentationViolation) at /cache/root/root-6.18.04/core/unix/src/TUnixSystem.cxx:3631
+#5  <signal handler called>
+#6  0x00007f26d664133c in read_weights(TString, double) () from /home/t3cms/u20mcarolina/work3/BinQGP/bmesons_C.so
+#7  0x00007f26d6641c8c in weights() () from /home/t3cms/u20mcarolina/work3/BinQGP/bmesons_C.so
+#8  0x00007f26d664e6c4 in bmesons() () from /home/t3cms/u20mcarolina/work3/BinQGP/bmesons_C.so
+#9  0x00007f26ea9d0066 in ?? ()
+#10 0x0000000100951dd8 in ?? ()
+#11 0x00000000008078f0 in ?? ()
+#12 0x00007f26e566eb70 in ?? () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#13 0x00007ffc058464e0 in ?? ()
+#14 0x00000000007b7440 in ?? ()
+#15 0x00007f26e56541cd in cling::IncrementalExecutor::executeWrapper(llvm::StringRef, cling::Value*) const () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#16 0x00007f26e55f6907 in cling::Interpreter::RunFunction(clang::FunctionDecl const*, cling::Value*) () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#17 0x00007f26e55f7fc3 in cling::Interpreter::EvaluateInternal(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cling::CompilationOptions, cling::Value*, cling::Transaction**, unsigned long) () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#18 0x00007f26e55f8309 in cling::Interpreter::process(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cling::Value*, cling::Transaction**, bool) () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#19 0x00007f26e569c25f in cling::MetaProcessor::process(llvm::StringRef, cling::Interpreter::CompilationResult&, cling::Value*, bool) () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#20 0x00007f26e558beba in HandleInterpreterException (metaProcessor=0xdd8140, input_line=0x7ffc058463e9 "bmesons()", compRes=
+0x7ffc058463b4: cling::Interpreter::kSuccess, result=result
+entry=0x7ffc058464e0) at /cache/root/root-6.18.04/core/metacling/src/TCling.cxx:2152
+#21 0x00007f26e55a4322 in TCling::ProcessLine (this=0x7b41a0, line=<optimized out>, error=0x7ffc0584752c) at /cache/root/root-6.18.04/core/metacling/src/TCling.cxx:2269
+#22 0x00007f26e5595456 in TCling::ProcessLineSynch (this=0x7b41a0, line=0x1287800 ".X  /home/t3cms/u20mcarolina/work3/BinQGP/./bmesons.C++", error=0x7ffc0584752c) at /cache/root/root-6.18.04/core/metacling/src/TCling.cxx:3176
+#23 0x00007f26ea2dce47 in TApplication::ExecuteFile (file=<optimized out>, error=0x7ffc0584752c, keep=<optimized out>) at /cache/root/root-6.18.04/core/base/src/TApplication.cxx:1162
+#24 0x00007f26ea2dc5c0 in TApplication::ProcessLine (this=0x7a02b0, line=<optimized out>, sync=<optimized out>, err=0x7ffc0584752c) at /cache/root/root-6.18.04/core/base/src/TApplication.cxx:1007
+#25 0x00007f26ea783d0e in TRint::ProcessLineNr (this=this
+entry=0x7a02b0, filestem=filestem
+entry=0x7f26ea7950b7 "ROOT_cli_", line=line
+entry=0x7ffc05847530 ".x bmesons.C++", error=error
+entry=0x7ffc0584752c) at /cache/root/root-6.18.04/core/rint/src/TRint.cxx:761
+#26 0x00007f26ea785427 in TRint::Run (this=this
+entry=0x7a02b0, retrn=retrn
+entry=false) at /cache/root/root-6.18.04/core/rint/src/TRint.cxx:421
+#27 0x000000000040092a in main (argc=<optimized out>, argv=0x7ffc058496b8) at /cache/root/root-6.18.04/main/src/rmain.cxx:30
+===========================================================
+
+
+The lines below might hint at the cause of the crash.
+You may get help by asking at the ROOT forum http://root.cern.ch/forum
+Only if you are really convinced it is a bug in ROOT then please submit a
+report at http://root.cern.ch/bugs Please post the ENTIRE stack trace
+from above as an attachment in addition to anything else
+that might help us fixing this issue.
+===========================================================
+#6  0x00007f26d664133c in read_weights(TString, double) () from /home/t3cms/u20mcarolina/work3/BinQGP/bmesons_C.so
+#7  0x00007f26d6641c8c in weights() () from /home/t3cms/u20mcarolina/work3/BinQGP/bmesons_C.so
+#8  0x00007f26d664e6c4 in bmesons() () from /home/t3cms/u20mcarolina/work3/BinQGP/bmesons_C.so
+#9  0x00007f26ea9d0066 in ?? ()
+#10 0x0000000100951dd8 in ?? ()
+#11 0x00000000008078f0 in ?? ()
+#12 0x00007f26e566eb70 in ?? () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#13 0x00007ffc058464e0 in ?? ()
+#14 0x00000000007b7440 in ?? ()
+#15 0x00007f26e56541cd in cling::IncrementalExecutor::executeWrapper(llvm::StringRef, cling::Value*) const () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#16 0x00007f26e55f6907 in cling::Interpreter::RunFunction(clang::FunctionDecl const*, cling::Value*) () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#17 0x00007f26e55f7fc3 in cling::Interpreter::EvaluateInternal(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cling::CompilationOptions, cling::Value*, cling::Transaction**, unsigned long) () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#18 0x00007f26e55f8309 in cling::Interpreter::process(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, cling::Value*, cling::Transaction**, bool) () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#19 0x00007f26e569c25f in cling::MetaProcessor::process(llvm::StringRef, cling::Interpreter::CompilationResult&, cling::Value*, bool) () from /cvmfs/sw.el7/gcc63/root/6.18.04/b03/lib/libCling.so
+#20 0x00007f26e558beba in HandleInterpreterException (metaProcessor=0xdd8140, input_line=0x7ffc058463e9 "bmesons()", compRes=
+0x7ffc058463b4: cling::Interpreter::kSuccess, result=result
+entry=0x7ffc058464e0) at /cache/root/root-6.18.04/core/metacling/src/TCling.cxx:2152
+===========================================================
+
+

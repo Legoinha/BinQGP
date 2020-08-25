@@ -59,6 +59,8 @@
 #include <fstream>
 #include <TGraph.h>
 #include "TMultiGraph.h"
+#include <TEfficiency.h>
+
 
 using namespace RooStats;
 using namespace RooFit;
@@ -79,22 +81,24 @@ void validate_fit(RooWorkspace* w);
 void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString);
 void pT_analysis(RooWorkspace& w,int n, TString, TString);
 double get_yield_syst(RooDataSet *dt, TString syst_src);
+double read_weights(TString var, double var_value);
+double getWeight(double var_value, TH1D* h_weight);
 void fit_syst_error(TString);
 void fit_syst_error_bin(TString, double a, double b);
-
+int weights();
 
 // DATA_CUT
 // 1 = apply cuts, recd ..strict variable range when reading data -- to be used for mc validation
 // 0 = read full data
 // note: when reading tratio should assign weight=1 for events out of range
 
-#define DATA_CUT 0
+#define DATA_CUT 1
 
 //particle
 // 0 = Bu
 // 1 = Bs
 
-#define particle 0
+#define particle 1
 
 void bmesons(){
   
@@ -152,8 +156,8 @@ void bmesons(){
 
   plot_complete_fit(*ws);
   
-  validate_fit(ws);
-  return ;
+  //validate_fit(ws);
+  
   //if(!DATA_CUT){fit_syst_error(input_file_data);}
 
   //sideband_sub histograms
@@ -161,7 +165,6 @@ void bmesons(){
 
   do_splot(*ws);
   histos_splot = splot_method(*ws,n_bins,variables, n_var);
-  
   	
   //monte carlo histograms
   TFile *fin_mc = new TFile(input_file_mc);
@@ -176,13 +179,15 @@ void bmesons(){
   
   //get the ratio between the data (splot method) and the MC
   if(DATA_CUT == 1){
-
     get_ratio(histos_splot, histos_mc,names,"weights.root");   
   }
+  
 
-  //if(!DATA_CUT == 0){pT_analysis(*ws,n_bins[0], "pT.root", input_file_data);}
+  //if(!DATA_CUT){pT_analysis(*ws,n_bins[0], "pT.root", input_file_data);}
+  
+  if(particle == 1){weights();}
 
-
+  return ;
   //COMPARISONS//
   
   //Sideband Subtraction vs. Monte Carlo
@@ -438,6 +443,127 @@ void bmesons(){
 
 //main function ends
 
+// get weights
+double getWeight(double var_value, TH1D* h_weight){
+  int bin = h_weight->FindBin(var_value);
+  return h_weight->GetBinContent(bin);
+}
+
+double read_weights(TString variable, double var_value){
+  
+  TString input_file = particle ? "~/work3/BinQGP/results/Bs/mc_validation_plots/weights/weights.root" :"~/work3/BinQGP/results/Bu/mc_validation_plots/weights/weights.root";
+
+  TFile* f_wei = new TFile(input_file, "read");
+
+  TH1D* histo_variable = (TH1D*)f_wei->Get(Form("weights_"+variable));
+
+  double weight;
+  double variable_min;
+  double variable_max;
+
+  variable_min = histo_variable->GetXaxis()->GetXmin();
+  variable_max = histo_variable->GetXaxis()->GetXmax();  
+  
+  //if the event is not in the range its weight is 1.
+  if(var_value>=variable_min && var_value<=variable_max){  
+     weight = getWeight(var_value,histo_variable);
+  }
+  else{
+     weight = 1;
+  }
+  
+  f_wei->Close();
+  delete f_wei;
+  
+  return weight;
+}
+
+// Efficiency and Efficiency systematics for Bs
+int weights(){
+  TString input_f_mc_cuts = particle ? "/lstore/cms/nuno/ppdata2017/000814/BsMC.root" : "/lstore/cms/nuno/ppdata2017/000814/BPMC.root";
+  TFile* f_mc_cuts = new TFile(input_f_mc_cuts);
+
+  TString input_t = particle ? "ntphi" : "ntKp";
+  TTree* t_cuts = (TTree*)f_mc_cuts->Get(input_t);
+
+  double pt_bins[] = {5, 10, 15, 20, 50};
+
+  int n_pt_bins = 4;
+
+  TH1F* hist_tot_weights = new TH1F("hist_tot_weights", "hist_tot_weights", n_pt_bins, pt_bins);
+  TH1F* hist_passed_weights = new TH1F("hist_passed_weights", "hist_passed_weights", n_pt_bins, pt_bins);
+
+  float bpt;
+
+  float bdt_pt_5_10;
+  float bdt_pt_10_15;
+  float bdt_pt_15_20;
+  float bdt_pt_20_50;
+
+  t_cuts->SetBranchAddress("Bpt", &bpt);
+
+  t_cuts->SetBranchAddress("BDT_pt_5_10", &bdt_pt_5_10);
+  t_cuts->SetBranchAddress("BDT_pt_10_15", &bdt_pt_10_15);
+  t_cuts->SetBranchAddress("BDT_pt_15_20", &bdt_pt_15_20);
+  t_cuts->SetBranchAddress("BDT_pt_20_50", &bdt_pt_20_50);
+
+  double weight = 1;
+  double bdt_total = 0;
+  TString variable;
+
+  for(int evt = 0; evt < t_cuts->GetEntries(); evt++){
+
+    t_cuts->GetEntry(evt);
+    for(int kk=0; kk<n_pt_bins; kk++){
+	if ( (bpt < pt_bins[kk]) || (bpt > pt_bins[kk+1]) )
+	  continue;
+	variable.Form("BDT_pt_%g_%g", pt_bins[kk], pt_bins[kk+1]);
+	if ((5<bpt) && (bpt<10))
+	  {bdt_total = bdt_pt_5_10;}
+	else if ((10<bpt) && (bpt<15))
+	  {bdt_total = bdt_pt_10_15;}
+	else if ((15<bpt) && (bpt<20))
+	  {bdt_total = bdt_pt_15_20;}
+	else if ((20<bpt) && (bpt<50))
+	  {bdt_total = bdt_pt_20_50;}
+	weight = read_weights(variable, bdt_total);
+    }
+    hist_passed_weights->Fill(bpt, weight);
+  }
+
+  TCanvas passed_weights;
+  hist_passed_weights->Draw();
+  passed_weights.SaveAs("./results/Bs/efficiency/plots/passed_weights.pdf");
+
+  TEfficiency* efficiency = new TEfficiency(*hist_passed_weights, *hist_tot_weights);
+
+  TCanvas c;
+  efficiency->Draw("AP");
+  c.SaveAs("./results/Bs/efficiency/plots/efficiency.pdf");
+
+  TFile* f = new TFile("./results/Bs/efficiency/root_files/efficiency.root" , "recreate");
+  f->cd();
+  efficiency->Write();
+  f->Write();
+  f->ls();
+  f->Close();
+
+  for(int i = 1; i < n_pt_bins + 1; i++)
+    {
+      cout << efficiency->GetEfficiency(i) << endl;
+    }
+
+  cout << endl;
+
+  delete hist_tot_weights;
+  delete hist_passed_weights;
+
+  f_mc_cuts->Close();
+  delete f_mc_cuts;
+
+  return 0;
+}
+
 
 void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
 
@@ -456,7 +582,7 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
 #elif particle == 1
   const int n_pt_bins = 4;
   double pt_bins[n_pt_bins + 1] = {5,10,15,20,50};
-#endif
+#endif  
 
   double pt_mean[n_pt_bins];
   double pt_low[n_pt_bins];
@@ -467,19 +593,18 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
   double yield_err_high[n_pt_bins];
   double yield_err_syst[n_pt_bins];
   double m_yield_err_syst[n_pt_bins];
+
   for(int k = 1; k<n_pt_bins; k++){
     yield_err_syst[k]=0;
     m_yield_err_syst[k]=0;
   } 
-
-  
 
   RooDataSet* data_pt, data_w, data_wp;
   RooFitResult* fit_pt;
   RooRealVar* n_sig_pt;
   RooRealVar* n_comb_pt;
 
-  /*
+  
   //plots the signal+background and signal distributions in linear and log scales
   TCanvas* a = new TCanvas("pT","pT", 800, 600);
   a->Divide(2,2);
@@ -555,7 +680,7 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
     a->SaveAs("./results/Bs/Bpt/pTdistributions_Bs.gif");
     a->SaveAs("./results/Bs/Bpt/pTdistributions_Bs.pdf");
   }
-  */
+  
  
   //applies the splot method and evaluates the weighted average pT per bin
 
@@ -823,10 +948,7 @@ void read_data(RooWorkspace& w, TString f_input){
   arg_list.add(*(w.var("Bmass")));
   arg_list.add(*(w.var("By")));
   arg_list.add(*(w.var("Bpt")));
-
-  /*i
-  arg_list.add(*(w.var("By")));
-  arg_list.add(*(w.var("Bpt")));
+  /*
   arg_list.add(*(w.var("Btrk1Pt")));
   arg_list.add(*(w.var("Btr1Eta")));
   arg_list.add(*(w.var("Btrk1PtErr")));
@@ -1389,7 +1511,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
     variables.push_back(*(w->var("BDT_pt_20_50")));
     //variables.push_back(*(w->var("BDT_total"))); 
     }
-  */  
+  */
   
 
   RooDataSet* reduceddata_side;
@@ -1492,7 +1614,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
     histos.push_back(create_histogram(variables[31], "BDT_pt_15_20",factor, reduceddata_side, reduceddata_central, data, n[30]));    
     histos.push_back(create_histogram(variables[32], "BDT_pt_20_50",factor, reduceddata_side, reduceddata_central, data, n[31])); 
     //histos.push_back(create_histogram(variables[20], "BDT_total",factor, reduceddata_side, reduceddata_central, data, n[29]));    
-    */
+    */ 
   }
 
   return histos;
@@ -2274,7 +2396,6 @@ void set_up_workspace_variables(RooWorkspace& w)
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);
     RooRealVar Bpt("Bpt","Bpt",pt_min,pt_max);
-    /*
     RooRealVar Btrk1Pt("Btrk1Pt","Btrk1Pt",trk1pt_min,trk1pt_max);
     RooRealVar Btrk1Eta("Btrk1Eta","Btrk1Eta",trk1eta_min,trk1eta_max);
     RooRealVar Btrk1PtErr("Btrk1PtErr","Btrk1PtErr",trk1pterr_min,trk1pterr_max);
@@ -2306,12 +2427,11 @@ void set_up_workspace_variables(RooWorkspace& w)
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
     RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
     //RooRealVar BDT_total("BDT_total", "BDT_total", BDT_total_min, BDT_total_max);
-    */
+    
 
     w.import(Bmass);
     w.import(By);
     w.import(Bpt);
-    /*
     w.import(Btrk1Pt);
     w.import(Btrk1Eta);
     w.import(Btrk1PtErr);
@@ -2343,6 +2463,6 @@ void set_up_workspace_variables(RooWorkspace& w)
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
     //w.import(BDT_total);
-    */       
+         
   }
 }
