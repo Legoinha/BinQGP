@@ -90,7 +90,7 @@ void fit_syst_error_bin(TString, double a, double b);
 // 0 = read full data
 // note: when reading tratio should assign weight=1 for events out of range
 
-#define DATA_CUT 0
+#define DATA_CUT 1
 
 //particle
 // 0 = Bu
@@ -141,8 +141,8 @@ void bmesons(){
 
   plot_complete_fit(*ws);
  
-  validate_fit(ws);
-  return ;
+  //validate_fit(ws);
+
   //if(!DATA_CUT){fit_syst_error(input_file_data);}
 
   //sideband_sub histograms
@@ -150,26 +150,28 @@ void bmesons(){
 
   do_splot(*ws);
   histos_splot = splot_method(*ws,n_bins,variables, n_var);
-  	
+
   //monte carlo histograms
   TFile *fin_mc = new TFile(input_file_mc);
   TTree* t1_mc = particle ? (TTree*)fin_mc->Get("ntphi") : (TTree*)fin_mc->Get("ntKp");
 
   std::vector<TString> names;
+
   for(int i=0; i<n_var; i++){
     //std::cout<< "Var names: "<< histos_sideband_sub[i]->GetName()<<std::endl;
     histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, n_bins[i]));
     names.push_back(TString(variables[i]));
   }
-  
+
   //get the ratio between the data (splot method) and the MC
   if(DATA_CUT == 1){
-    get_ratio(histos_splot, histos_mc,names,"weights.root");   
-  }
+     get_ratio(histos_splot, histos_mc,names,"weights.root");
+  }         
+  
+  TString Weights = particle ? "~/work3/BinQGP/results/Bs/mc_validation_plots/weights/weights.root" : "~work3/BinQGP/results/Bu/mc_validation_plots/weights/weights.root";
 
   //if(!DATA_CUT){pT_analysis(*ws,n_bins[0], "pT.root", input_file_data);}
  
-  
   //COMPARISONS//
   
   //Sideband Subtraction vs. Monte Carlo
@@ -835,7 +837,7 @@ void read_data(RooWorkspace& w, TString f_input){
   arg_list.add(*(w.var("Bmumueta")));
   arg_list.add(*(w.var("Bmumuphi")));
   arg_list.add(*(w.var("Bmumupt")));
- 
+  
   
   /*if(particle == 0){
     arg_list.add(*(w.var("Btrk1Dz1")));
@@ -854,7 +856,7 @@ void read_data(RooWorkspace& w, TString f_input){
     arg_list.add(*(w.var("BDT_total")));
   }
   */
- 
+  
   if(particle == 1){
     arg_list.add(*(w.var("BDT_pt_5_10")));
     arg_list.add(*(w.var("BDT_pt_10_15")));
@@ -862,7 +864,7 @@ void read_data(RooWorkspace& w, TString f_input){
     arg_list.add(*(w.var("BDT_pt_20_50")));
     //arg_list.add(*(w.var("BDT_total")));	 
   }
-
+  
  
   RooDataSet* data = new RooDataSet("data","data",t1_data,arg_list);
 
@@ -1207,8 +1209,8 @@ void plot_complete_fit(RooWorkspace& w){
   p2->SetBottomMargin(0.2);
    
   p2->SetBorderMode(1);
-  p2->SetFrameBorderMode(0);
-  p2->SetBorderSize(1); 
+  //p2->SetFrameBorderMode(0);
+  //p2->SetBorderSize(1); 
   
   p2->Draw();
 
@@ -1371,7 +1373,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
     variables.push_back(*(w->var("BDT_pt_20_50")));
     //variables.push_back(*(w->var("BDT_total"))); 
     } 
-
+  
   RooDataSet* reduceddata_side;
   RooDataSet* reduceddata_central; 
 
@@ -1482,11 +1484,11 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n){
 
 
   TH1D* h = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
+  TH1D* wei = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
 
   TString name_string = TString(var.GetName()) + ">>htemp(" + Form("%d",n) +"," + Form("%lf", var.getMin()) + "," + Form("%lf", var.getMax()) + ")";
-
   TString pthatweight = "pthat * weight";
- 
+
   t->Draw(name_string, pthatweight);
 
   h = (TH1D*)gDirectory->Get("htemp")->Clone();
@@ -1883,17 +1885,14 @@ for(int i = 0; i < params_size; ++i){
     h[i]->GetYaxis()->SetTitle("Toy MCs");
     h[i]->Draw("same");
   }
-  cout << "yyyyyyyyyyy" << endl ;
 
   TCanvas* c_params = new TCanvas("params", "params", 900, 800);
-  cout << "yyyyyyyyyyy" << endl ;
 
   for(int i = 0; i < params_size; ++i){
     c_params->cd();
     framesParam.at(i)->GetYaxis()->SetTitleOffset(1.4);
     framesParam.at(i)->Draw();
   }
-  cout << "yyyyyyyyyyy" << endl ;
 
   if(particle == 0){
     c_pull->SaveAs("./results/Bu/pulls/pulls_poisson_Bu.pdf");
@@ -1954,11 +1953,11 @@ void set_up_workspace_variables(RooWorkspace& w)
     y_min = -2.4;
     y_max = 2.4;
 
-    pt_min = 5.;
-    pt_max = 110.;
+    pt_min = 0.;
+    pt_max = 40.;
 
-    trk1pt_min = 0.5;
-    trk1pt_max = 20.;
+    trk1pt_min = 5.;
+    trk1pt_max = 15.;
 
     trk1eta_min = -2.4;
     trk1eta_max = 2.4;
@@ -1981,13 +1980,13 @@ void set_up_workspace_variables(RooWorkspace& w)
     mu1eta_min = -2.4;
     mu1eta_max = 2.4;
 
-    mu2eta_min = -2.3;
-    mu2eta_max = 2.3;
+    mu2eta_min = -2.4;
+    mu2eta_max = 2.4;
 
-    mu1pt_min = 1.5;
-    mu1pt_max = 22.;
+    mu1pt_min = 5.;
+    mu1pt_max = 20.;
 
-    mu2pt_min = 1.5;
+    mu2pt_min = 5.;
     mu2pt_max = 20.;
 
     mu1dxyPV_min = -0.3; 
@@ -2097,7 +2096,7 @@ void set_up_workspace_variables(RooWorkspace& w)
     w.import(Bmumueta);
     w.import(Bmumuphi);
     w.import(Bmumupt);
-       
+    
   }
     
   
@@ -2319,6 +2318,6 @@ void set_up_workspace_variables(RooWorkspace& w)
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
     //w.import(BDT_total);
-         
+            
   }
 }
