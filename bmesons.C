@@ -91,13 +91,13 @@ void fit_syst_error_bin(TString, double a, double b);
 // 0 = read full data
 // note: when reading tratio should assign weight=1 for events out of range
 
-#define DATA_CUT 0
+#define DATA_CUT 1
 
 //particle
 // 0 = Bu
 // 1 = Bs
 
-#define particle 0
+#define particle 1
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -132,7 +132,7 @@ void bmesons(){
 #elif particle == 1
   int n_bins[] = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20} ;
 
-  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "BDT_pt_5_10","BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50"} ;
+  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "BDT_pt_5_10","BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50"} ;
 
 #endif
 
@@ -158,7 +158,7 @@ void bmesons(){
     plot_complete_fit(*ws);
     validate_fit(ws);
   }
-  return;  
+  
   //if(!DATA_CUT){fit_syst_error(input_file_data);}
 
   //sideband_sub histograms
@@ -835,7 +835,6 @@ void read_data(RooWorkspace& w, TString f_input){
   arg_list.add(*(w.var("Bmass")));
   arg_list.add(*(w.var("By")));
   arg_list.add(*(w.var("Bpt")));
-  /*
   arg_list.add(*(w.var("Btrk1Pt")));
   arg_list.add(*(w.var("Btrk1Eta")));
   arg_list.add(*(w.var("Btrk1PtErr")));
@@ -862,7 +861,7 @@ void read_data(RooWorkspace& w, TString f_input){
   arg_list.add(*(w.var("Bmumueta")));
   arg_list.add(*(w.var("Bmumuphi")));
   arg_list.add(*(w.var("Bmumupt")));
-  */
+ 
   
   /*if(particle == 0){
     arg_list.add(*(w.var("Btrk1Dz1")));
@@ -2535,7 +2534,6 @@ void set_up_workspace_variables(RooWorkspace& w)
     double BDT_15_20_min, BDT_15_20_max;
     double BDT_20_50_min, BDT_20_50_max;
     double BDT_total_min, BDT_total_max;
-    
     /*
     double BDT_4_7_min, BDT_4_7_max;
     double BDT_7_10_min, BDT_7_10_max;
@@ -2645,7 +2643,7 @@ void set_up_workspace_variables(RooWorkspace& w)
 
     BDT_20_50_min = 0.25;
     BDT_20_50_max = 0.42;
-    
+
     //BDT_total_min = 0.29;
     // BDT_total_max = DATA_CUT? 0.70 : 0.73;
     
