@@ -115,9 +115,9 @@ void fit_syst_error_bin(TString, double a, double b);
 void bmesons_new(){
   
   int n_var;
-  TString input_file_data = particle ? "/lstore/cms/nuno/ppdata2017/001120_nocut/TrkQualCut/BsData.root" : "/lstore/cms/nuno/ppdata2017/001120_nocut/TrkQualCut/BPData.root";
+  TString input_file_data = particle ? "/lstore/cms/nuno/ppdata2017/001120_nocut/TrkQualCut/BsData.root" : "/lstore/cms/nuno/ppdata2017/001120_nocut/AnaCut/BPData.root";
 
-  TString input_file_mc   = particle ? "/lstore/cms/nuno/ppdata2017/001120_nocut/TrkQualCut/BsMC.root" : "/lstore/cms/nuno/ppdata2017/001120_nocut/TrkQualCut/BPMC.root";
+  TString input_file_mc   = particle ? "/lstore/cms/nuno/ppdata2017/001120_nocut/TrkQualCut/BsMC.root" : "/lstore/cms/nuno/ppdata2017/001120_nocut/AnaCut/BPMC.root";
   TString input_file_reweighted_mc   = particle ? "./results/Bs/mc_validation_plots/weights/tree_with_weight.root" : "./results/Bu/mc_validation_plots/weights/tree_with_weight.root";
   
   std::vector<TH1D*> histos_sideband_sub;
@@ -159,9 +159,7 @@ void bmesons_new(){
     //validate_fit(ws);
     //pT_analysis(*ws,n_bins[0], "pT.root", input_file_data);
   }
-  
   return;
-
   //if(!DATA_CUT){fit_syst_error(input_file_data);}
  
   //sideband_sub histograms
@@ -467,11 +465,11 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
   RooRealVar Bmass = *(w.var("Bmass"));
 
 #if particle == 0
-  const int n_pt_bins = 5;
-  double pt_bins [n_pt_bins + 1] = {5,10,15,20,30,50};  
+  const int n_pt_bins = 4;
+  double pt_bins [n_pt_bins + 1] = {7,10,15,20,50};  
 #elif particle == 1
-  const int n_pt_bins = 5;
-  double pt_bins[n_pt_bins + 1] = {5,10,15,20,30,50};
+  const int n_pt_bins = 4;
+  double pt_bins[n_pt_bins + 1] = {5,10,15,20,50};
 #endif  
 
   double pt_mean[n_pt_bins];
@@ -582,8 +580,6 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
   double yield_syst[n_pt_bins][n_pdf_syst]; 
   //value of the systematic uncertainty
 
-   cout << '|' << setw(15) << "Nominal" << '|' << setw(15) << "Bkg_poly" << '|' << setw(15) << "Signal1gauss" << '|' << setw(15) << "Bkg_range" << '|' << endl;
-
 
   for(int i=0;i<n_pt_bins;i++){
     //select data subset corresponding to pT bin
@@ -692,9 +688,8 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
       cout<<"syst nominal: "<<syst_src[0]<<endl;
       //yield_syst_rel[i][k] = (val - val_nominal)/val_nominal;
       yield_syst[i][k] = (val - val_nominal);
-    cout << '|' << setw(15) << yield_syst[i][0] << '|' << setw(15) << yield_syst[i][1] << '|' << setw(15) << yield_syst[i][2] << '|' << setw(15) << yield_syst[i][3] << '|' << endl;
 
-    }
+}
 
     yield_err_syst[i] = pow(yield_syst[i][0],2) + pow(yield_syst[i][1],2) + pow(yield_syst[i][2],2) + pow(yield_syst[i][3],2);
     m_yield_err_syst[i] = sqrt(yield_err_syst[i]);
@@ -845,6 +840,13 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
   //for(int i=0;i<n_pt_bins;i++){
   // fit_syst_error_bin(datafile, pt_bins[i], pt_bins[i+1]);
   // }
+
+   cout << '|' << setw(15) << "Pdf" << '|' << setw(15) << "7-10" << '|' << setw(15) << "10-15" << '|' << setw(15) << "15-20" << '|' << setw(15) << "20-50" << '|' << endl;
+   cout << '|' << setw(15) << "Nominal" << '|' << setw(15) << yield_syst[0][0] << '|' << setw(15) << yield_syst[1][0] << '|' << setw(15) << yield_syst[2][0] << '|' << setw(15) << yield_syst[3][0] << '|' << endl;
+   cout << '|' << setw(15) << "Bkg_poly" << '|' << setw(15) << yield_syst[0][1] << '|' << setw(15) << yield_syst[1][1] << '|' << setw(15) << yield_syst[2][1] << '|' << setw(15) << yield_syst[3][1] << '|' << endl;
+   cout << '|' << setw(15) << "Signal1gauss" << '|' << setw(15) << yield_syst[0][2] << '|' << setw(15) << yield_syst[1][2] << '|' << setw(15) << yield_syst[2][2] << '|' << setw(15) << yield_syst[3][2] << '|' << endl;
+   cout << '|' << setw(15) << "Bkg_range" << '|' << setw(15) << yield_syst[0][3] << '|' << setw(15) <<  yield_syst[1][3] << '|' << setw(15) <<  yield_syst[2][3] << '|' << setw(15) <<  yield_syst[3][3] << '|' << endl;
+
 
 }
 
@@ -1307,13 +1309,13 @@ void plot_complete_fit(RooWorkspace& w){
   tex11->SetNDC(kTRUE);
   tex11->SetLineWidth(2);
   tex11->SetTextSize(0.04);
-  //  tex11->Draw();
+  //tex11->Draw();
   tex11 = new TLatex(0.6,0.85,"CMS Preliminary");
   tex11->SetNDC(kTRUE);
   tex11->SetTextFont(42);
   tex11->SetTextSize(0.04);
   tex11->SetLineWidth(2);
-  //  tex11->Draw();
+  //tex11->Draw();
   
   double lambda_str = lambda->getVal();
   double lambda_err = lambda->getError();
@@ -1347,7 +1349,7 @@ void plot_complete_fit(RooWorkspace& w){
     leg->AddEntry(massframe->findObject("Combinatorial"), "Combinatorial", "l");
     leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
   }
-    //leg->Draw("same");
+  //leg->Draw("same");
 
   //pull dists
 
@@ -2362,7 +2364,7 @@ void set_up_workspace_variables(RooWorkspace& w)
     pt_min = 5.;
     pt_max = 110.;
 
-    trk1pt_min = 0.5;
+    trk1pt_min = 1.;
     trk1pt_max = 100.;
 
     trk1eta_min = -2.4;
@@ -2372,13 +2374,13 @@ void set_up_workspace_variables(RooWorkspace& w)
     trk1pterr_max = 0.5;
 
     chi2cl_min = 0.;
-    chi2cl_max = 1.05;
+    chi2cl_max = 1.0;
 
     svpvDistance_min = 0.5;
     svpvDistance_max = 21.;
 
-    svpvDistance2D_min = -0.5;
-    svpvDistance_max = 0.5;
+    svpvDistance2D_min = 0.;
+    svpvDistance2D_max = 1.;
 
     svpvDistanceErr_min = 0.;
     svpvDistanceErr_max = 0.5;
@@ -2428,8 +2430,8 @@ void set_up_workspace_variables(RooWorkspace& w)
     trk1Dz1_min = -30.;
     trk1Dz1_max = 30.;
 
-    trk1DzError1_min = 0.;
-    trk1DzError1_max = 0.1;
+    trk1DzError1_min = -0.5;
+    trk1DzError1_max = 0.5;
 
     trk1Dxy1_min = -5.;
     trk1Dxy1_max = 5.;
