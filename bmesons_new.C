@@ -66,7 +66,7 @@ using namespace RooStats;
 using namespace RooFit;
 using namespace std;
 
-std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var);
+std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var);
 std::vector<TH1D*> splot_method(RooWorkspace& w, int* n, TString* label, int n_var);
 
 void set_up_workspace_variables(RooWorkspace& w);
@@ -86,13 +86,6 @@ void fit_syst_error(TString);
 void fit_syst_error_bin(TString, double a, double b);
 
 
-// DATA_CUT
-// 1 = apply cuts, recd ..strict variable range when reading data -- to be used for mc validation
-// 0 = read full data
-// note: when reading tratio should assign weight=1 for events out of range
-
-#define DATA_CUT 0
-
 //particle
 // 0 = Bu
 // 1 = Bs
@@ -103,7 +96,7 @@ void fit_syst_error_bin(TString, double a, double b);
 // 1 = calculates ratio between MC and sPlot 
 // 0 = does not calculate weights 
 
-#define weights 0
+#define weights 1
 
 //add_weights
 // 1 = adds weights to tree
@@ -115,9 +108,9 @@ void fit_syst_error_bin(TString, double a, double b);
 void bmesons_new(){
   
   int n_var;
-  TString input_file_data = particle ? "/lstore/cms/nuno/ppdata2017/001120_nocut/TrkQualCut/BsData.root" : "/lstore/cms/nuno/ppdata2017/001120_nocut/AnaCut/BPData.root";
+  TString input_file_data = particle ? "/eos/cms/store/group/phys_heavyions/zshi/SamplesForMaria/NewBDTCut/Bs/BsData.root" : "/eos/cms/store/group/phys_heavyions/zshi/SamplesForMaria/NewBDTCut/BPNew/BPData.root";
 
-  TString input_file_mc   = particle ? "/lstore/cms/nuno/ppdata2017/001120_nocut/TrkQualCut/BsMC.root" : "/lstore/cms/nuno/ppdata2017/001120_nocut/AnaCut/BPMC.root";
+  TString input_file_mc   = particle ? "/eos/cms/store/group/phys_heavyions/zshi/SamplesForMaria/NewBDTCut/Bs/BsMC.root" : "/eos/cms/store/group/phys_heavyions/zshi/SamplesForMaria/NewBDTCut/BPNew/BPMC.root";
   TString input_file_reweighted_mc   = particle ? "./results/Bs/mc_validation_plots/weights/tree_with_weight.root" : "./results/Bu/mc_validation_plots/weights/tree_with_weight.root";
   
   std::vector<TH1D*> histos_sideband_sub;
@@ -125,26 +118,23 @@ void bmesons_new(){
   std::vector<TH1D*> histos_splot;
 
 #if particle == 0
-  int n_bins[] = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20} ;
+  int n_bins[] = {30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30} ;
 
-  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr","BsvpvDistance_2D","BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt"} ;    
+  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr","BsvpvDistance_2D","BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_100"} ;    
 
 #elif particle == 1
-  int n_bins[] = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20} ;
+  int n_bins[] = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20} ;
 
-  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDistance_2D","BsvpvDisErr","BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "BDT_pt_5_10","BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50"} ;
+  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDistance_2D","BsvpvDisErr","BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk2Dz1", "Btrk1DzError1", "Btrk2DzError1", "Btrk1Dxy1", "Btrk2Dxy1", "Btrk1DxyError1", "Btrk2DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_100"} ;
 
 #endif
 
   int n_n_bins = sizeof(n_bins)/sizeof(n_bins[0]);
-  //std::cout << n_n_bins << std::endl;
   int n_variables = sizeof(variables)/sizeof(variables[0]);
-  //std::cout << n_variables << std::endl;
 
   if(n_n_bins != n_variables){
     std::cout << "Error: number of bins does not correspond to number of variables." << std::endl;
-    return;
-  }
+    return;}
 
   n_var = n_variables;
   
@@ -153,23 +143,19 @@ void bmesons_new(){
   read_data(*ws,input_file_data);
 
   build_pdf(*ws, "nominal");
-  
-  if (DATA_CUT == 0){
-    plot_complete_fit(*ws);
-    //validate_fit(ws);
-    //pT_analysis(*ws,n_bins[0], "pT.root", input_file_data);
-  }
-  return;
-  //if(!DATA_CUT){fit_syst_error(input_file_data);}
+  plot_complete_fit(*ws);  
+
+  //validate_fit(ws);
+  //pT_analysis(*ws,n_bins[0], "pT.root", input_file_data);
+
+  // SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
+  histos_sideband_sub = sideband_subtraction(*ws, n_bins, n_var);
  
-  //sideband_sub histograms
-  histos_sideband_sub = sideband_subtraction(ws, n_bins, n_var);
-
-  do_splot(*ws); //splot fixes parameters of the fit -> they need to be unfixed for pT analysis
+  // SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
+  do_splot(*ws); 
   histos_splot = splot_method(*ws,n_bins,variables, n_var);
-
-  //MONTE CARLO HISTOGRAMS
   
+  // MONTE CARLO HISTOGRAMS
   TFile *fin_mc = new TFile(input_file_mc); //use this file to add the weights (to clone original tree) and make data-MC comparisons without weights
   //TFile *fin_mc = new TFile(input_file_reweighted_mc); //use this file to make data-MC comparisons with weights
 
@@ -179,279 +165,235 @@ void bmesons_new(){
 
   for(int i=0; i<n_var; i++){
     //std::cout<< "Var names: "<< histos_sideband_sub[i]->GetName()<<std::endl;
-    TString weight = "pthat * weight ";
+    TString weight = "pthat * weight";
     histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, n_bins[i], weight));
     names.push_back(TString(variables[i]));
   }
   
-  //get the ratio between the data (splot method) and the MC 
- 
-  if (weights == 1){
-    get_ratio(histos_splot, histos_mc,names,"weights.root");
-  }
+  // RATIO BETWEE DATA (SPLOT) AND MC
+  if (weights == 1){get_ratio(histos_splot, histos_mc,names,"weights.root");}
   
-  if (add_weights == 1){
-    AddWeights(t1_mc);    
-  } 
+  // ADDS WEIGHTS TO MC TREE (use to reweight MC)
+  if (add_weights == 1){AddWeights(t1_mc);}  
   
+
   //COMPARISONS//
   
   //Sideband Subtraction vs. Monte Carlo
-  //clone
   vector<TH1D*> mc_comp_ss(histos_mc);
 
   vector<TH1D*> ss_comp_mc(histos_sideband_sub);
 
-  if(DATA_CUT == 1){
-    for(int i=0; i<n_var; i++) {
-      TCanvas c;
- 
-      mc_comp_ss[i]->SetXTitle(TString(ss_comp_mc[i]->GetName()));
+  for(int i=0; i<n_var; i++) {
+    TCanvas c;
+    mc_comp_ss[i]->SetXTitle(TString(ss_comp_mc[i]->GetName()));
+    mc_comp_ss[i]->SetStats(0);
+    ss_comp_mc[i]->SetStats(0);
 
-      mc_comp_ss[i]->SetStats(0);
-      ss_comp_mc[i]->SetStats(0);
+    if(particle == 0){
+        mc_comp_ss[i]->SetTitle("B^{+}");}
+    else if (particle == 1){
+        mc_comp_ss[i]->SetTitle("B^{0}_{s}");}
 
-      if(particle == 0){
-          mc_comp_ss[i]->SetTitle("B^{+}");
-      }
-      else if (particle == 1){
-          mc_comp_ss[i]->SetTitle("B^{0}_{s}");
-      }
+    //normalization
+    mc_comp_ss[i]->Scale(1/mc_comp_ss[i]->Integral());
+    ss_comp_mc[i]->Scale(1/ss_comp_mc[i]->Integral());
 
-      //normalization
-      mc_comp_ss[i]->Scale(1/mc_comp_ss[i]->Integral());
-      ss_comp_mc[i]->Scale(1/ss_comp_mc[i]->Integral());
+    mc_comp_ss[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_ss[i]->GetMinimum(),1.1*mc_comp_ss[i]->GetMaximum());
+    mc_comp_ss[i]->Draw();
+    ss_comp_mc[i]->Draw("same");
 
-      mc_comp_ss[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_ss[i]->GetMinimum(),1.1*mc_comp_ss[i]->GetMaximum());
-      mc_comp_ss[i]->Draw();
-      ss_comp_mc[i]->Draw("same");
-
-      //--TRATIO--//
+    //--TRATIO--//
       
-      auto rp = new TRatioPlot(ss_comp_mc[i] ,mc_comp_ss[i], "divsym");
-      c.SetTicks(0, 1);
-      rp->SetH1DrawOpt("E");
-      rp->Draw("nogrid");
-      rp->GetLowerRefYaxis()->SetTitle("Data(ss)/MC");
-      rp->GetUpperRefYaxis()->SetTitle("normalized entries");
-      c.Update();
+    auto rp = new TRatioPlot(ss_comp_mc[i] ,mc_comp_ss[i], "divsym");
+    c.SetTicks(0, 1);
+    rp->SetH1DrawOpt("E");
+    rp->Draw("nogrid");
+    rp->GetLowerRefYaxis()->SetTitle("Data(ss)/MC");
+    rp->GetUpperRefYaxis()->SetTitle("normalized entries");
+    c.Update();
 
-      TLegend* leg;
-      leg = new TLegend(0.7, 0.9, 0.9, 1.0);
-      leg->AddEntry(ss_comp_mc[i]->GetName(), "S. Subtraction", "l");
-      leg->AddEntry(mc_comp_ss[i]->GetName(), "Monte Carlo", "l");
-      leg->SetTextSize(0.03);
-      leg->Draw("same");
+    TLegend* leg;
+    leg = new TLegend(0.7, 0.9, 0.9, 1.0);
+    leg->AddEntry(ss_comp_mc[i]->GetName(), "S. Subtraction", "l");
+    leg->AddEntry(mc_comp_ss[i]->GetName(), "Monte Carlo", "l");
+    leg->SetTextSize(0.03);
+    leg->Draw("same");
    
-      if(particle == 0){
-c.SaveAs("./results/Bu/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bu.pdf");
-c.SaveAs("./results/Bu/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bu.gif");
-      }else if(particle == 1){
-c.SaveAs("./results/Bs/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bs.pdf");
-c.SaveAs("./results/Bs/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bs.gif");
-      }
-      //leg->Delete();
-      
-    }
+    if(particle == 0){
+      c.SaveAs("./results/Bu/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bu.pdf");
+      c.SaveAs("./results/Bu/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bu.gif");} 
+    else if(particle == 1){
+      c.SaveAs("./results/Bs/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bs.pdf");
+      c.SaveAs("./results/Bs/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bs.gif");}
+    //leg->Delete();
   }
+  
 
   //SPlot vs. Sideband subtraction
-
-  //clone
   vector<TH1D*> sp_comp_ss(histos_splot);
   vector<TH1D*> ss_comp_sp(histos_sideband_sub);
 
-  if(DATA_CUT == 1){
-    for(int i=0; i<n_var; i++)
-      {
-TCanvas a;
-ss_comp_sp[i]->SetYTitle("normalized entries");
-sp_comp_ss[i]->SetXTitle(TString(ss_comp_sp[i]->GetName()));
-ss_comp_sp[i]->SetStats(0);
-sp_comp_ss[i]->SetStats(0);
+  for(int i=0; i<n_var; i++)
+   {
+    TCanvas a;
+    ss_comp_sp[i]->SetYTitle("normalized entries");
+    sp_comp_ss[i]->SetXTitle(TString(ss_comp_sp[i]->GetName()));
+    ss_comp_sp[i]->SetStats(0);
+    sp_comp_ss[i]->SetStats(0);
 
-        /*if(particle == 0){
-          ss_comp_sp[i]->SetTitle("B^{+}");
-        }
-        else if (particle == 1){
-	ss_comp_sp[i]->SetTitle("B^{0}_{s}");
-      }*/
+    if(particle == 0){
+      mc_comp_sp[i]->SetTitle("B^{+}");}
+    else if (particle == 1){
+      mc_comp_sp[i]->SetTitle("B^{0}_{s}");}
+
+    //normalization
+    ss_comp_sp[i]->Scale(1/ss_comp_sp[i]->Integral());
+    sp_comp_ss[i]->Scale(1/sp_comp_ss[i]->Integral());
+
  
-//normalization
- ss_comp_sp[i]->Scale(1/ss_comp_sp[i]->Integral());
- sp_comp_ss[i]->Scale(1/sp_comp_ss[i]->Integral());
+    ss_comp_sp[i]->GetYaxis()->SetRangeUser(0.1*ss_comp_sp[i]->GetMinimum(),1.1*ss_comp_sp[i]->GetMaximum());
+    ss_comp_sp[i]->Draw();
+    sp_comp_ss[i]->Draw("same");
  
+    //--TRATIO--//
  
- ss_comp_sp[i]->GetYaxis()->SetRangeUser(0.1*ss_comp_sp[i]->GetMinimum(),1.1*ss_comp_sp[i]->GetMaximum());
- ss_comp_sp[i]->Draw();
- sp_comp_ss[i]->Draw("same");
+    auto rp = new TRatioPlot(ss_comp_sp[i], sp_comp_ss[i], "divsym");
+    a.SetTicks(0, 1);
+    rp->SetH1DrawOpt("E");
+    rp->Draw("nogrid");
+    rp->GetLowerRefYaxis()->SetTitle("Data(ss)/Data(sp)");
+    rp->GetUpperRefYaxis()->SetTitle("normalized entries");
+    a.Update();
  
- //--TRATIO--//
+    TLegend* leg;
  
- auto rp = new TRatioPlot(ss_comp_sp[i], sp_comp_ss[i], "divsym");
- a.SetTicks(0, 1);
- rp->SetH1DrawOpt("E");
- rp->Draw("nogrid");
- rp->GetLowerRefYaxis()->SetTitle("Data(ss)/Data(sp)");
- rp->GetUpperRefYaxis()->SetTitle("normalized entries");
- a.Update();
+    leg = new TLegend(0.6, 0.9, 0.9, 1.0);
+    leg->AddEntry(ss_comp_sp[i]->GetName(), "Sideband Subtraction", "l");
+    leg->AddEntry(sp_comp_ss[i]->GetName(), "SPlot", "l");
+    leg->SetTextSize(0.03);
+    leg->Draw("same");
  
- TLegend* leg;
- 
- leg = new TLegend(0.6, 0.9, 0.9, 1.0);
- leg->AddEntry(ss_comp_sp[i]->GetName(), "Sideband Subtraction", "l");
- leg->AddEntry(sp_comp_ss[i]->GetName(), "SPlot", "l");
- leg->SetTextSize(0.03);
- leg->Draw("same");
- 
- if(particle == 0){
-   a.SaveAs("./results/Bu/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bu.pdf");
-   a.SaveAs("./results/Bu/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bu.gif");
- }else if(particle == 1){
-   a.SaveAs("./results/Bs/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bs.pdf");
-   a.SaveAs("./results/Bs/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bs.gif");
- }
- //leg->Delete();
-      }
-  }     
+    if(particle == 0){
+      a.SaveAs("./results/Bu/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bu.pdf");
+      a.SaveAs("./results/Bu/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bu.gif");}
+    else if(particle == 1){
+      a.SaveAs("./results/Bs/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bs.pdf");
+      a.SaveAs("./results/Bs/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bs.gif");}
+    //leg->Delete();
+  }
+       
   
   //SPlot vs. Monte Carlo
-
-  //clone
   vector<TH1D*> sp_comp_mc(histos_splot);
   vector<TH1D*> mc_comp_sp(histos_mc);
 
-  if(DATA_CUT == 1){
-    for(int i=0; i<n_var; i++)
-      {
-	TCanvas a;
-	mc_comp_sp[i]->SetXTitle(TString(histos_sideband_sub[i]->GetName()));
-	mc_comp_sp[i]->SetYTitle("normalized entries");
-	sp_comp_mc[i]->SetXTitle(TString(histos_sideband_sub[i]->GetName()));
+  for(int i=0; i<n_var; i++)
+   {
+    TCanvas a;
+    mc_comp_sp[i]->SetXTitle(TString(histos_sideband_sub[i]->GetName()));
+    mc_comp_sp[i]->SetYTitle("normalized entries");
+    sp_comp_mc[i]->SetXTitle(TString(histos_sideband_sub[i]->GetName()));
 	
-	mc_comp_sp[i]->SetStats(0);
-	sp_comp_mc[i]->SetStats(0);
+    mc_comp_sp[i]->SetStats(0);
+    sp_comp_mc[i]->SetStats(0);
 
-        if(particle == 0){
-          mc_comp_sp[i]->SetTitle("B^{+}");
-        }
-        else if (particle == 1){
-          mc_comp_sp[i]->SetTitle("B^{0}_{s}");
-        }
+    if(particle == 0){
+      mc_comp_sp[i]->SetTitle("B^{+}");}
+    else if (particle == 1){
+      mc_comp_sp[i]->SetTitle("B^{0}_{s}");}
 	
-	//normalization
-	mc_comp_sp[i]->Scale(1/mc_comp_sp[i]->Integral());
-	sp_comp_mc[i]->Scale(1/sp_comp_mc[i]->Integral());
+    //normalization
+    mc_comp_sp[i]->Scale(1/mc_comp_sp[i]->Integral());
+    sp_comp_mc[i]->Scale(1/sp_comp_mc[i]->Integral());
 	
-	mc_comp_sp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(),1.1*mc_comp_sp[i]->GetMaximum());
-	mc_comp_sp[i]->Draw();
-	sp_comp_mc[i]->Draw("same");
+    mc_comp_sp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(),1.1*mc_comp_sp[i]->GetMaximum());
+    mc_comp_sp[i]->Draw();
+    sp_comp_mc[i]->Draw("same");
 	
-	//--TRATIO--//
-	
-	auto rp = new TRatioPlot(sp_comp_mc[i], mc_comp_sp[i], "divsym");
-	a.SetTicks(0, 1);
-	rp->SetH1DrawOpt("E");
-	rp->Draw("nogrid");
-	rp->GetLowerRefYaxis()->SetTitle("Data(sp)/MC");
-	rp->GetUpperRefYaxis()->SetTitle("normalized entries");
-	a.Update();
+    //--TRATIO--//	
+    auto rp = new TRatioPlot(sp_comp_mc[i], mc_comp_sp[i], "divsym");
+    a.SetTicks(0, 1);
+    rp->SetH1DrawOpt("E");
+    rp->Draw("nogrid");
+    rp->GetLowerRefYaxis()->SetTitle("Data(sp)/MC");
+    rp->GetUpperRefYaxis()->SetTitle("normalized entries");
+    a.Update();
      
-	TLegend* leg;
+    TLegend* leg;	
+    leg = new TLegend(0.7, 0.9, 0.9, 1.0);
+    leg->AddEntry(mc_comp_sp[i]->GetName(), "Monte Carlo", "l");
+    leg->AddEntry(sp_comp_mc[i]->GetName(), "SPlot", "l");
+    leg->SetTextSize(0.03);
+    leg->Draw("same");
 	
-	leg = new TLegend(0.7, 0.9, 0.9, 1.0);
-	leg->AddEntry(mc_comp_sp[i]->GetName(), "Monte Carlo", "l");
-	leg->AddEntry(sp_comp_mc[i]->GetName(), "SPlot", "l");
-	leg->SetTextSize(0.03);
-	leg->Draw("same");
+    if(particle == 0){
+      a.SaveAs("./results/Bu/mc_validation_plots/mc_sp/" + names[i]+"_mc_validation_Bu.pdf")
+      a.SaveAs("./results/Bu/mc_validation_plots/mc_sp/" + names[i]+"_mc_validation_Bu.gif");}
+    else if(particle == 1){
+      a.SaveAs("./results/Bs/mc_validation_plots/mc_sp/"+names[i]+"_mc_validation_Bs.pdf");
+      a.SaveAs("./results/Bs/mc_validation_plots/mc_sp/"+names[i]+"_mc_validation_Bs.gif");}
 	
-	if(particle == 0){
-	  a.SaveAs("./results/Bu/mc_validation_plots/mc_sp/" + names[i]+"_mc_validation_Bu.pdf");
-	  a.SaveAs("./results/Bu/mc_validation_plots/mc_sp/" + names[i]+"_mc_validation_Bu.gif");
-	}else if(particle == 1){
-	  a.SaveAs("./results/Bs/mc_validation_plots/mc_sp/"+names[i]+"_mc_validation_Bs.pdf");
-	  a.SaveAs("./results/Bs/mc_validation_plots/mc_sp/"+names[i]+"_mc_validation_Bs.gif");
-	}
-	
-	//leg->Delete();
-      }
+    //leg->Delete();
   }
+ 
   //Sideband subtraction vs. Monte Carlo vs SPlot
-  
-  //clone
   vector<TH1D*> sp_comp(histos_splot);
   vector<TH1D*> mc_comp(histos_mc);
   vector<TH1D*> ss_comp(histos_sideband_sub);
 
-  if(DATA_CUT == 1){
-    for(int i=0; i<n_var; i++)
-      {
-	TCanvas a;
-	
-	mc_comp[i]->SetXTitle(TString(ss_comp[i]->GetName()));
-	mc_comp[i]->SetYTitle("normalized entries");
-	sp_comp[i]->SetXTitle(TString(ss_comp[i]->GetName()));
-	mc_comp[i]->SetStats(0);
-	sp_comp[i]->SetStats(0);
-	ss_comp[i]->SetStats(0);
+  for(int i=0; i<n_var; i++)
+   {
+    TCanvas a;	
+    mc_comp[i]->SetXTitle(TString(ss_comp[i]->GetName()));
+    mc_comp[i]->SetYTitle("normalized entries");
+    sp_comp[i]->SetXTitle(TString(ss_comp[i]->GetName()));
+    mc_comp[i]->SetStats(0);
+    sp_comp[i]->SetStats(0);
+    ss_comp[i]->SetStats(0);
 
-        if(particle == 0){
-          mc_comp[i]->SetTitle("B^{+}");
-        }
-        else if (particle == 1){
-          mc_comp[i]->SetTitle("B^{0}_{s}");
-        }
+    if(particle == 0){
+      mc_comp[i]->SetTitle("B^{+}");}
+    else if (particle == 1){
+      mc_comp[i]->SetTitle("B^{0}_{s}");}
 	
-	//normalization
-	mc_comp[i]->Scale(1/mc_comp[i]->Integral());
-	sp_comp[i]->Scale(1/sp_comp[i]->Integral());
-	ss_comp[i]->Scale(1/ss_comp[i]->Integral());
+    //normalization
+    mc_comp[i]->Scale(1/mc_comp[i]->Integral());
+    sp_comp[i]->Scale(1/sp_comp[i]->Integral());
+    ss_comp[i]->Scale(1/ss_comp[i]->Integral());	
 	
+    //y axis: maximum and minimum 
+    if((mc_comp[i]->GetMaximum() > sp_comp[i]->GetMaximum()) && (mc_comp[i]->GetMaximum() > ss_comp[i]->GetMaximum())){
+      mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*mc_comp[i]->GetMaximum());}
+    else if((sp_comp[i]->GetMaximum() > ss_comp[i]->GetMaximum()) && (sp_comp[i]->GetMaximum() > mc_comp[i]->GetMaximum())){
+      mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*sp_comp[i]->GetMaximum());}
+    else{mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*ss_comp[i]->GetMaximum());}
 	
-	//y axis: maximum and minimum 
-	if ( ( mc_comp[i]->GetMaximum() > sp_comp[i]->GetMaximum() ) && ( mc_comp[i]->GetMaximum() > ss_comp[i]->GetMaximum() ) ){
-	  mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*mc_comp[i]->GetMaximum());
-	}
-	else if ( (sp_comp[i]->GetMaximum() > ss_comp[i]->GetMaximum() ) && ( sp_comp[i]->GetMaximum() > mc_comp[i]->GetMaximum() ) ){
-	  mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*sp_comp[i]->GetMaximum());
-	}
-	else {
-	  mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*ss_comp[i]->GetMaximum());
-	}
+    mc_comp[i]->Draw();
+    sp_comp[i]->Draw("same");
+    ss_comp[i]->Draw("same");
+		
+    TLegend* leg;
+    leg = new TLegend(0.7, 0.9, 0.9, 1.0);	
+    leg->AddEntry(ss_comp[i]->GetName(), "S. Subtraction", "l");
+    leg->AddEntry(mc_comp[i]->GetName(), "Monte Carlo", "l");
+    leg->AddEntry(sp_comp[i]->GetName(), "SPlot", "l");
+    leg->SetTextSize(0.03);
+    leg->Draw("same");
 	
-	mc_comp[i]->Draw();
-	sp_comp[i]->Draw("same");
-	ss_comp[i]->Draw("same");
-	
-	
-	TLegend* leg;
-	
-	leg = new TLegend(0.7, 0.9, 0.9, 1.0);
-	
-	leg->AddEntry(ss_comp[i]->GetName(), "S. Subtraction", "l");
-	leg->AddEntry(mc_comp[i]->GetName(), "Monte Carlo", "l");
-	leg->AddEntry(sp_comp[i]->GetName(), "SPlot", "l");
-	leg->SetTextSize(0.03);
-	leg->Draw("same");
-	
-	if(particle == 0){
-	  a.SaveAs("./results/Bu/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bu.pdf");
-	  a.SaveAs("./results/Bu/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bu.gif");
-	}else if(particle == 1){
-	  a.SaveAs("./results/Bs/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bs.pdf");
+    if(particle == 0){
+      a.SaveAs("./results/Bu/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bu.pdf");
+      a.SaveAs("./results/Bu/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bu.gif");}
+    else if(particle == 1){
+      a.SaveAs("./results/Bs/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bs.pdf");
+      a.SaveAs("./results/Bs/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bs.gif");}
 
-	  a.SaveAs("./results/Bs/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bs.gif");
-	}
-	
-	//leg->Delete();
-      }
+    //leg->Delete();
   }
-  
-  //comparisons end
-
+//comparisons end
 }
-
 //main function ends
+
 
 void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
 
@@ -465,11 +407,11 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
   RooRealVar Bmass = *(w.var("Bmass"));
 
 #if particle == 0
-  const int n_pt_bins = 4;
-  double pt_bins [n_pt_bins + 1] = {7,10,15,20,50};  
+  const int n_pt_bins = 7;
+  double pt_bins [n_pt_bins + 1] = {3,5,7,10,15,20,50,100};  
 #elif particle == 1
-  const int n_pt_bins = 4;
-  double pt_bins[n_pt_bins + 1] = {5,10,15,20,50};
+  const int n_pt_bins = 7;
+  double pt_bins[n_pt_bins + 1] = {3,5,7,10,15,20,50,100};
 #endif  
 
   double pt_mean[n_pt_bins];
@@ -575,9 +517,10 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
 
   const int n_pdf_syst=4;
   //number of pdfs
-  TString syst_src[n_pdf_syst]={"nominal","bkg_poly","signal1gauss","bkg_range"};
+  TString syst_src[n_pdf_syst]={"nominal","bkg_range","triple_gauss","bkg_poly"};//crystal_ball, signal1gauss (change table label)
   //array of pdfs to evaluate the systematic uncertainty of the N signal
   double yield_syst[n_pt_bins][n_pdf_syst]; 
+  double yield_syst_rel[n_pt_bins][n_pdf_syst];
   //value of the systematic uncertainty
 
 
@@ -686,7 +629,7 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
       val = get_yield_syst(data_pt, syst_src[k]); // gets yield value for bin i using pdf choice k
       val_nominal = get_yield_syst(data_pt, syst_src[0]); //gets yield value for bin i using nominal pdf choice
       cout<<"syst nominal: "<<syst_src[0]<<endl;
-      //yield_syst_rel[i][k] = (val - val_nominal)/val_nominal;
+      yield_syst_rel[i][k] = (val - val_nominal)/val_nominal;
       yield_syst[i][k] = (val - val_nominal);
 
 }
@@ -841,13 +784,12 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile){
   // fit_syst_error_bin(datafile, pt_bins[i], pt_bins[i+1]);
   // }
 
-   cout << '|' << setw(15) << "Pdf" << '|' << setw(15) << "7-10" << '|' << setw(15) << "10-15" << '|' << setw(15) << "15-20" << '|' << setw(15) << "20-50" << '|' << endl;
-   cout << '|' << setw(15) << "Nominal" << '|' << setw(15) << yield_syst[0][0] << '|' << setw(15) << yield_syst[1][0] << '|' << setw(15) << yield_syst[2][0] << '|' << setw(15) << yield_syst[3][0] << '|' << endl;
-   cout << '|' << setw(15) << "Bkg_poly" << '|' << setw(15) << yield_syst[0][1] << '|' << setw(15) << yield_syst[1][1] << '|' << setw(15) << yield_syst[2][1] << '|' << setw(15) << yield_syst[3][1] << '|' << endl;
-   cout << '|' << setw(15) << "Signal1gauss" << '|' << setw(15) << yield_syst[0][2] << '|' << setw(15) << yield_syst[1][2] << '|' << setw(15) << yield_syst[2][2] << '|' << setw(15) << yield_syst[3][2] << '|' << endl;
-   cout << '|' << setw(15) << "Bkg_range" << '|' << setw(15) << yield_syst[0][3] << '|' << setw(15) <<  yield_syst[1][3] << '|' << setw(15) <<  yield_syst[2][3] << '|' << setw(15) <<  yield_syst[3][3] << '|' << endl;
-
-
+   cout << '|' << setw(15) << "Pdf" << '|' << setw(15) << "3-5" << '|' << setw(15) << "5-7" << '|' << setw(15) << "7-10" << '|' << setw(15) << "10-15" << '|' << setw(15) << "15-20" << '|' << setw(15) << "20-50" << '|' << setw(15) << "50-100" << '|' << endl;
+   cout << '|' << setw(15) << "Nominal" << '|' << setw(15) << yield_syst_rel[0][0] << '|' << setw(15) << yield_syst_rel[1][0] << '|' << setw(15) << yield_syst_rel[2][0] << '|' << setw(15) << yield_syst_rel[3][0] << '|' << setw(15) << yield_syst_rel[4][0] << '|' << setw(15) << yield_syst_rel[5][0] << '|' << setw(15) << yield_syst_rel[6][0]  << '|' << endl;
+   cout << '|' << setw(15) << "Bkg_range" << '|' << setw(15) << yield_syst_rel[0][1] << '|' << setw(15) << yield_syst_rel[1][1] << '|' << setw(15) << yield_syst_rel[2][1] << '|' << setw(15) << yield_syst_rel[3][1] << '|' << setw(15) << yield_syst_rel[4][1] << '|' << setw(15) << yield_syst_rel[5][1]  << '|' << setw(15) << yield_syst_rel[6][1]<< '|' << endl;
+   cout << '|' << setw(15) << "Triple_gauss" << '|' << setw(15) << yield_syst_rel[0][2] << '|' << setw(15) << yield_syst_rel[1][2] << '|' << setw(15) << yield_syst_rel[2][2] << '|' << setw(15) << yield_syst_rel[3][2] << '|' << setw(15) << yield_syst_rel[4][2] << '|' << setw(15) << yield_syst_rel[5][2] << '|' << setw(15) << yield_syst_rel[6][2] << '|' << endl;
+   cout << '|' << setw(15) << "Bkg_poly" << '|' << setw(15) << yield_syst_rel[0][3] << '|' << setw(15) <<  yield_syst_rel[1][3] << '|' << setw(15) <<  yield_syst_rel[2][3] << '|' << setw(15) <<  yield_syst_rel[3][3] << '|' << setw(15) << yield_syst_rel[4][3] << '|' << setw(15) << yield_syst_rel[5][3] << '|' << setw(15) << yield_syst_rel[6][3] << '|' << endl;
+ //  cout << '|' << setw(15) << "Signal1gauss" << '|' << setw(15) << yield_syst_rel[0][4] << '|' << setw(15) <<  yield_syst_rel[1][4] << '|' << setw(15) <<  yield_syst_rel[2][4] << '|' << setw(15) <<  yield_syst_rel[3][4] << '|' << setw(15) << yield_syst_rel[4][4] << '|' << setw(15) << yield_syst_rel[5][4] << '|' << setw(15) << yield_syst_rel[6][4] << '|' << endl;
 }
 
 //pT_analysis end
@@ -940,12 +882,33 @@ void read_data(RooWorkspace& w, TString f_input){
   arg_list.add(*(w.var("Bmumuphi")));
   arg_list.add(*(w.var("Bmumupt")));
   
-   
-  if(particle == 1){
-    arg_list.add(*(w.var("BDT_pt_5_10")));
+
+  if(particle == 0){
+    arg_list.add(*(w.var("BDT_pt_3_5")));
+    arg_list.add(*(w.var("BDT_pt_5_7")));
+    arg_list.add(*(w.var("BDT_pt_7_10")));
     arg_list.add(*(w.var("BDT_pt_10_15")));
     arg_list.add(*(w.var("BDT_pt_15_20")));
     arg_list.add(*(w.var("BDT_pt_20_50")));
+    arg_list.add(*(w.var("BDT_pt_50_100")));
+  }
+
+   
+  if(particle == 1){
+    arg_list.add(*(w.var("Btrk2Pt")));
+    arg_list.add(*(w.var("Btrk2Eta")));
+    arg_list.add(*(w.var("Btrk2PtErr")));
+    arg_list.add(*(w.var("Btrk2Dz1")));
+    arg_list.add(*(w.var("Btrk2DzError1")));
+    arg_list.add(*(w.var("Btrk2Dxy1")));
+    arg_list.add(*(w.var("Btrk2DxyError1")));
+    arg_list.add(*(w.var("BDT_pt_3_5")));
+    arg_list.add(*(w.var("BDT_pt_5_7")));
+    arg_list.add(*(w.var("BDT_pt_7_10")));
+    arg_list.add(*(w.var("BDT_pt_10_15")));
+    arg_list.add(*(w.var("BDT_pt_15_20")));
+    arg_list.add(*(w.var("BDT_pt_20_50")));
+    arg_list.add(*(w.var("BDT_pt_50_100")));
   }
   
  
@@ -964,9 +927,9 @@ void build_pdf(RooWorkspace& w, std::string choice) {
 
   //  RooDataSet* reduceddata_central;
 
-  double left = particle ? 5.3 : 5.15; 
+  double left = particle ? 5.3 : 5.2; 
   double right = particle ? 5.45 : 5.4; 
-  double mass_peak = particle ? 5.366 : 5.265; 
+  double mass_peak = particle ? 5.366 : 5.279; 
 
   cout << "buid pdf 1 " << choice << endl;
   
@@ -986,15 +949,17 @@ void build_pdf(RooWorkspace& w, std::string choice) {
   RooGaussian signal2("signal2","signal_gauss2",Bmass,mean,sigma2);
   RooRealVar cofs("cofs", "cofs", 0.3, 0., 1.);
   RooAddPdf signal("signal", "signal", RooArgList(signal1,signal2),cofs);
-  //sigma1.setConstant();
-  //sigma2.setConstant();
-  //cofs.setConstant();
-  //systematics->signal
   RooRealVar sigma3("sigma3","sigma3",0.012,0.010,0.030);
   RooGaussian signal3("signal3","signal3",Bmass, mean, sigma3);
   
-  
-  
+  RooRealVar cofs1("cofs1", "cofs1", 0.3, 0., 1.);
+  RooAddPdf signal_triple("signal_triple", "signal_triple", RooArgList(signal1,signal2,signal3), RooArgList(cofs,cofs1));
+
+  RooRealVar alpha("alpha", "alpha", mass_peak-0.015/2, mass_peak-0.08, mass_peak-0.003);
+  RooRealVar n("n", "n", 5.00);
+  RooCBShape crystal_ball("crystal_ball", "crystal_ball", Bmass, mean, sigma1, alpha, n);
+
+
   //BACKGROUND//
 
   //error function
@@ -1008,7 +973,7 @@ void build_pdf(RooWorkspace& w, std::string choice) {
  
   //exponential
   RooRealVar lambda("lambda","lambda",-2.,-5.,1.0);
-  RooExponential fit_side("fit_side", "fit_side_exp", Bmass, lambda);
+  RooExponential fit_side("fit_side", "fit_side", Bmass, lambda);
 
   //jpsi_pi component
   RooRealVar m_jpsipi_mean1("m_jpsipi_mean1","m_jpsipi_mean1",5.34693, 5.346, 5.347);
@@ -1048,42 +1013,37 @@ void build_pdf(RooWorkspace& w, std::string choice) {
   double n_combinatorial_initial = data->sumEntries() - n_signal_initial;
   RooRealVar n_signal("n_signal","n_signal",n_signal_initial,0.,data->sumEntries());
   RooRealVar n_combinatorial("n_combinatorial","n_combinatorial",n_combinatorial_initial,0.,data->sumEntries());
-  cout << "n_signal_ini" << n_signal_initial << endl;
   RooRealVar f_erf("f_erf","f_erf",0.2,0.0,1.);//2.50259e-01,0.0,1.
   RooProduct n_erf("n_erf","n_erf",RooArgList(n_signal,f_erf));
-  
-  //RooRealVar f_jpsipi("f_jpsipi","f_jpsipi",0.1, 0.09, 0.11); 
   RooRealVar f_jpsipi("f_jpsipi","f_jpsipi",0.03996, 0.038, 0.040); 
-  //RooRealVar f_jpsipi("f_jpsipi","f_jpsipi",4.1E-5/1.026E-3,0.,0.1); 
   f_jpsipi.setConstant(kTRUE);
-  //XXX
   RooProduct n_jpsipi("n_jpsipi","n_jpsipi",RooArgList(n_signal,f_jpsipi));
-  //systematics->bkg
   RooRealVar slope("slope","slope",0,-5,5);
   RooPolynomial poly_bkg("poly_bkg", "poly_bkg", Bmass, slope);
 
-  if(particle == 0){ //B+
+  if(particle == 0){//B+
     if (choice == "nominal"){
-       cout << "before model" << endl;
-      //RooAddPdf model("model", "model", RooArgList(signal,fit_side),RooArgList(n_signal,n_combinatorial));//good
-      //RooAddPdf model("model", "model", RooArgList(signal,fit_side,jpsipi),RooArgList(n_signal,n_combinatorial,n_jpsipi));//bad
-      //RooAddPdf model("model", "model", RooArgList(signal,fit_side,erf),RooArgList(n_signal,n_combinatorial,n_erf));//good
       RooAddPdf model("model", "model", RooArgList(signal,fit_side,erf,jpsipi),RooArgList(n_signal,n_combinatorial,n_erf,n_jpsipi));
-      cout << "after model" <<endl;
       w.import(model);
     }else if (choice=="bkg_poly"){
       RooAddPdf model("model", "model", RooArgList(signal,poly_bkg,erf,jpsipi),RooArgList(n_signal,n_combinatorial,n_erf,n_jpsipi));
       w.import(model);
     } else if (choice=="bkg_range"){
-      RooAddPdf model("model", "model", RooArgList(signal,fit_side, jpsipi),RooArgList(n_signal,n_combinatorial, n_jpsipi));
+      RooAddPdf model("model", "model", RooArgList(signal,fit_side,jpsipi),RooArgList(n_signal,n_combinatorial, n_jpsipi));
       w.import(model);
     }else if (choice == "signal1gauss"){
       RooAddPdf model("model", "model", RooArgList(signal3,fit_side,erf,jpsipi),RooArgList(n_signal,n_combinatorial,n_erf,n_jpsipi));
       w.import(model);
+    }else if (choice == "triple_gauss"){
+      RooAddPdf model("model", "model", RooArgList(signal_triple,fit_side,erf,jpsipi),RooArgList(n_signal,n_combinatorial,n_erf,n_jpsipi));
+      w.import(model);
+    }else if (choice == "crystal_ball"){
+      RooAddPdf model("model", "model", RooArgList(crystal_ball,fit_side,erf,jpsipi),RooArgList(n_signal,n_combinatorial,n_erf,n_jpsipi));
+      w.import(model);
     }
   }
 
-  else if(particle == 1){
+  else if(particle == 1){//Bs
     if (choice == "nominal"){
       RooAddPdf model("model", "model", RooArgList(signal,fit_side), RooArgList(n_signal, n_combinatorial)); 
       w.import(model);
@@ -1095,6 +1055,12 @@ void build_pdf(RooWorkspace& w, std::string choice) {
       w.import(model);
     }else if (choice == "signal1gauss"){
       RooAddPdf model("model", "model", RooArgList(signal3,fit_side),RooArgList(n_signal,n_combinatorial));
+      w.import(model);
+    }else if (choice == "triple_gauss"){
+      RooAddPdf model("model", "model", RooArgList(signal_triple,fit_side),RooArgList(n_signal,n_combinatorial));
+      w.import(model);
+    }else if (choice == "crystal_ball"){
+      RooAddPdf model("model", "model", RooArgList(crystal_ball,fit_side),RooArgList(n_signal,n_combinatorial));
       w.import(model);
     }
   }
@@ -1239,7 +1205,6 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src) {
 void plot_complete_fit(RooWorkspace& w){
 
   RooAbsPdf*  model = w.pdf("model");
-  // RooDataSet* data = (RooDataSet*) w.data("data");
   RooDataSet* data = (RooDataSet*) w.data("data");//->reduce("Bpt>15")->reduce("Bmass<5.6");
   //->reduce(EventRange(1, 50000))
   //, Cut("bpt>10"));//, Cut("Bmass>5.2"));    //XXX
@@ -1319,7 +1284,6 @@ void plot_complete_fit(RooWorkspace& w){
   
   double lambda_str = lambda->getVal();
   double lambda_err = lambda->getError();
-
   double chis = massframe->chiSquare();
  
   TLatex* tex12 = new TLatex(0.15, 0.85, Form("#lambda_{exp} = %.3lf #pm %.3lf",lambda_str,lambda_err));
@@ -1383,115 +1347,127 @@ void plot_complete_fit(RooWorkspace& w){
   pull_plot->Draw();
  
   //only saves the fit when no cuts are applied
-  if(DATA_CUT == 0){
-    if(particle == 0){
-      d.SaveAs("./results/Bu/complete_fit_Bu.pdf");
-      d.SaveAs("./results/Bu/complete_fit_Bu.gif");
-    }else if(particle == 1){
-      d.SaveAs("./results/Bs/complete_fit_Bs.pdf");
-      d.SaveAs("./results/Bs/complete_fit_Bs.gif");
-    }
-  }
+  if(particle == 0){
+    d.SaveAs("./results/Bu/complete_fit_Bu.pdf");
+    d.SaveAs("./results/Bu/complete_fit_Bu.gif");}
+  else if(particle == 1){
+    d.SaveAs("./results/Bs/complete_fit_Bs.pdf");
+    d.SaveAs("./results/Bs/complete_fit_Bs.gif");}
 }
+
 
 //plot_complete_fit ends
 
 //SIDEBAND SUBTRACTION//
-std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
+std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
   
-  RooDataSet* data = (RooDataSet*) w->data("data");
+  RooDataSet* data = (RooDataSet*) w.data("data");
 
-  RooAbsPdf* fit_side = w->pdf("fit_side");
+  RooAbsPdf* model = w.pdf("model");
+  RooAbsPdf* BpModel = w.pdf("signal");
+  RooAbsPdf* BgModel = w.pdf("fit_side");
+
+  RooRealVar Bmass = *(w.var("Bmass"));
 
   vector<RooRealVar> variables;
   
-  variables.push_back(*(w->var("Bmass")));
-  variables.push_back(*(w->var("By")));
-  variables.push_back(*(w->var("Bpt")));
-  variables.push_back(*(w->var("Btrk1Pt")));
-  variables.push_back(*(w->var("Btrk1Eta")));
-  variables.push_back(*(w->var("Btrk1PtErr")));
-  variables.push_back(*(w->var("Bchi2cl")));
-  variables.push_back(*(w->var("BsvpvDistance")));
-  variables.push_back(*(w->var("BsvpvDisErr")));
-  variables.push_back(*(w->var("BsvpvDistance_2D")));
-  variables.push_back(*(w->var("BsvpvDisErr_2D")));
-  variables.push_back(*(w->var("Bmumumass")));
-  variables.push_back(*(w->var("Bmu1eta")));
-  variables.push_back(*(w->var("Bmu2eta")));
-  variables.push_back(*(w->var("Bmu1pt")));
-  variables.push_back(*(w->var("Bmu2pt")));
-  variables.push_back(*(w->var("Bmu1dxyPV")));
-  variables.push_back(*(w->var("Bmu2dxyPV")));
-  variables.push_back(*(w->var("Bmu1dzPV")));
-  variables.push_back(*(w->var("Bmu2dzPV")));
-  variables.push_back(*(w->var("Bd0")));
-  variables.push_back(*(w->var("Bd0Err")));
-  variables.push_back(*(w->var("Bdtheta")));
-  variables.push_back(*(w->var("Balpha")));
-  variables.push_back(*(w->var("Btrk1Dz1")));
-  variables.push_back(*(w->var("Btrk1DzError1")));
-  variables.push_back(*(w->var("Btrk1Dxy1")));
-  variables.push_back(*(w->var("Btrk1DxyError1")));
-  variables.push_back(*(w->var("Bmumueta")));
-  variables.push_back(*(w->var("Bmumuphi")));
-  variables.push_back(*(w->var("Bmumupt")));
+  variables.push_back(*(w.var("Bmass")));
+  variables.push_back(*(w.var("By")));
+  variables.push_back(*(w.var("Bpt")));
+  variables.push_back(*(w.var("Btrk1Pt")));
+  variables.push_back(*(w.var("Btrk1Eta")));
+  variables.push_back(*(w.var("Btrk1PtErr")));
+  variables.push_back(*(w.var("Bchi2cl")));
+  variables.push_back(*(w.var("BsvpvDistance")));
+  variables.push_back(*(w.var("BsvpvDisErr")));
+  variables.push_back(*(w.var("BsvpvDistance_2D")));
+  variables.push_back(*(w.var("BsvpvDisErr_2D")));
+  variables.push_back(*(w.var("Bmumumass")));
+  variables.push_back(*(w.var("Bmu1eta")));
+  variables.push_back(*(w.var("Bmu2eta")));
+  variables.push_back(*(w.var("Bmu1pt")));
+  variables.push_back(*(w.var("Bmu2pt")));
+  variables.push_back(*(w.var("Bmu1dxyPV")));
+  variables.push_back(*(w.var("Bmu2dxyPV")));
+  variables.push_back(*(w.var("Bmu1dzPV")));
+  variables.push_back(*(w.var("Bmu2dzPV")));
+  variables.push_back(*(w.var("Bd0")));
+  variables.push_back(*(w.var("Bd0Err")));
+  variables.push_back(*(w.var("Bdtheta")));
+  variables.push_back(*(w.var("Balpha")));
+  variables.push_back(*(w.var("Btrk1Dz1")));
+  variables.push_back(*(w.var("Btrk1DzError1")));
+  variables.push_back(*(w.var("Btrk1Dxy1")));
+  variables.push_back(*(w.var("Btrk1DxyError1")));
+  variables.push_back(*(w.var("Bmumueta")));
+  variables.push_back(*(w.var("Bmumuphi")));
+  variables.push_back(*(w.var("Bmumupt")));
   
-  /*
-  if(particle == 0){variables.push_back(*(w->var("Btrk1Dz1")));
-    variables.push_back(*(w->var("Btrk1DzError1")));
-    variables.push_back(*(w->var("Btrk1Dxy1")));
-    variables.push_back(*(w->var("Btrk1DxyError1")));
-    variables.push_back(*(w->var("Bd0")));
-    variables.push_back(*(w->var("Bd0Err")));
-    variables.push_back(*(w->var("BDT_pt_5_7")));
-    variables.push_back(*(w->var("BDT_pt_7_10")));
-    variables.push_back(*(w->var("BDT_pt_10_15")));
-    variables.push_back(*(w->var("BDT_pt_15_20")));
-    variables.push_back(*(w->var("BDT_pt_20_30")));
-    variables.push_back(*(w->var("BDT_pt_30_50")));
-    variables.push_back(*(w->var("BDT_pt_50_100")));
-    variables.push_back(*(w->var("BDT_total")));
+  
+  if(particle == 0){
+    variables.push_back(*(w.var("BDT_pt_3_5")));
+    variables.push_back(*(w.var("BDT_pt_5_7")));
+    variables.push_back(*(w.var("BDT_pt_7_10")));
+    variables.push_back(*(w.var("BDT_pt_10_15")));
+    variables.push_back(*(w.var("BDT_pt_15_20")));
+    variables.push_back(*(w.var("BDT_pt_20_50")));
+    variables.push_back(*(w.var("BDT_pt_50_100")));
    }
-  */
+  
   
   if(particle == 1){
-    variables.push_back(*(w->var("BDT_pt_5_10")));
-    variables.push_back(*(w->var("BDT_pt_10_15")));
-    variables.push_back(*(w->var("BDT_pt_15_20")));
-    variables.push_back(*(w->var("BDT_pt_20_50")));
-    //variables.push_back(*(w->var("BDT_total"))); 
-  /* 
-    variables.push_back(*(w->var("BDT_pt_4_7")));
-    variables.push_back(*(w->var("BDT_pt_7_10")));
-    variables.push_back(*(w->var("BDT_pt_10_15")));
-    variables.push_back(*(w->var("BDT_pt_15_20")));
-    variables.push_back(*(w->var("BDT_pt_20_50")));
-  */
+    variables.push_back(*(w.var("Btrk2Pt")));
+    variables.push_back(*(w.var("Btrk2Eta")));
+    variables.push_back(*(w.var("Btrk2PtErr")));
+    variables.push_back(*(w.var("Btrk2Dz1")));
+    variables.push_back(*(w.var("Btrk2DzError1")));
+    variables.push_back(*(w.var("Btrk2Dxy1")));
+    variables.push_back(*(w.var("Btrk2DxyError1")));
+    variables.push_back(*(w.var("BDT_pt_3_5")));
+    variables.push_back(*(w.var("BDT_pt_5_7")));
+    variables.push_back(*(w.var("BDT_pt_7_10")));
+    variables.push_back(*(w.var("BDT_pt_10_15")));
+    variables.push_back(*(w.var("BDT_pt_15_20")));
+    variables.push_back(*(w.var("BDT_pt_20_50")));
+    variables.push_back(*(w.var("BDT_pt_50_100")));
   } 
   
   
   RooDataSet* reduceddata_side;
   RooDataSet* reduceddata_central; 
 
-  double left = particle ? 5.3  : 5.15;
+  double left = particle ? 5.3  : 5.2;
   double right = particle ? 5.45 : 5.4;
 
-
+  Bmass.setRange("right",right,Bmass.getMax());
+  Bmass.setRange("left",Bmass.getMin(),left);
+  Bmass.setRange("peak",left,right);
+  Bmass.setRange("peakright",left,Bmass.getMax());
+  Bmass.setRange("total", Bmass.getMin(), Bmass.getMax());
+  
   reduceddata_side = particle ? (RooDataSet*)data->reduce(Form("Bmass>%lf || Bmass<%lf", right, left)) : (RooDataSet*)data->reduce(Form("Bmass>%lf", right));
   reduceddata_central = (RooDataSet*)data->reduce(Form("Bmass>%lf",left));
   reduceddata_central = (RooDataSet*)reduceddata_central->reduce(Form("Bmass<%lf",right));
 
   //Integrating the background distribution
+   
+  RooAbsReal* int_fit_side_right = BgModel->createIntegral(Bmass, Bmass, "right");
+  RooAbsReal* int_fit_side_left = BgModel->createIntegral(Bmass, Bmass, "left");
+  RooAbsReal* int_fit_peak = BgModel->createIntegral(Bmass, Bmass, "peak");
+ 
+  cout << "Integral left band = " << int_fit_side_left->getVal() << endl; 
+  cout << "Integral right band = " << int_fit_side_right->getVal() << endl;
+  cout << "Integral peak = " << int_fit_peak->getVal() << endl; 
+  cout << "normalisation = " << (BgModel->createIntegral(Bmass, Bmass, "total"))->getVal() << endl;
 
-  RooAbsReal* int_fit_side_right = fit_side->createIntegral(variables[0], "right");
-  RooAbsReal* int_fit_side_left = fit_side->createIntegral(variables[0], "left");
-  RooAbsReal* int_fit_peak = fit_side->createIntegral(variables[0], "peak");
-
-  std::cout<< std::endl << "Integral right band: " << int_fit_side_right->getVal() << std::endl;
-  if(particle == 1){
-    cout << "Integral left band: " << int_fit_side_left->getVal() << endl;
-  }
+  /* 
+  TCanvas *can = new TCanvas();
+  RooPlot *plot = Bmass.frame();
+  BgModel->plotOn(plot);
+  plot->Draw();
+  can->Draw();
+  can->SaveAs("~/public/BinQGP/results/fit_side.gif"); 
+  */
 
   double factor = particle ? (int_fit_peak->getVal())/(int_fit_side_right->getVal() + int_fit_side_left->getVal()) : (int_fit_peak->getVal())/(int_fit_side_right->getVal()); 
 
@@ -1500,7 +1476,6 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
   for(int i=0; i<n_var; i++){
     std::cout << "bins: " << n[i] << std::endl;
   } 
-
   std::vector<TH1D*> histos;
 
   if(particle == 0){
@@ -1511,8 +1486,8 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
     histos.push_back(create_histogram(variables[5], "Btrk1PtErr",factor, reduceddata_side, reduceddata_central, data, n[4]));
     histos.push_back(create_histogram(variables[6], "Bchi2cl",factor, reduceddata_side, reduceddata_central, data, n[5]));
     histos.push_back(create_histogram(variables[7], "BsvpvDistance",factor, reduceddata_side, reduceddata_central, data, n[6]));
-    histos.push_back(create_histogram(variables[8], "BsvpvDistance_2D",factor, reduceddata_side, reduceddata_central, data, n[7]));
-    histos.push_back(create_histogram(variables[9], "BsvpvDisErr",factor, reduceddata_side, reduceddata_central, data, n[8]));
+    histos.push_back(create_histogram(variables[8], "BsvpvDisErr",factor, reduceddata_side, reduceddata_central, data, n[8]));
+    histos.push_back(create_histogram(variables[9], "BsvpvDistance_2D",factor, reduceddata_side, reduceddata_central, data, n[7]));
     histos.push_back(create_histogram(variables[10], "BsvpvDisErr_2D",factor, reduceddata_side, reduceddata_central, data, n[9]));
     histos.push_back(create_histogram(variables[11], "Bmumumass",factor, reduceddata_side, reduceddata_central, data, n[10]));
     histos.push_back(create_histogram(variables[12], "Bmu1eta",factor, reduceddata_side, reduceddata_central, data, n[11]));
@@ -1534,49 +1509,58 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
     histos.push_back(create_histogram(variables[28], "Bmumueta",factor, reduceddata_side, reduceddata_central, data, n[27]));
     histos.push_back(create_histogram(variables[29], "Bmumuphi",factor, reduceddata_side, reduceddata_central, data, n[28]));
     histos.push_back(create_histogram(variables[30], "Bmumupt",factor, reduceddata_side, reduceddata_central, data, n[29]));
+    histos.push_back(create_histogram(variables[31], "BDT_pt_3_5",factor, reduceddata_side, reduceddata_central, data, n[30]));
+    histos.push_back(create_histogram(variables[32], "BDT_pt_5_7",factor, reduceddata_side, reduceddata_central, data, n[31]));
+    histos.push_back(create_histogram(variables[33], "BDT_pt_7_10",factor, reduceddata_side, reduceddata_central, data, n[32]));
+    histos.push_back(create_histogram(variables[34], "BDT_pt_10_15",factor, reduceddata_side, reduceddata_central, data, n[33]));
+    histos.push_back(create_histogram(variables[35], "BDT_pt_15_20",factor, reduceddata_side, reduceddata_central, data, n[34]));
+    histos.push_back(create_histogram(variables[36], "BDT_pt_20_50",factor, reduceddata_side, reduceddata_central, data, n[35]));
+    histos.push_back(create_histogram(variables[37], "BDT_pt_50_100",factor, reduceddata_side, reduceddata_central, data, n[36]));
   }else if(particle == 1){
     histos.push_back(create_histogram(variables[1], "By",factor, reduceddata_side, reduceddata_central, data, n[0]));
     histos.push_back(create_histogram(variables[2], "Bpt",factor, reduceddata_side, reduceddata_central, data, n[1]));
     histos.push_back(create_histogram(variables[3], "Btrk1Pt",factor, reduceddata_side, reduceddata_central, data, n[2]));
     histos.push_back(create_histogram(variables[4], "Btrk1Eta",factor, reduceddata_side, reduceddata_central, data, n[3]));
     histos.push_back(create_histogram(variables[5], "Btrk1PtErr",factor, reduceddata_side, reduceddata_central, data, n[4]));
-    histos.push_back(create_histogram(variables[6], "Bchi2cl",factor, reduceddata_side, reduceddata_central, data, n[5]));
-    histos.push_back(create_histogram(variables[7], "BsvpvDistance",factor, reduceddata_side, reduceddata_central, data, n[6]));
-    histos.push_back(create_histogram(variables[8], "BsvpvDistance_2D",factor, reduceddata_side, reduceddata_central, data, n[7]));
-    histos.push_back(create_histogram(variables[9], "BsvpvDisErr",factor, reduceddata_side, reduceddata_central, data, n[8]));
-    histos.push_back(create_histogram(variables[10], "BsvpvDisErr_2D",factor, reduceddata_side, reduceddata_central, data, n[9]));
-    histos.push_back(create_histogram(variables[11], "Bmumumass",factor, reduceddata_side, reduceddata_central, data, n[10]));
-    histos.push_back(create_histogram(variables[12], "Bmu1eta",factor, reduceddata_side, reduceddata_central, data, n[11]));
-    histos.push_back(create_histogram(variables[13], "Bmu2eta",factor, reduceddata_side, reduceddata_central, data, n[12]));
-    histos.push_back(create_histogram(variables[14], "Bmu1pt",factor, reduceddata_side, reduceddata_central, data, n[13]));
-    histos.push_back(create_histogram(variables[15], "Bmu2pt",factor, reduceddata_side, reduceddata_central, data, n[14]));
-    histos.push_back(create_histogram(variables[16], "Bmu1dxyPV",factor, reduceddata_side, reduceddata_central, data, n[15]));
-    histos.push_back(create_histogram(variables[17], "Bmu2dxyPV",factor, reduceddata_side, reduceddata_central, data, n[16]));
-    histos.push_back(create_histogram(variables[18], "Bmu1dzPV",factor, reduceddata_side, reduceddata_central, data, n[17]));
-    histos.push_back(create_histogram(variables[19], "Bmu2dzPV",factor, reduceddata_side, reduceddata_central, data, n[18]));
-    histos.push_back(create_histogram(variables[20], "Bd0",factor, reduceddata_side, reduceddata_central, data, n[19]));
-    histos.push_back(create_histogram(variables[21], "Bd0Err",factor, reduceddata_side, reduceddata_central, data, n[20]));
-    histos.push_back(create_histogram(variables[22], "Bdtheta",factor, reduceddata_side, reduceddata_central, data, n[21]));
-    histos.push_back(create_histogram(variables[23], "Balpha",factor, reduceddata_side, reduceddata_central, data, n[22]));
-    histos.push_back(create_histogram(variables[24], "Btrk1Dz1",factor, reduceddata_side, reduceddata_central, data, n[23]));
-    histos.push_back(create_histogram(variables[25], "Btrk1DzError1",factor, reduceddata_side, reduceddata_central, data, n[24]));
-    histos.push_back(create_histogram(variables[26], "Btrk1Dxy1",factor, reduceddata_side, reduceddata_central, data, n[25]));
-    histos.push_back(create_histogram(variables[27], "Btrk1DxyError1",factor, reduceddata_side, reduceddata_central, data, n[26]));
-    histos.push_back(create_histogram(variables[28], "Bmumueta",factor, reduceddata_side, reduceddata_central, data, n[27]));
-    histos.push_back(create_histogram(variables[29], "Bmumuphi",factor, reduceddata_side, reduceddata_central, data, n[28]));
-    histos.push_back(create_histogram(variables[30], "Bmumupt",factor, reduceddata_side, reduceddata_central, data, n[29]));
-    histos.push_back(create_histogram(variables[31], "BDT_pt_5_10",factor, reduceddata_side, reduceddata_central, data, n[30]));
-    histos.push_back(create_histogram(variables[32], "BDT_pt_10_15",factor, reduceddata_side, reduceddata_central, data, n[31]));    
-    histos.push_back(create_histogram(variables[33], "BDT_pt_15_20",factor, reduceddata_side, reduceddata_central, data, n[32]));    
-    histos.push_back(create_histogram(variables[34], "BDT_pt_20_50",factor, reduceddata_side, reduceddata_central, data, n[33])); 
-    
-    /*
-    histos.push_back(create_histogram(variables[29], "BDT_pt_4_7",factor, reduceddata_side, reduceddata_central, data, n[28]));
-    histos.push_back(create_histogram(variables[30], "BDT_pt_7_10",factor, reduceddata_side, reduceddata_central, data, n[29]));    
-    histos.push_back(create_histogram(variables[31], "BDT_pt_10_15",factor, reduceddata_side, reduceddata_central, data, n[30]));    
-    histos.push_back(create_histogram(variables[32], "BDT_pt_15_20",factor, reduceddata_side, reduceddata_central, data, n[31])); 
-    histos.push_back(create_histogram(variables[33], "BDT_pt_20_50",factor, reduceddata_side, reduceddata_central, data, n[32]));
-    */
+    histos.push_back(create_histogram(variables[6], "Btrk2Pt",factor, reduceddata_side, reduceddata_central, data, n[5]));
+    histos.push_back(create_histogram(variables[7], "Btrk2Eta",factor, reduceddata_side, reduceddata_central, data, n[6]));
+    histos.push_back(create_histogram(variables[8], "Btrk2PtErr",factor, reduceddata_side, reduceddata_central, data, n[7]));
+    histos.push_back(create_histogram(variables[9], "Bchi2cl",factor, reduceddata_side, reduceddata_central, data, n[8]));
+    histos.push_back(create_histogram(variables[10], "BsvpvDistance",factor, reduceddata_side, reduceddata_central, data, n[9]));
+    histos.push_back(create_histogram(variables[11], "BsvpvDistance_2D",factor, reduceddata_side, reduceddata_central, data, n[10]));
+    histos.push_back(create_histogram(variables[12], "BsvpvDisErr",factor, reduceddata_side, reduceddata_central, data, n[11]));
+    histos.push_back(create_histogram(variables[13], "BsvpvDisErr_2D",factor, reduceddata_side, reduceddata_central, data, n[12]));
+    histos.push_back(create_histogram(variables[14], "Bmumumass",factor, reduceddata_side, reduceddata_central, data, n[13]));
+    histos.push_back(create_histogram(variables[15], "Bmu1eta",factor, reduceddata_side, reduceddata_central, data, n[14]));
+    histos.push_back(create_histogram(variables[16], "Bmu2eta",factor, reduceddata_side, reduceddata_central, data, n[15]));
+    histos.push_back(create_histogram(variables[17], "Bmu1pt",factor, reduceddata_side, reduceddata_central, data, n[16]));
+    histos.push_back(create_histogram(variables[18], "Bmu2pt",factor, reduceddata_side, reduceddata_central, data, n[17]));
+    histos.push_back(create_histogram(variables[19], "Bmu1dxyPV",factor, reduceddata_side, reduceddata_central, data, n[18]));
+    histos.push_back(create_histogram(variables[20], "Bmu2dxyPV",factor, reduceddata_side, reduceddata_central, data, n[19]));
+    histos.push_back(create_histogram(variables[21], "Bmu1dzPV",factor, reduceddata_side, reduceddata_central, data, n[20]));
+    histos.push_back(create_histogram(variables[22], "Bmu2dzPV",factor, reduceddata_side, reduceddata_central, data, n[21]));
+    histos.push_back(create_histogram(variables[23], "Bd0",factor, reduceddata_side, reduceddata_central, data, n[22]));
+    histos.push_back(create_histogram(variables[24], "Bd0Err",factor, reduceddata_side, reduceddata_central, data, n[23]));
+    histos.push_back(create_histogram(variables[25], "Bdtheta",factor, reduceddata_side, reduceddata_central, data, n[24]));
+    histos.push_back(create_histogram(variables[26], "Balpha",factor, reduceddata_side, reduceddata_central, data, n[25]));
+    histos.push_back(create_histogram(variables[27], "Btrk1Dz1",factor, reduceddata_side, reduceddata_central, data, n[26]));
+    histos.push_back(create_histogram(variables[28], "Btrk2Dz1",factor, reduceddata_side, reduceddata_central, data, n[27]));
+    histos.push_back(create_histogram(variables[29], "Btrk1DzError1",factor, reduceddata_side, reduceddata_central, data, n[28]));
+    histos.push_back(create_histogram(variables[30], "Btrk2DzError1",factor, reduceddata_side, reduceddata_central, data, n[29]));
+    histos.push_back(create_histogram(variables[31], "Btrk1Dxy1",factor, reduceddata_side, reduceddata_central, data, n[30]));
+    histos.push_back(create_histogram(variables[32], "Btrk2Dxy1",factor, reduceddata_side, reduceddata_central, data, n[31]));
+    histos.push_back(create_histogram(variables[33], "Btrk1DxyError1",factor, reduceddata_side, reduceddata_central, data, n[32]));
+    histos.push_back(create_histogram(variables[34], "Btrk2DxyError1",factor, reduceddata_side, reduceddata_central, data, n[33]));
+    histos.push_back(create_histogram(variables[35], "Bmumueta",factor, reduceddata_side, reduceddata_central, data, n[34]));
+    histos.push_back(create_histogram(variables[36], "Bmumuphi",factor, reduceddata_side, reduceddata_central, data, n[35]));
+    histos.push_back(create_histogram(variables[37], "Bmumupt",factor, reduceddata_side, reduceddata_central, data, n[36]));
+    histos.push_back(create_histogram(variables[38], "BDT_pt_3_5",factor, reduceddata_side, reduceddata_central, data, n[37]));
+    histos.push_back(create_histogram(variables[39], "BDT_pt_5_7",factor, reduceddata_side, reduceddata_central, data, n[38]));
+    histos.push_back(create_histogram(variables[40], "BDT_pt_7_10",factor, reduceddata_side, reduceddata_central, data, n[39]));
+    histos.push_back(create_histogram(variables[41], "BDT_pt_10_15",factor, reduceddata_side, reduceddata_central, data, n[40]));
+    histos.push_back(create_histogram(variables[42], "BDT_pt_15_20",factor, reduceddata_side, reduceddata_central, data, n[41]));
+    histos.push_back(create_histogram(variables[43], "BDT_pt_20_50",factor, reduceddata_side, reduceddata_central, data, n[42]));
+    histos.push_back(create_histogram(variables[44], "BDT_pt_50_100",factor, reduceddata_side, reduceddata_central, data, n[43])); 
   }
 
   return histos;
@@ -1587,7 +1571,6 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace* w, int* n, int n_var){
 
 
 TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
-
 
   TH1D* h = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
   TH1D* wei = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
@@ -1608,7 +1591,6 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
 //create_histogram_mc ends
 
 TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n){
-
 
   std::cout<< "n in create_histogram = "<< n <<std::endl;
   TH1D* dist_side = (TH1D*)reduced->createHistogram("dist_side",var, Binning(n, var.getMin(), var.getMax()));
@@ -1733,9 +1715,7 @@ void do_splot(RooWorkspace& w){
   //cout << endl
 
   w.import(*data, Rename("dataWithSWeights"));
-  //the reweighted data is saved in the woorkspace
-
- 
+  //the reweighted data is saved in the woorkspace 
 }
 
 //do_splot ends
@@ -1853,7 +1833,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   histo_Bp_sig->SetLineColor(kRed);
   histo_Bp_sig->SetTitle("");
   histo_Bp_sig->GetYaxis()->SetTitle(TString::Format("Events /(%g)",(variable->getMax()-variable->getMin())/n));
-  histo_Bp_sig->GetXaxis()->SetTitle(label );
+  histo_Bp_sig->GetXaxis()->SetTitle(label);
 
   histo_Bp_sig->SetStats(0);
   histo_Bp_sig->Draw("E");
@@ -2015,84 +1995,34 @@ void validate_fit(RooWorkspace* w)
 
 void AddWeights(TTree* t){
   TString input_file;
-  input_file = particle ? "./results/Bs/mc_validation_plots/weights/weights.root": "./results/Bu/mc_validation_plots/weights/weights.root";
+  input_file = particle ? "~/public/BinQGP/results/Bs/mc_validation_plots/weights/weights.root": "~/public/BinQGP/results/Bu/mc_validation_plots/weights/weights.root";
   TFile* f_wei = new TFile(input_file, "read");
  
-  TH1D* h_pt = (TH1D*)f_wei->Get(TString("weights_Bpt"));
-  TH1D* h_y = (TH1D*)f_wei->Get(TString("weights_By"));
-  TH1D* h_trk1Pt = (TH1D*)f_wei->Get(TString("weights_Btrk1Pt"));
-  TH1D* h_trk1Eta = (TH1D*)f_wei->Get(TString("weights_Btrk1Eta"));
-  TH1D* h_trk1PtErr = (TH1D*)f_wei->Get(TString("weights_Btrk1PtErr"));
-  TH1D* h_chi2cl = (TH1D*)f_wei->Get(TString("weights_Bchi2cl"));
-  TH1D* h_svpvDistance = (TH1D*)f_wei->Get(TString("weights_BsvpvDistance"));
-  TH1D* h_svpvDisErr = (TH1D*)f_wei->Get(TString("weights_BsvpvDisErr"));
-  TH1D* h_mumumass = (TH1D*)f_wei->Get(TString("weights_Bmumumass"));
-  TH1D* h_mu1eta = (TH1D*)f_wei->Get(TString("weights_Bmu1eta"));
-  TH1D* h_mu1pt = (TH1D*)f_wei->Get(TString("weights_Bmu1pt"));
-  TH1D* h_mu1dxyPV = (TH1D*)f_wei->Get(TString("weights_Bmu1dxyPV"));
-  TH1D* h_mu1dzPV = (TH1D*)f_wei->Get(TString("weights_Bmu1dzPV"));
-  TH1D* h_d0 = (TH1D*)f_wei->Get(TString("weights_Bd0"));
-  TH1D* h_d0Err = (TH1D*)f_wei->Get(TString("weights_Bd0Err"));
-  TH1D* h_dtheta = (TH1D*)f_wei->Get(TString("weights_Bdtheta"));
-  TH1D* h_alpha = (TH1D*)f_wei->Get(TString("weights_Balpha"));
-  TH1D* h_trk1Dz1 = (TH1D*)f_wei->Get(TString("weights_Btrk1Dz1"));
-  TH1D* h_trk1DzError1 = (TH1D*)f_wei->Get(TString("weights_Btrk1DzError1"));
-  TH1D* h_trk1Dxy1 = (TH1D*)f_wei->Get(TString("weights_Btrk1Dxy1"));
-  TH1D* h_trk1DxyError1 = (TH1D*)f_wei->Get(TString("weights_Btrk1DxyError1"));
-  TH1D* h_mumueta = (TH1D*)f_wei->Get(TString("weights_Bmumueta"));
-  TH1D* h_mumuphi = (TH1D*)f_wei->Get(TString("weights_Bmumuphi"));
-  TH1D* h_mumupt = (TH1D*)f_wei->Get(TString("weights_Bmumupt"));
+  TH1D* h_bdt_pt_3_5 = (TH1D*)f_wei->Get(TString("weights_BDT_pt_3_5;1"));
+  TH1D* h_bdt_pt_5_7 = (TH1D*)f_wei->Get(TString("weights_BDT_pt_5_7;1"));
+  TH1D* h_bdt_pt_7_10 = (TH1D*)f_wei->Get(TString("weights_BDT_pt_7_10;1"));
+  TH1D* h_bdt_pt_10_15 = (TH1D*)f_wei->Get(TString("weights_BDT_pt_10_15;1"));
+  TH1D* h_bdt_pt_15_20 = (TH1D*)f_wei->Get(TString("weights_BDT_pt_15_20;1"));
+  TH1D* h_bdt_pt_20_50 = (TH1D*)f_wei->Get(TString("weights_BDT_pt_20_50;1"));
+  TH1D* h_bdt_pt_50_100 = (TH1D*)f_wei->Get(TString("weights_BDT_pt_50_100;1"));
 
-  double pt_min = h_pt->GetXaxis()->GetXmin();
-  double y_min = h_y->GetXaxis()->GetXmin();
-  double trk1Pt_min = h_trk1Pt->GetXaxis()->GetXmin();
-  double trk1Eta_min = h_trk1Eta->GetXaxis()->GetXmin();
-  double trk1PtErr_min = h_trk1PtErr->GetXaxis()->GetXmin();
-  double chi2cl_min = h_chi2cl->GetXaxis()->GetXmin();
-  double svpvDistance_min = h_svpvDistance->GetXaxis()->GetXmin();
-  double svpvDisErr_min = h_svpvDisErr->GetXaxis()->GetXmin();
-  double mumumass_min = h_mumumass->GetXaxis()->GetXmin();
-  double mu1eta_min = h_mu1eta->GetXaxis()->GetXmin();
-  double mu1pt_min = h_mu1pt->GetXaxis()->GetXmin();
-  double mu1dxyPV_min = h_mu1dxyPV->GetXaxis()->GetXmin();
-  double mu1dzPV_min = h_mu1dzPV->GetXaxis()->GetXmin();
-  double d0_min = h_d0->GetXaxis()->GetXmin();
-  double d0Err_min = h_d0Err->GetXaxis()->GetXmin();
-  double dtheta_min = h_dtheta->GetXaxis()->GetXmin();
-  double alpha_min = h_alpha->GetXaxis()->GetXmin();
-  double trk1Dz1_min = h_trk1Dz1->GetXaxis()->GetXmin();
-  double trk1DzError1_min = h_trk1DzError1->GetXaxis()->GetXmin();
-  double trk1Dxy1_min = h_trk1Dxy1->GetXaxis()->GetXmin();
-  double trk1DxyError1_min = h_trk1DxyError1->GetXaxis()->GetXmin();
-  double mumueta_min = h_mumueta->GetXaxis()->GetXmin();
-  double mumuphi_min = h_mumuphi->GetXaxis()->GetXmin();
-  double mumupt_min = h_mumupt->GetXaxis()->GetXmin();
+ 
+  double bdt_pt_3_5_min = h_bdt_pt_3_5->GetXaxis()->GetXmin();
+  double bdt_pt_5_7_min = h_bdt_pt_5_7->GetXaxis()->GetXmin();
+  double bdt_pt_7_10_min = h_bdt_pt_7_10->GetXaxis()->GetXmin();
+  double bdt_pt_10_15_min = h_bdt_pt_10_15->GetXaxis()->GetXmin();
+  double bdt_pt_15_20_min = h_bdt_pt_15_20->GetXaxis()->GetXmin();
+  double bdt_pt_20_50_min = h_bdt_pt_20_50->GetXaxis()->GetXmin();
+  double bdt_pt_50_100_min = h_bdt_pt_50_100->GetXaxis()->GetXmin();
 
-  double pt_max = h_pt->GetXaxis()->GetXmax();
-  double y_max = h_y->GetXaxis()->GetXmax();
-  double trk1Pt_max = h_trk1Pt->GetXaxis()->GetXmax();
-  double trk1Eta_max = h_trk1Eta->GetXaxis()->GetXmax();
-  double trk1PtErr_max = h_trk1PtErr->GetXaxis()->GetXmax();
-  double chi2cl_max = h_chi2cl->GetXaxis()->GetXmax();
-  double svpvDistance_max = h_svpvDistance->GetXaxis()->GetXmax();
-  double svpvDisErr_max = h_svpvDisErr->GetXaxis()->GetXmax();
-  double mumumass_max = h_mumumass->GetXaxis()->GetXmax();
-  double mu1eta_max = h_mu1eta->GetXaxis()->GetXmax();
-  double mu1pt_max = h_mu1pt->GetXaxis()->GetXmax();
-  double mu1dxyPV_max = h_mu1dxyPV->GetXaxis()->GetXmax();
-  double mu1dzPV_max = h_mu1dzPV->GetXaxis()->GetXmax();
-  double d0_max = h_d0->GetXaxis()->GetXmax();
-  double d0Err_max = h_d0Err->GetXaxis()->GetXmax();
-  double dtheta_max = h_dtheta->GetXaxis()->GetXmax();
-  double alpha_max = h_alpha->GetXaxis()->GetXmax();
-  double trk1Dz1_max = h_trk1Dz1->GetXaxis()->GetXmax();
-  double trk1DzError1_max = h_trk1DzError1->GetXaxis()->GetXmax();
-  double trk1Dxy1_max = h_trk1Dxy1->GetXaxis()->GetXmax();
-  double trk1DxyError1_max = h_trk1DxyError1->GetXaxis()->GetXmax();
-  double mumueta_max = h_mumueta->GetXaxis()->GetXmax();
-  double mumuphi_max = h_mumuphi->GetXaxis()->GetXmax();
-  double mumupt_max = h_mumupt->GetXaxis()->GetXmax();
-  
+  double bdt_pt_3_5_max = h_bdt_pt_3_5->GetXaxis()->GetXmax();
+  double bdt_pt_5_7_max = h_bdt_pt_5_7->GetXaxis()->GetXmax();
+  double bdt_pt_7_10_max = h_bdt_pt_7_10->GetXaxis()->GetXmax();
+  double bdt_pt_10_15_max = h_bdt_pt_10_15->GetXaxis()->GetXmax();
+  double bdt_pt_15_20_max = h_bdt_pt_15_20->GetXaxis()->GetXmax();
+  double bdt_pt_20_50_max = h_bdt_pt_20_50->GetXaxis()->GetXmax();
+  double bdt_pt_50_100_max = h_bdt_pt_50_100->GetXaxis()->GetXmax();
+
 
   TFile* f_tree = particle ? new TFile("./results/Bs/mc_validation_plots/weights/tree_with_weight.root", "recreate") : new TFile("./results/Bu/mc_validation_plots/weights/tree_with_weight.root", "recreate");
 
@@ -2107,12 +2037,18 @@ void AddWeights(TTree* t){
   Float_t Btrk1PtErr;
   Float_t Bchi2cl;
   Float_t BsvpvDistance;
+  Float_t BsvpvDistance_2D;
+  Float_t BsvpvDisErr_2D;
   Float_t BsvpvDisErr;
   Float_t Bmumumass;
   Float_t Bmu1eta;
+  Float_t Bmu2eta;
   Float_t Bmu1pt;
+  Float_t Bmu2pt;
   Float_t Bmu1dxyPV;
+  Float_t Bmu2dxyPV;
   Float_t Bmu1dzPV;
+  Float_t Bmu2dzPV;
   Float_t Bd0;
   Float_t Bd0Err;
   Float_t Bdtheta;
@@ -2124,31 +2060,21 @@ void AddWeights(TTree* t){
   Float_t Bmumueta;
   Float_t Bmumuphi;
   Float_t Bmumupt;
+  Float_t BDT_pt_3_5;
+  Float_t BDT_pt_5_7;
+  Float_t BDT_pt_7_10;
+  Float_t BDT_pt_10_15;
+  Float_t BDT_pt_15_20;
+  Float_t BDT_pt_20_50;
+  Float_t BDT_pt_50_100;
 
-  Float_t weight_Bpt;
-  Float_t weight_By;
-  Float_t weight_Btrk1Pt;
-  Float_t weight_Btrk1Eta;
-  Float_t weight_Btrk1PtErr;
-  Float_t weight_Bchi2cl;
-  Float_t weight_BsvpvDistance;
-  Float_t weight_BsvpvDisErr;
-  Float_t weight_Bmumumass;
-  Float_t weight_Bmu1eta;
-  Float_t weight_Bmu1pt;
-  Float_t weight_Bmu1dxyPV;
-  Float_t weight_Bmu1dzPV;
-  Float_t weight_Bd0;
-  Float_t weight_Bd0Err;
-  Float_t weight_Bdtheta;
-  Float_t weight_Balpha;
-  Float_t weight_Btrk1Dz1;
-  Float_t weight_Btrk1DzError1;
-  Float_t weight_Btrk1Dxy1;
-  Float_t weight_Btrk1DxyError1;
-  Float_t weight_Bmumueta;
-  Float_t weight_Bmumuphi;
-  Float_t weight_Bmumupt;
+  Float_t weight_BDT_pt_3_5;
+  Float_t weight_BDT_pt_5_7;
+  Float_t weight_BDT_pt_7_10;
+  Float_t weight_BDT_pt_10_15;
+  Float_t weight_BDT_pt_15_20;
+  Float_t weight_BDT_pt_20_50;
+  Float_t weight_BDT_pt_50_100;
 
   t->SetBranchAddress("Bpt", &Bpt);
   t->SetBranchAddress("By", &By);
@@ -2157,12 +2083,18 @@ void AddWeights(TTree* t){
   t->SetBranchAddress("Btrk1PtErr", &Btrk1PtErr);
   t->SetBranchAddress("Bchi2cl", &Bchi2cl);
   t->SetBranchAddress("BsvpvDistance", &BsvpvDistance);
+  t->SetBranchAddress("BsvpvDistance_2D", &BsvpvDistance_2D);
   t->SetBranchAddress("BsvpvDisErr", &BsvpvDisErr);
+  t->SetBranchAddress("BsvpvDisErr_2D", &BsvpvDisErr_2D);
   t->SetBranchAddress("Bmumumass", &Bmumumass);
   t->SetBranchAddress("Bmu1eta", &Bmu1eta);
+  t->SetBranchAddress("Bmu2eta", &Bmu2eta);
   t->SetBranchAddress("Bmu1pt", &Bmu1pt);
+  t->SetBranchAddress("Bmu2pt", &Bmu2pt);
   t->SetBranchAddress("Bmu1dxyPV", &Bmu1dxyPV);
+  t->SetBranchAddress("Bmu2dxyPV", &Bmu2dxyPV);
   t->SetBranchAddress("Bmu1dzPV", &Bmu1dzPV);
+  t->SetBranchAddress("Bmu2dzPV", &Bmu2dzPV);
   t->SetBranchAddress("Bd0", &Bd0);
   t->SetBranchAddress("Bd0Err", &Bd0Err);
   t->SetBranchAddress("Bdtheta", &Bdtheta);
@@ -2174,137 +2106,48 @@ void AddWeights(TTree* t){
   t->SetBranchAddress("Bmumueta", &Bmumueta);
   t->SetBranchAddress("Bmumuphi", &Bmumuphi);
   t->SetBranchAddress("Bmumupt", &Bmumupt);
+  t->SetBranchAddress("BDT_pt_3_5", &BDT_pt_3_5);
+  t->SetBranchAddress("BDT_pt_5_7", &BDT_pt_5_7);
+  t->SetBranchAddress("BDT_pt_7_10", &BDT_pt_7_10);
+  t->SetBranchAddress("BDT_pt_10_15", &BDT_pt_10_15);
+  t->SetBranchAddress("BDT_pt_15_20", &BDT_pt_15_20);
+  t->SetBranchAddress("BDT_pt_20_50", &BDT_pt_20_50);
+  t->SetBranchAddress("BDT_pt_50_100", &BDT_pt_50_100);
 
-  tw->Branch("weight_Bpt", &weight_Bpt);
-  tw->Branch("weight_By", &weight_By);
-  tw->Branch("weight_Btrk1Pt", &weight_Btrk1Pt);
-  tw->Branch("weight_Btrk1Eta", &weight_Btrk1Eta);
-  tw->Branch("weight_Btrk1PtErr", &weight_Btrk1PtErr);
-  tw->Branch("weight_Bchi2cl", &weight_Bchi2cl);
-  tw->Branch("weight_BsvpvDistance", &weight_BsvpvDistance);
-  tw->Branch("weight_BsvpvDisErr", &weight_BsvpvDisErr);
-  tw->Branch("weight_Bmumumass", &weight_Bmumumass);
-  tw->Branch("weight_Bmu1eta", &weight_Bmu1eta);
-  tw->Branch("weight_Bmu1pt", &weight_Bmu1pt);
-  tw->Branch("weight_Bmu1dxyPV", &weight_Bmu1dxyPV);
-  tw->Branch("weight_Bmu1dzPV", &weight_Bmu1dzPV);
-  tw->Branch("weight_Bd0", &weight_Bd0);
-  tw->Branch("weight_Bd0Err", &weight_Bd0Err);
-  tw->Branch("weight_Bdtheta", &weight_Bdtheta);
-  tw->Branch("weight_Balpha", &weight_Balpha);
-  tw->Branch("weight_Btrk1Dz1", &weight_Btrk1Dz1);
-  tw->Branch("weight_Btrk1DzError1", &weight_Btrk1DzError1);
-  tw->Branch("weight_Btrk1Dxy1", &weight_Btrk1Dxy1);
-  tw->Branch("weight_Btrk1DxyError1", &weight_Btrk1DxyError1);
-  tw->Branch("weight_Bmumueta", &weight_Bmumueta);
-  tw->Branch("weight_Bmumuphi", &weight_Bmumuphi);
-  tw->Branch("weight_Bmumupt", &weight_Bmumupt);
+  tw->Branch("weight_BDT_pt_3_5", &weight_BDT_pt_3_5);
+  tw->Branch("weight_BDT_pt_5_7", &weight_BDT_pt_5_7);
+  tw->Branch("weight_BDT_pt_7_10", &weight_BDT_pt_7_10);
+  tw->Branch("weight_BDT_pt_10_15", &weight_BDT_pt_10_15);
+  tw->Branch("weight_BDT_pt_15_20", &weight_BDT_pt_15_20);
+  tw->Branch("weight_BDT_pt_20_50", &weight_BDT_pt_20_50);
+  tw->Branch("weight_BDT_pt_50_100", &weight_BDT_pt_50_100);
   
   cout << "Starting Cycle" << endl;
 
   for (int i = 0; i < (t->GetEntries()); i++){
     t->GetEntry(i);
 
-    if(Bpt>=pt_min && Bpt<=pt_max){
-      weight_Bpt = h_pt->GetBinContent(h_pt->FindBin(Bpt));
-    }
-    if(By>=y_min && By<=y_max){
-      weight_By = h_y->GetBinContent(h_y->FindBin(By));
-    }
-    if(Btrk1Pt>=trk1Pt_min && Btrk1Pt<=trk1Pt_max){
-      weight_Btrk1Pt = h_trk1Pt->GetBinContent(h_trk1Pt->FindBin(Btrk1Pt));
-    }
-    if(Btrk1Eta>=trk1Eta_min && Btrk1Eta<=trk1Eta_max){
-      weight_Btrk1Eta = h_trk1Eta->GetBinContent(h_trk1Eta->FindBin(Btrk1Eta));
-    }
-    if(Btrk1PtErr>=trk1PtErr_min && Btrk1PtErr<=trk1PtErr_max){
-      weight_Btrk1PtErr = h_trk1PtErr->GetBinContent(h_trk1PtErr->FindBin(Btrk1PtErr));
-    }
-    if(Bchi2cl>=chi2cl_min && Bchi2cl<=chi2cl_max){
-      weight_Bchi2cl = h_chi2cl->GetBinContent(h_chi2cl->FindBin(Bchi2cl));
-    }
-    if(BsvpvDistance>=svpvDistance_min && BsvpvDistance<=svpvDistance_max){
-      weight_BsvpvDistance = h_svpvDistance->GetBinContent(h_svpvDistance->FindBin(BsvpvDistance));
-    }
-    if(BsvpvDisErr>=svpvDisErr_min && BsvpvDisErr<=svpvDisErr_max){
-      weight_BsvpvDisErr = h_svpvDisErr->GetBinContent(h_svpvDisErr->FindBin(BsvpvDisErr));
-    }
-    if(Bmumumass>=mumumass_min && Bmumumass<=mumumass_max){
-      weight_Bmumumass = h_mumumass->GetBinContent(h_mumumass->FindBin(Bmumumass));
-    }
-    if(Bmu1eta>=mu1eta_min && Bmu1eta<=mu1eta_max){
-      weight_Bmu1eta = h_mu1eta->GetBinContent(h_mu1eta->FindBin(Bmu1eta));
-    }
-    if(Bmu1pt>=mu1pt_min && Bmu1pt<=mu1pt_max){
-      weight_Bmu1pt = h_mu1pt->GetBinContent(h_mu1pt->FindBin(Bmu1pt));
-    }
-    if(Bmu1dxyPV>=mu1dxyPV_min && Bmu1dxyPV<=mu1dxyPV_max){
-      weight_Bmu1dxyPV = h_mu1dxyPV->GetBinContent(h_mu1dxyPV->FindBin(Bmu1dxyPV));
-    }
-    if(Bmu1dzPV>=mu1dzPV_min && Bmu1dzPV<=mu1dzPV_max){
-      weight_Bmu1dzPV = h_mu1dzPV->GetBinContent(h_mu1dzPV->FindBin(Bmu1dzPV));
-    }
-    if(Bd0>=d0_min && Bd0<=d0_max){
-      weight_Bd0 = h_d0->GetBinContent(h_d0->FindBin(Bd0));
-    }
-    if(Bd0Err>=d0Err_min && Bd0Err<=d0Err_max){
-      weight_Bd0Err = h_d0Err->GetBinContent(h_d0Err->FindBin(Bd0Err));
-    }
-    if(Bdtheta>=dtheta_min && Bdtheta<=dtheta_max){
-      weight_Bdtheta = h_dtheta->GetBinContent(h_dtheta->FindBin(Bdtheta));
-    }
-    if(Balpha>=alpha_min && Balpha<=alpha_max){
-      weight_Balpha = h_alpha->GetBinContent(h_alpha->FindBin(Balpha));
-    }
-    if(Btrk1Dz1>=trk1Dz1_min && Btrk1Dz1<=trk1Dz1_max){
-      weight_Btrk1Dz1 = h_trk1Dz1->GetBinContent(h_trk1Dz1->FindBin(Btrk1Dz1));
-    }
-    if(Btrk1DzError1>=trk1DzError1_min && Btrk1DzError1<=trk1DzError1_max){
-      weight_Btrk1DzError1 = h_trk1DzError1->GetBinContent(h_trk1DzError1->FindBin(Btrk1DzError1));
-    }
-    if(Btrk1Dxy1>=trk1Dxy1_min && Btrk1Dxy1<=trk1Dxy1_max){
-      weight_Btrk1Dxy1 = h_trk1Dxy1->GetBinContent(h_trk1Dxy1->FindBin(Btrk1Dxy1));
-    }
-    if(Btrk1DxyError1>=trk1DxyError1_min && Btrk1DxyError1<=trk1DxyError1_max){
-      weight_Btrk1DxyError1 = h_trk1DxyError1->GetBinContent(h_trk1DxyError1->FindBin(Btrk1DxyError1));
-    }
-    if(Bmumueta>=mumueta_min && Bmumueta<=mumueta_max){
-      weight_Bmumueta = h_mumueta->GetBinContent(h_mumueta->FindBin(Bmumueta));
-    }
-    if(Bmumuphi>=mumuphi_min && Bmumuphi<=mumuphi_max){
-      weight_Bmumuphi = h_mumuphi->GetBinContent(h_mumuphi->FindBin(Bmumuphi));
-    }
-    if(Bmumupt>=mumupt_min && Bmumupt<=mumupt_max){
-      weight_Bmumupt = h_mumupt->GetBinContent(h_mumupt->FindBin(Bmumupt));
-    }
-     
-    else{
-      weight_Bpt = 1.;
-      weight_By = 1.;
-      weight_Btrk1Pt = 1.;
-      weight_Btrk1Eta = 1.;
-      weight_Btrk1PtErr = 1.;
-      weight_Bchi2cl = 1.;
-      weight_BsvpvDistance = 1.;
-      weight_BsvpvDisErr = 1.;
-      weight_Bmumumass = 1.;
-      weight_Bmu1eta = 1.;
-      weight_Bmu1pt = 1.;
-      weight_Bmu1dxyPV = 1.;
-      weight_Bmu1dzPV = 1.;
-      weight_Bd0 = 1.;
-      weight_Bd0Err = 1.;
-      weight_Bdtheta = 1.;
-      weight_Balpha = 1.;
-      weight_Btrk1Dz1 = 1.;
-      weight_Btrk1DzError1 = 1.;
-      weight_Btrk1Dxy1 = 1.;
-      weight_Btrk1DxyError1 = 1.;
-      weight_Bmumueta = 1.;
-      weight_Bmumuphi = 1.;
-      weight_Bmumupt = 1.;
-         
-    }
+    if(BDT_pt_3_5 >= bdt_pt_3_5_min && BDT_pt_3_5 <= bdt_pt_3_5_max){weight_BDT_pt_3_5 = h_bdt_pt_3_5->GetBinContent(h_bdt_pt_3_5->FindBin(BDT_pt_3_5));}
+    else{weight_BDT_pt_3_5 = 1.0;}
+
+    if(BDT_pt_5_7 >= bdt_pt_5_7_min && BDT_pt_5_7 <= bdt_pt_5_7_max){weight_BDT_pt_5_7 = h_bdt_pt_5_7->GetBinContent(h_bdt_pt_5_7->FindBin(BDT_pt_5_7));}
+    else{weight_BDT_pt_5_7 = 1.0;}
+
+    if(BDT_pt_7_10 >= bdt_pt_7_10_min && BDT_pt_7_10 <= bdt_pt_7_10_max){weight_BDT_pt_7_10 = h_bdt_pt_7_10->GetBinContent(h_bdt_pt_7_10->FindBin(BDT_pt_7_10));}
+    else{weight_BDT_pt_7_10 = 1.0;}
+
+    if(BDT_pt_10_15 >= bdt_pt_10_15_min && BDT_pt_10_15 <= bdt_pt_10_15_max){weight_BDT_pt_10_15 = h_bdt_pt_10_15->GetBinContent(h_bdt_pt_10_15->FindBin(BDT_pt_10_15));}
+    else{weight_BDT_pt_10_15 = 1.0;}
+
+    if(BDT_pt_15_20 >= bdt_pt_15_20_min && BDT_pt_15_20 <= bdt_pt_15_20_max){weight_BDT_pt_15_20 = h_bdt_pt_15_20->GetBinContent(h_bdt_pt_15_20->FindBin(BDT_pt_15_20));}
+    else{weight_BDT_pt_15_20 = 1.0;}
+
+    if(BDT_pt_20_50 >= bdt_pt_20_50_min && BDT_pt_20_50 <= bdt_pt_20_50_max){weight_BDT_pt_20_50 = h_bdt_pt_20_50->GetBinContent(h_bdt_pt_20_50->FindBin(BDT_pt_20_50));}
+    else{weight_BDT_pt_20_50 = 1.0;}
+
+    if(BDT_pt_50_100 >= bdt_pt_50_100_min && BDT_pt_50_100 <= bdt_pt_50_100_max){weight_BDT_pt_50_100 = h_bdt_pt_50_100->GetBinContent(h_bdt_pt_50_100->FindBin(BDT_pt_50_100));}
+    else{weight_BDT_pt_50_100 = 1.0;}
+
     tw->Fill();
     tw->Show();
   }  
@@ -2354,39 +2197,46 @@ void set_up_workspace_variables(RooWorkspace& w)
     double mumueta_min, mumueta_max;
     double mumuphi_min, mumuphi_max;
     double mumupt_min, mumupt_max;
+    double BDT_3_5_min, BDT_3_5_max;
+    double BDT_5_7_min, BDT_5_7_max;
+    double BDT_7_10_min, BDT_7_10_max;
+    double BDT_10_15_min, BDT_10_15_max;
+    double BDT_15_20_min, BDT_15_20_max;
+    double BDT_20_50_min, BDT_20_50_max;
+    double BDT_50_100_min, BDT_50_100_max;
     
     mass_min = 5.0;
-    mass_max = 5.6;
+    mass_max = 6.0;
     
     y_min = -2.4;
     y_max = 2.4;
 
-    pt_min = 5.;
-    pt_max = 110.;
+    pt_min = 0.;
+    pt_max = 100.;
 
-    trk1pt_min = 1.;
-    trk1pt_max = 100.;
+    trk1pt_min = 0.;
+    trk1pt_max = 60.;
 
     trk1eta_min = -2.4;
     trk1eta_max = 2.4;
 
     trk1pterr_min = 0.;  
-    trk1pterr_max = 0.5;
+    trk1pterr_max = 1.0;
 
     chi2cl_min = 0.;
-    chi2cl_max = 1.0;
+    chi2cl_max = 1.05;
 
-    svpvDistance_min = 0.5;
-    svpvDistance_max = 21.;
+    svpvDistance_min = 0.;
+    svpvDistance_max = 25.;
 
     svpvDistance2D_min = 0.;
     svpvDistance2D_max = 1.;
 
     svpvDistanceErr_min = 0.;
-    svpvDistanceErr_max = 0.5;
+    svpvDistanceErr_max = 0.2;
 
     svpvDistanceErr2D_min = 0.;
-    svpvDistanceErr2D_max = 0.02;
+    svpvDistanceErr2D_max = 0.03;
 
     mumumass_min = 2.95;
     mumumass_max = 3.25; 
@@ -2397,17 +2247,17 @@ void set_up_workspace_variables(RooWorkspace& w)
     mu2eta_min = -2.4;
     mu2eta_max = 2.4;
 
-    mu1pt_min = 1.;
-    mu1pt_max = 50.;
+    mu1pt_min = 0.;
+    mu1pt_max = 60.;
 
-    mu2pt_min = 1.;
-    mu2pt_max = 50.;
+    mu2pt_min = 0.;
+    mu2pt_max = 60.;
 
-    mu1dxyPV_min = -0.3; 
-    mu1dxyPV_max = 0.3;
+    mu1dxyPV_min = -0.2; 
+    mu1dxyPV_max = 0.2;
 
-    mu2dxyPV_min = -0.3;
-    mu2dxyPV_max = 0.3;
+    mu2dxyPV_min = -0.2;
+    mu2dxyPV_max = 0.22;
 
     mu1dzPV_min = -20.; 
     mu1dzPV_max = 20.;
@@ -2419,7 +2269,7 @@ void set_up_workspace_variables(RooWorkspace& w)
     d0_max = 1.;
 
     d0err_min = 0.;
-    d0err_max = 0.001;
+    d0err_max = 0.0005;
 
     dtheta_min = 0.;
     dtheta_max = 3.1;
@@ -2427,26 +2277,47 @@ void set_up_workspace_variables(RooWorkspace& w)
     alpha_min = 0.;
     alpha_max = 3.1;
 
-    trk1Dz1_min = -30.;
-    trk1Dz1_max = 30.;
+    trk1Dz1_min = -20.;
+    trk1Dz1_max = 20.;
 
     trk1DzError1_min = -0.5;
     trk1DzError1_max = 0.5;
 
-    trk1Dxy1_min = -5.;
-    trk1Dxy1_max = 5.;
+    trk1Dxy1_min = -1.;
+    trk1Dxy1_max = 1.;
 
     trk1DxyError1_min = 0.;
-    trk1DxyError1_max = 0.5;
+    trk1DxyError1_max = 0.3;
 
-    mumueta_min = -3.1;
-    mumueta_max = 3.1;
+    mumueta_min = -3.0;
+    mumueta_max = 3.0;
 
     mumuphi_min = -3.1;
     mumuphi_max = 3.1;
 
-    mumupt_min = 1.;
-    mumupt_max = 50.;
+    mumupt_min = 0.;
+    mumupt_max = 80.;
+
+    BDT_3_5_min = -0.4;
+    BDT_3_5_max = 0.1;
+
+    BDT_5_7_min = -0.3;
+    BDT_5_7_max = 0.2;
+
+    BDT_7_10_min = -0.2;
+    BDT_7_10_max = 0.3;
+
+    BDT_10_15_min = -0.2;
+    BDT_10_15_max = 0.3;
+
+    BDT_15_20_min = -0.2;
+    BDT_15_20_max = 0.4;
+
+    BDT_20_50_min = -0.1;
+    BDT_20_50_max = 0.4;
+
+    BDT_50_100_min = 0.3;
+    BDT_50_100_max = 0.8;
 
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);  
@@ -2479,6 +2350,13 @@ void set_up_workspace_variables(RooWorkspace& w)
     RooRealVar Bmumueta("Bmumueta", "Bmumueta", mumueta_min, mumueta_max);
     RooRealVar Bmumuphi("Bmumuphi", "Bmumuphi", mumuphi_min, mumuphi_max);
     RooRealVar Bmumupt("Bmumupt", "Bmumupt", mumupt_min, mumupt_max);
+    RooRealVar BDT_pt_3_5("BDT_pt_3_5", "BDT_pt_3_5", BDT_3_5_min, BDT_3_5_max);
+    RooRealVar BDT_pt_5_7("BDT_pt_5_7", "BDT_pt_3_5", BDT_5_7_min, BDT_5_7_max);
+    RooRealVar BDT_pt_7_10("BDT_pt_7_10", "BDT_pt_7_10", BDT_7_10_min, BDT_7_10_max);
+    RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
+    RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
+    RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
+    RooRealVar BDT_pt_50_100("BDT_pt_50_100", "BDT_pt_50_100", BDT_50_100_min, BDT_50_100_max);
 
     w.import(Bmass);
     w.import(By);
@@ -2511,7 +2389,13 @@ void set_up_workspace_variables(RooWorkspace& w)
     w.import(Bmumueta);
     w.import(Bmumuphi);
     w.import(Bmumupt);
- 
+    w.import(BDT_pt_3_5);
+    w.import(BDT_pt_5_7);
+    w.import(BDT_pt_7_10);
+    w.import(BDT_pt_10_15);
+    w.import(BDT_pt_15_20);
+    w.import(BDT_pt_20_50);
+    w.import(BDT_pt_50_100);
   }
     
   
@@ -2523,7 +2407,9 @@ void set_up_workspace_variables(RooWorkspace& w)
     double trk1pt_min, trk1pt_max;
     double trk2pt_min, trk2pt_max;
     double trk1eta_min, trk1eta_max;
+    double trk2eta_min, trk2eta_max;
     double trk1pterr_min, trk1pterr_max;
+    double trk2pterr_min, trk2pterr_max;
     double chi2cl_min, chi2cl_max;
     double svpvDistance_min, svpvDistance_max;
     double svpvDistance2D_min, svpvDistance2D_max;
@@ -2543,60 +2429,65 @@ void set_up_workspace_variables(RooWorkspace& w)
     double dtheta_min, dtheta_max;
     double alpha_min, alpha_max;
     double trk1Dz1_min, trk1Dz1_max;
+    double trk2Dz1_min, trk2Dz1_max;
     double trk1DzError1_min, trk1DzError1_max;
+    double trk2DzError1_min, trk2DzError1_max;
     double trk1Dxy1_min, trk1Dxy1_max;
+    double trk2Dxy1_min, trk2Dxy1_max;
     double trk1DxyError1_min, trk1DxyError1_max;
+    double trk2DxyError1_min, trk2DxyError1_max;
     double mumueta_min, mumueta_max;
     double mumuphi_min, mumuphi_max;
     double mumupt_min, mumupt_max;
-    double BDT_5_10_min, BDT_5_10_max;
-    double BDT_10_15_min, BDT_10_15_max;
-    double BDT_15_20_min, BDT_15_20_max;
-    double BDT_20_50_min, BDT_20_50_max;
-    double BDT_total_min, BDT_total_max;
-    /*
-    double BDT_4_7_min, BDT_4_7_max;
+    double BDT_3_5_min, BDT_3_5_max;
+    double BDT_5_7_min, BDT_5_7_max;
     double BDT_7_10_min, BDT_7_10_max;
     double BDT_10_15_min, BDT_10_15_max;
     double BDT_15_20_min, BDT_15_20_max;
     double BDT_20_50_min, BDT_20_50_max;
-    */
+    double BDT_50_100_min, BDT_50_100_max;
 
     mass_min = 5.0;
-    mass_max = 6.;
+    mass_max = 6.0;
 
     y_min = -2.4;
     y_max = 2.4;
 
-    pt_min = 5.;
+    pt_min = 0.;
     pt_max = 100.;
 
-    trk1pt_min = 1.;
-    trk1pt_max = 15;
+    trk1pt_min = 0.;
+    trk1pt_max = 20.;
 
-    trk2pt_min = 3.;
-    trk2pt_max = 24.;
+    trk2pt_min = 0.;
+    trk2pt_max = 20.;
 
     trk1eta_min = -2.4;
     trk1eta_max = 2.4;
 
-    trk1pterr_min = 0.01;
+    trk2eta_min = -2.4;
+    trk2eta_max = 2.4;
+
+    trk1pterr_min = 0.;
     trk1pterr_max = 0.3;
+
+    trk2pterr_min = -0.5;
+    trk2pterr_max = 0.5;
 
     chi2cl_min = 0.;
     chi2cl_max = 1.05;
 
     svpvDistance_min = 0.;
-    svpvDistance_max = 0.7;
+    svpvDistance_max = 25.;
 
-    svpvDistance2D_min = -0.5;
-    svpvDistance2D_max = 0.5;
+    svpvDistance2D_min = 0.;
+    svpvDistance2D_max = 1.0;
 
     svpvDistanceErr_min = 0.;
-    svpvDistanceErr_max = 0.03;
+    svpvDistanceErr_max = 0.2;
    
-    svpvDistanceErr2D_min = -0.5;
-    svpvDistanceErr2D_max = 0.5;
+    svpvDistanceErr2D_min = 0.;
+    svpvDistanceErr2D_max = 0.035;
 
     mumumass_min = 2.95;
     mumumass_max = 3.25;
@@ -2607,11 +2498,11 @@ void set_up_workspace_variables(RooWorkspace& w)
     mu2eta_min = -2.4;
     mu2eta_max = 2.4;
 
-    mu1pt_min = 1.;
-    mu1pt_max = 42.;
+    mu1pt_min = 0.;
+    mu1pt_max = 70.;
 
-    mu2pt_min = 1.;
-    mu2pt_max = 42.;
+    mu2pt_min = 0.;
+    mu2pt_max = 70.;
 
     mu1dxyPV_min = -0.2;
     mu1dxyPV_max = 0.2;
@@ -2619,76 +2510,77 @@ void set_up_workspace_variables(RooWorkspace& w)
     mu2dxyPV_min = -0.2;
     mu2dxyPV_max = 0.2;
 
-    mu1dzPV_min = -20.;
+    mu1dzPV_min = -25.;
     mu1dzPV_max = 20.;
 
-    mu2dzPV_min = -20.;
+    mu2dzPV_min = -25.;
     mu2dzPV_max = 20.;
 
     d0_min = 0.;
     d0_max = 1.;
 
     d0err_min = 0.;
-    d0err_max = 0.0004;
+    d0err_max = 0.0006;
 
     dtheta_min = 0.;
-    dtheta_max = 3.2;
+    dtheta_max = 3.1;
 
     alpha_min = 0.;
-    alpha_max = 3.3;
+    alpha_max = 3.1;
 
-    trk1Dz1_min = -20.;
+    trk1Dz1_min = -25.;
     trk1Dz1_max = 20.;
 
-    trk1DzError1_min = -0.1;
-    trk1DzError1_max = 0.1;
+    trk2Dz1_min = -25.;
+    trk2Dz1_max = 20.;
 
-    trk1Dxy1_min = -0.2;
-    trk1Dxy1_max = 0.2;
+    trk1DzError1_min = -0.5;
+    trk1DzError1_max = 0.5;
+
+    trk2DzError1_min = -0.5;
+    trk2DzError1_max = 0.5;
+
+    trk1Dxy1_min = -1.;
+    trk1Dxy1_max = 1.;
+
+    trk2Dxy1_min = -1.;
+    trk2Dxy1_max = 1.;
 
     trk1DxyError1_min = 0.;
-    trk1DxyError1_max = 0.1;
+    trk1DxyError1_max = 0.2;
 
-    mumueta_min = -6.;
-    mumueta_max = 6.;
+    trk2DxyError1_min = 0.;
+    trk2DxyError1_max = 0.4;
 
-    mumuphi_min = -3.5;
-    mumuphi_max = 3.5;
+    mumueta_min = -3.1;
+    mumueta_max = 3.1;
 
-    mumupt_min = 1.;
-    mumupt_max = 60.;
-    
-    BDT_5_10_min = 0.1;
-    BDT_5_10_max = 0.43;
+    mumuphi_min = -3.1;
+    mumuphi_max = 3.1;
 
-    BDT_10_15_min = 0.25;
-    BDT_10_15_max = 0.53;
+    mumupt_min = 0.;
+    mumupt_max = 100.;
 
-    BDT_15_20_min = 0.25;
-    BDT_15_20_max = 0.53;
+    BDT_3_5_min = -0.8;
+    BDT_3_5_max = 0.2;
 
-    BDT_20_50_min = 0.25;
-    BDT_20_50_max = 0.42;
+    BDT_5_7_min = -0.8;
+    BDT_5_7_max = 0.2;
 
-    //BDT_total_min = 0.29;
-    // BDT_total_max = DATA_CUT? 0.70 : 0.73;
-    
-    /*
-    BDT_4_7_min = -0.7;
-    BDT_4_7_max = 0.6;
+    BDT_7_10_min = -0.5;
+    BDT_7_10_max = 0.5;
 
-    BDT_7_10_min = -0.4;
-    BDT_7_10_max = 0.4;
+    BDT_10_15_min = -0.3;
+    BDT_10_15_max = 0.4;
 
-    BDT_10_15_min = -0.4;
-    BDT_10_15_max = 0.3;
+    BDT_15_20_min = -0.1;
+    BDT_15_20_max = 0.5;
 
-    BDT_15_20_min = -0.2;
-    BDT_15_20_max = 0.4;
+    BDT_20_50_min = 0.2;
+    BDT_20_50_max = 0.6;
 
-    BDT_20_50_min = -0.1;
-    BDT_20_50_max = 0.3;
-    */
+    BDT_50_100_min = 0.1;
+    BDT_50_100_max = 0.6;
 
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);
@@ -2696,6 +2588,9 @@ void set_up_workspace_variables(RooWorkspace& w)
     RooRealVar Btrk1Pt("Btrk1Pt","Btrk1Pt",trk1pt_min,trk1pt_max);
     RooRealVar Btrk1Eta("Btrk1Eta","Btrk1Eta",trk1eta_min,trk1eta_max);
     RooRealVar Btrk1PtErr("Btrk1PtErr","Btrk1PtErr",trk1pterr_min,trk1pterr_max);
+    RooRealVar Btrk2Pt("Btrk2Pt","Btrk2Pt",trk2pt_min,trk2pt_max);
+    RooRealVar Btrk2Eta("Btrk2Eta","Btrk2Eta",trk2eta_min,trk2eta_max);
+    RooRealVar Btrk2PtErr("Btrk2PtErr","Btrk2PtErr",trk2pterr_min,trk2pterr_max);
     RooRealVar Bchi2cl("Bchi2cl","Bchi2cl",chi2cl_min,chi2cl_max);
     RooRealVar BsvpvDistance("BsvpvDistance", "BsvpvDistance", svpvDistance_min, svpvDistance_max);
     RooRealVar BsvpvDistance_2D("BsvpvDistance_2D", "BsvpvDistance_2D", svpvDistance2D_min, svpvDistance2D_max);
@@ -2718,22 +2613,20 @@ void set_up_workspace_variables(RooWorkspace& w)
     RooRealVar Btrk1DzError1("Btrk1DzError1","Btrk1DzError1",trk1DzError1_min,trk1DzError1_max);
     RooRealVar Btrk1Dxy1("Btrk1Dxy1","Btrk1Dxy1",trk1Dxy1_min,trk1Dxy1_max);
     RooRealVar Btrk1DxyError1("Btrk1DxyError1","Btrk1DxyError1",trk1DxyError1_min,trk1DxyError1_max);
+    RooRealVar Btrk2Dz1("Btrk2Dz1","Btrk2Dz1",trk2Dz1_min,trk2Dz1_max);
+    RooRealVar Btrk2DzError1("Btrk2DzError1","Btrk2DzError1",trk2DzError1_min,trk2DzError1_max);
+    RooRealVar Btrk2Dxy1("Btrk2Dxy1","Btrk2Dxy1",trk2Dxy1_min,trk2Dxy1_max);
+    RooRealVar Btrk2DxyError1("Btrk2DxyError1","Btrk2DxyError1",trk2DxyError1_min,trk2DxyError1_max);
     RooRealVar Bmumueta("Bmumueta", "Bmumueta", mumueta_min, mumueta_max);
     RooRealVar Bmumuphi("Bmumuphi", "Bmumuphi", mumuphi_min, mumuphi_max);
     RooRealVar Bmumupt("Bmumupt", "Bmumupt", mumupt_min, mumupt_max);
-    RooRealVar BDT_pt_5_10("BDT_pt_5_10", "BDT_pt_5_10", BDT_5_10_min, BDT_5_10_max);
-    RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
-    RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
-    RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
-    //RooRealVar BDT_total("BDT_total", "BDT_total", BDT_total_min, BDT_total_max);
-    
-    /*
-    RooRealVar BDT_pt_4_7("BDT_pt_4_7", "BDT_pt_4_7", BDT_4_7_min, BDT_4_7_max);
+    RooRealVar BDT_pt_3_5("BDT_pt_3_5", "BDT_pt_3_5", BDT_3_5_min, BDT_3_5_max);
+    RooRealVar BDT_pt_5_7("BDT_pt_5_7", "BDT_pt_3_5", BDT_5_7_min, BDT_5_7_max);
     RooRealVar BDT_pt_7_10("BDT_pt_7_10", "BDT_pt_7_10", BDT_7_10_min, BDT_7_10_max);
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
     RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
-    */
+    RooRealVar BDT_pt_50_100("BDT_pt_50_100", "BDT_pt_50_100", BDT_50_100_min, BDT_50_100_max);
 
     w.import(Bmass);
     w.import(By);
@@ -2741,6 +2634,9 @@ void set_up_workspace_variables(RooWorkspace& w)
     w.import(Btrk1Pt);
     w.import(Btrk1Eta);
     w.import(Btrk1PtErr);
+    w.import(Btrk2Pt);
+    w.import(Btrk2Eta);
+    w.import(Btrk2PtErr);
     w.import(Bchi2cl);
     w.import(BsvpvDistance);
     w.import(BsvpvDistance_2D);
@@ -2763,21 +2659,19 @@ void set_up_workspace_variables(RooWorkspace& w)
     w.import(Btrk1DzError1);
     w.import(Btrk1Dxy1);
     w.import(Btrk1DxyError1);
+    w.import(Btrk2Dz1);
+    w.import(Btrk2DzError1);
+    w.import(Btrk2Dxy1);
+    w.import(Btrk2DxyError1);
     w.import(Bmumueta);
     w.import(Bmumuphi);
     w.import(Bmumupt);
-    w.import(BDT_pt_5_10);
-    w.import(BDT_pt_10_15);
-    w.import(BDT_pt_15_20);
-    w.import(BDT_pt_20_50);
-    //w.import(BDT_total);
-       
-    /*
-    w.import(BDT_pt_4_7);
+    w.import(BDT_pt_3_5);
+    w.import(BDT_pt_5_7);
     w.import(BDT_pt_7_10);
     w.import(BDT_pt_10_15);
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
-    */            
+    w.import(BDT_pt_50_100);       
   }
 }
