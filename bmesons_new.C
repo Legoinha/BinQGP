@@ -124,7 +124,7 @@ double MC_fit_result(TString input_file, TString inVarName);
 // 1 = WT
 // 0 = RT
 
-# define component 1 
+# define component 0 
 
 void bmesons_new(){
   
@@ -195,7 +195,7 @@ void bmesons_new(){
   build_pdf(*ws, "nominal", c_vars);
   plot_complete_fit(*ws, c_vars);  
   if(MC == 1){return;}
-  //return;
+  return;
 
 
  
@@ -212,7 +212,8 @@ void bmesons_new(){
   // SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
   do_splot(*ws,c_vars); 
   histos_splot = splot_method(*ws, n_bins, variables, n_var);
-  return;  
+ 
+  
   // MONTE CARLO HISTOGRAMS
   TFile *fin_mc = new TFile(input_file_mc); //use this file to add the weights (to clone original tree) and make data-MC comparisons without weights
   //TFile *fin_mc = new TFile(input_file_reweighted_mc); //use this file to make data-MC comparisons with weights
@@ -487,7 +488,7 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
 
   fitresult = (RooFitResult*)f->Get("fitresult_model_data");
 
-  RooRealVar* var = (RooRealVar*)fitresult->floatParsFinal().find(inVarName);
+  RooRealVar* var = (RooRealVar*)fitresult->floatParsFinal().find(inVarName); 
 
   RooGaussian* gauss_constr = new RooGaussian(Form("gauss_%s",var->GetName()),
                                               Form("gauss_%s",var->GetName()),
@@ -497,6 +498,9 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
                                               );
   c_vars.add(*var);
   c_pdfs.add(*gauss_constr);
+ 
+  
+
 }
 
 
@@ -1044,18 +1048,14 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     constrainVar(input_file_RT, "sigma3", c_vars, c_pdfs_RT);
     
     constrainVar(input_file_WT, "sigma1_swp", c_vars, c_pdfs_WT);
-    constrainVar(input_file_WT, "sigma2_swp", c_vars, c_pdfs_WT);
     //constrainVar(input_file_RT, "alpha1", c_vars, c_pdfs_RT);
     constrainVar(input_file_WT, "alpha3", c_vars, c_pdfs_WT);
-    constrainVar(input_file_WT, "alpha4", c_vars, c_pdfs_WT);
     //constrainVar(input_file_RT, "n1", c_vars, c_pdfs_RT);
     constrainVar(input_file_WT, "n3", c_vars, c_pdfs_WT);
-    constrainVar(input_file_WT, "n4", c_vars, c_pdfs_WT);
     constrainVar(input_file_RT, "cofs", c_vars, c_pdfs_RT);
-    constrainVar(input_file_WT, "cofs_swp", c_vars, c_pdfs_WT);
+    //constrainVar(input_file_WT, "cofs_swp", c_vars, c_pdfs_WT);
     constrainVar(input_file_RT, "cofs1", c_vars, c_pdfs_RT);
- 
-                                    }
+                                   }
 
   // Variable initialization
   cout << "Initialisating variables with constraints" << endl;
@@ -1104,24 +1104,23 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     cout << "fraction = " << fraction << endl;
     f_swap = new RooRealVar("f_swap","f_swap", fraction, 0., 1.);       
     f_swap->setConstant();
-    cout << "f_swap = " << f_swap->getVal() << endl;  
+    cout << "f_swap = " << f_swap->getVal() << endl; 
+  
 
+     
     mean = new RooRealVar("mean", "mean", MC_fit_result(input_file_RT, "mean"), MC_fit_result(input_file_RT, "mean")-0.1, MC_fit_result(input_file_RT, "mean")+0.1);
     sigma1 = new RooRealVar("sigma1", "sigma1", MC_fit_result(input_file_RT, "sigma1"), 0.005, 0.5);
     sigma2 = new RooRealVar("sigma2", "sigma2", MC_fit_result(input_file_RT, "sigma2"), 0.005 ,0.5);
     sigma3 = new RooRealVar("sigma3", "sigma3", MC_fit_result(input_file_RT, "sigma3"), 0.005 ,0.5);
-    //alpha1 = new RooRealVar("alpha1", "alpha1", MC_fit_result(input_file_RT, "alpha1"), 0., 20.);
+    alpha1 = new RooRealVar("alpha1", "alpha1", 5,0, 20.);
     alpha3 = new RooRealVar("alpha3", "alpha3", MC_fit_result(input_file_WT, "alpha3"), 0., 20.);
-    alpha4 = new RooRealVar("alpha4", "alpha4", MC_fit_result(input_file_WT, "alpha3"), 0., 20.);
-    //n1 = new RooRealVar("n1", "n1", MC_fit_result(input_file_RT, "n1"), 0., 300.);
-    n4 = new RooRealVar("n4", "n4", MC_fit_result(input_file_WT, "n4"), 0., 300.);
-    n3 = new RooRealVar("n1", "n1", MC_fit_result(input_file_WT, "n3"), 0., 300.);
+    n1 = new RooRealVar("n1", "n1", 105, 0., 300.);
+    n3 = new RooRealVar("n3", "n3", MC_fit_result(input_file_WT, "n3"), 0., 300.);
     cofs = new RooRealVar("cofs", "cofs", MC_fit_result(input_file_RT, "cofs"), 0., 1.);
-    mean_swp = new RooRealVar("mean_swp", "mean_swp", MC_fit_result(input_file_WT, "mean_swp"), MC_fit_result(input_file_WT, "mean_swp")-0.1, MC_fit_result(input_file_WT, "mean_swp")+0.1);
+    mean_swp = new RooRealVar("mean_swp", "mean_swp", MC_fit_result(input_file_WT, "mean"), MC_fit_result(input_file_WT, "mean")-0.1, MC_fit_result(input_file_WT, "mean")+0.1);
     sigma1_swp = new RooRealVar("sigma1_swp", "sigma1_swp", MC_fit_result(input_file_WT, "sigma1_swp"), 0.005, 0.5);
-    sigma2_swp = new RooRealVar("sigma2_swp", "sigma2_swp", MC_fit_result(input_file_WT, "sigma2_swp"), 0.005, 0.5);
-    cofs_swp = new RooRealVar("cofs_swp", "cofs_swp", MC_fit_result(input_file_WT, "cofs_swp"), 0., 1.);
-
+    //cofs_swp = new RooRealVar("cofs_swp", "cofs_swp", MC_fit_result(input_file_WT, "cofs_swp"), 0., 1.);
+    cofs1 = new RooRealVar("cofs1", "cofs1", MC_fit_result(input_file_RT, "cofs1"), 0., 1.);
   }
   else{
     cout << "Initialising variables without constraints" << endl;
@@ -1164,20 +1163,23 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
 
   //SIGNAL
   //sum of two gaussians
+
   RooGaussian* signal1 = new RooGaussian("signal1","signal_gauss1",Bmass,*mean,*sigma1);
   RooGaussian* signal2 = new RooGaussian("signal2","signal_gauss2",Bmass,*mean,*sigma2);
+  
   RooAddPdf* signal = new RooAddPdf("signal", "signal", RooArgList(*signal1,*signal2),*cofs);
 			
-		//B0 WT
-  RooGaussian* signal1_swp = new RooGaussian("signal1_swp","signal_gauss1_swp",Bmass,*mean_swp,*sigma1_swp);
-  RooGaussian* signal2_swp = new RooGaussian("signal2_swp","signal_gauss2_swp",Bmass,*mean_swp,*sigma2_swp);
-  RooAddPdf* signal_swp = new RooAddPdf("signal_swp", "signal_swp", RooArgList(*signal1_swp,*signal2_swp),*cofs_swp);      //original pdf
+		//B0 WT             
+  RooGaussian* signal1_swp = new RooGaussian("signal1_swp","signal1_swp",Bmass,*mean_swp,*sigma1_swp);
+  //RooGaussian* signal2_swp = new RooGaussian("signal2_swp","signal2_swp",Bmass,*mean_swp,*sigma2_swp);
+  //RooAddPdf* signal_swp = new RooAddPdf("signal_swp", "signal_swp", RooArgList(*signal1_swp,*signal2_swp),*cofs_swp);      //original pdf
 
   // triple gaussian
   RooGaussian* signal3 = new RooGaussian("signal3","signal3",Bmass,*mean,*sigma3);  
   RooGaussian* signal3_swp = new RooGaussian("signal3_swp","signal_gauss3_swp",Bmass,*mean_swp,*sigma3_swp);
+  
 
-  RooAddPdf* triple_signal_swp = new RooAddPdf("triple_signal_swp", "triple_signal_swp", RooArgList(*signal_swp,*signal3_swp),*cofs_swp);
+  //RooAddPdf* triple_signal_swp = new RooAddPdf("triple_signal_swp", "triple_signal_swp", RooArgList(*signal_swp,*signal3_swp),*cofs_swp);
   RooAddPdf* signal_triple = new RooAddPdf("signal_triple","signal_triple",RooArgList(*signal1,*signal2,*signal3),RooArgList(*cofs,*cofs1));
 
   // crystal ball function
@@ -1186,13 +1188,13 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
   RooAddPdf* sum_CB = new RooAddPdf("sum_CB","sum_CB",RooArgList(*CB1,*CB2),*cofs);
  
   RooCBShape* CB1_swp = new RooCBShape("CB1_swp", "CB1_swp",Bmass,*mean,*sigma1_swp,*alpha3,*n3);
-  RooCBShape* CB2_swp = new RooCBShape("CB2_swp", "CB2_swp",Bmass,*mean,*sigma2_swp,*alpha4,*n4);
-  RooAddPdf* sum_CB_swp = new RooAddPdf("sum_CB_swp","sum_CB_swp",RooArgList(*CB1_swp,*CB2_swp),*cofs_swp);
+  // RooCBShape* CB2_swp = new RooCBShape("CB2_swp", "CB2_swp",Bmass,*mean,*sigma2_swp,*alpha4,*n4);
+  // RooAddPdf* sum_CB_swp = new RooAddPdf("sum_CB_swp","sum_CB_swp",RooArgList(*CB1_swp,*CB2_swp),*cofs_swp);
  
   RooAddPdf* gauss_CB = new RooAddPdf("gauss_CB","gauss_CB",RooArgList(*signal1,*CB1),*cofs);
   RooAddPdf* two_gauss_CB = new RooAddPdf("two_gauss_CB","two_gauss_CB",RooArgList(*signal,*CB1),*cofs);
 
-  RooAddPdf* two_gauss_CB_swp = new RooAddPdf("two_gauss_CB_swp","two_gauss_CB_swp",RooArgList(*signal_swp,*CB1_swp),*cofs);
+  //RooAddPdf* two_gauss_CB_swp = new RooAddPdf("two_gauss_CB_swp","two_gauss_CB_swp",RooArgList(*signal_swp,*CB1_swp),*cofs);
   RooAddPdf* gauss_CB_swp = new RooAddPdf("gauss_CB_swp" , "gauss_CB_swp",RooArgList(*signal1_swp,*CB1_swp),*cofs);
   
   //BACKGROUND//
@@ -1220,7 +1222,9 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
 
   RooBifurGauss* m_jpsipi_gaussian1 = new RooBifurGauss("m_jpsipi_gaussian1","m_jpsipi_gaussian1",Bmass,*m_jpsipi_mean1,*m_jpsipi_sigma1l,*m_jpsipi_sigma1r);
   RooGaussian* m_jpsipi_gaussian2 = new RooGaussian("m_jpsipi_gaussian2","m_jpsipi_gaussian2",Bmass,*m_jpsipi_mean2,*m_jpsipi_sigma2);
+  cout << "AQUI 10" << endl;
   RooGaussian* m_jpsipi_gaussian3 = new RooGaussian("m_jpsipi_gaussian3","m_jpsipi_gaussian3",Bmass,*m_jpsipi_mean3,*m_jpsipi_sigma3);
+  cout << "AQUI 11" << endl;
   RooAddPdf* jpsipi = new RooAddPdf("jpsipi","jpsipi",RooArgList(*m_jpsipi_gaussian3,*m_jpsipi_gaussian2,*m_jpsipi_gaussian1),RooArgList(*m_jpsipi_fraction3,*m_jpsipi_fraction2));
 
   Bmass.setRange("all", Bmass.getMin(),Bmass.getMax());
@@ -1242,19 +1246,15 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
   RooRealVar* RT_yield = new RooRealVar("RT_yield", "RT_yield", RT_yield_initial, 0.,  data->sumEntries());
 
   RooArgList constr_rt_list = RooArgList(c_pdfs_RT);
-  //constr_rt_list.add(*sum_rt);
+  constr_rt_list.add(*signal_triple);
   RooProdPdf* rt_pdf = new RooProdPdf("rt_pdf", "rt_pdf", constr_rt_list); 
 
   // WT component
-  RooGaussian* g1_wt = new RooGaussian("g1_wt","g1_wt",Bmass,*mean_swp,*sigma1_swp);
-  RooGaussian* g2_wt = new RooGaussian("g2_wt","g2_wt",Bmass,*mean_swp,*sigma2_swp);
-  RooAddPdf* gauss_sum_wt = new RooAddPdf("gauss_sum_wt","gauss_sum_wt",RooArgList(*g1_wt,*g2_wt),*cofs_swp);
-
-  RooProduct* WT_yield = new RooProduct("WT_yield","WT_yield",RooArgList(*f_swap,*RT_yield));
-
+    RooProduct* WT_yield = new RooProduct("WT_yield","WT_yield",RooArgList(*f_swap,*RT_yield));
   RooArgList constr_wt_list = RooArgList(c_pdfs_WT);
-  constr_wt_list.add(*gauss_sum_wt);
+
   RooProdPdf* wt_pdf = new RooProdPdf("wt_pdf", "wt_pdf", constr_wt_list);
+  constr_wt_list.add(*CB1_swp);
 
   RooAddPdf* B0_signal;
   if((particle == 2) && (MC == 0)){B0_signal = new RooAddPdf("B0_signal","B0_signal",RooArgList(*wt_pdf,*rt_pdf),*f_swap);}
@@ -1312,10 +1312,10 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
   else if(particle == 2){//B0
     if(MC == 0){
       if(choice == "nominal"){
-        RooAddPdf model("model","model",RooArgList(*rt_pdf,*wt_pdf,*fit_side),RooArgList(*RT_yield,*WT_yield,*n_combinatorial));
+        RooAddPdf model("model","model",RooArgList(*rt_pdf, *wt_pdf,*fit_side),RooArgList(*RT_yield,*WT_yield,*n_combinatorial));
         w.import(model);
       }else if(choice == "bkg_poly"){
-        RooAddPdf model("model","model",RooArgList(*rt_pdf,*wt_pdf,*poly_bkg),RooArgList(*RT_yield,*WT_yield,*n_combinatorial));
+        RooAddPdf model("model","model",RooArgList(*rt_pdf, *wt_pdf,*poly_bkg),RooArgList(*RT_yield,*WT_yield,*n_combinatorial));
         w.import(model);
       }
     }
@@ -1325,7 +1325,7 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
         w.import(model);
       }
       else if(component == 1){
-        RooAddPdf model("model", "model",RooArgList(*sum_CB_swp),RooArgList(*n_signal_swp));
+        RooAddPdf model("model", "model",RooArgList(*CB1_swp),RooArgList(*n_signal_swp));
         w.import(model);
       }
     }
@@ -1758,7 +1758,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
   Bmass.setRange("peakright",left,Bmass.getMax());
   Bmass.setRange("total", Bmass.getMin(), Bmass.getMax());
   
-  if(particle == 0){reduceddata_side = (RooDataSet*)data->reduce(Form("Bmass>%lf", right));}
+  if(particle == 0){reduceddata_side = (RooDataSet*)data->reduce(Form("Bmass>%lf", right));}   //only events w bigger mass than the peak 
   else if( (particle == 1) || (particle == 2) ){reduceddata_side =  (RooDataSet*)data->reduce(Form("Bmass>%lf || Bmass<%lf", right, left));}
 
   reduceddata_central = (RooDataSet*)data->reduce(Form("Bmass>%lf",left));
@@ -1775,7 +1775,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
   cout << "normalisation = " << (BgModel->createIntegral(Bmass, Bmass, "total"))->getVal() << endl;
 
   double factor;
-  if(particle == 0){factor = (int_fit_peak->getVal())/(int_fit_side_right->getVal());}
+  if(particle == 0){factor = (int_fit_peak->getVal())/(int_fit_side_right->getVal());}    
   else if( (particle == 1) || (particle == 2) ){(factor = int_fit_peak->getVal())/(int_fit_side_right->getVal() + int_fit_side_left->getVal());}
   std::cout << std::endl << "Factor: " << factor << std::endl;
 
@@ -2024,49 +2024,61 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
   //sPlot technique requires model parameters (other than the yields) to be fixed
   RooRealVar* mean = 0;
+  RooRealVar* mean_swp = 0;
   RooRealVar* sigma1 = 0;
   RooRealVar* sigma2 = 0;
+  RooRealVar* sigma3 = 0;
   RooRealVar* cofs = 0;
+  RooRealVar* cofs1 = 0;
+  RooRealVar* cofs_swp = 0;
   RooRealVar* lambda = 0;
   RooRealVar* sigma1_swp = 0;
   RooRealVar* sigma2_swp = 0;
   RooRealVar* n1 = 0;
-  RooRealVar* mean_swp = 0;
-  RooRealVar* cofs_swp = 0;
+  RooRealVar* n3 = 0;
+  RooRealVar* n4 = 0;
   RooRealVar* alpha1 = 0;  
+  RooRealVar* alpha3 = 0;  
+  RooRealVar* alpha4 = 0;  
 
   mean  = w.var("mean");
   sigma1 = w.var("sigma1");
-  sigma2 = w.var("sigma2");
-  cofs = w.var("cofs");
   lambda = w.var("lambda");
-
   mean->setConstant();
   sigma1->setConstant();
+
   if(particle != 1){
      
     sigma2 = w.var("sigma2");
     cofs = w.var("sigma2");
-
     sigma2->setConstant();
     cofs->setConstant();
   }
+
   lambda->setConstant();
 
   if(particle == 2){
     sigma1_swp = w.var("sigma1_swp");
     sigma2_swp = w.var("sigma2_swp");
-    n1 = w.var("n1");
+    n3 = w.var("n3");
+    n4 = w.var("n4");
     mean_swp = w.var("mean_swp");
     cofs_swp = w.var("cofs_swp");
-    alpha1 = w.var("alpha1");
-
+    cofs1 = w.var("cofs1");
+    alpha3 = w.var("alpha3");
+    alpha4 = w.var("alpha4");
+    sigma3 = w.var("sigma3");
+    
+    cofs1->setConstant();
     sigma1_swp->setConstant();
+    sigma3->setConstant();
     sigma2_swp->setConstant();
-    n1->setConstant();
+    n3->setConstant();
+    n4->setConstant();
     mean_swp->setConstant();
     cofs_swp->setConstant();
-    alpha1->setConstant();
+    alpha4->setConstant();
+    alpha3->setConstant();
   }
 
   RooMsgService::instance().setSilentMode(true);
