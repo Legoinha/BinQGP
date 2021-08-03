@@ -195,11 +195,11 @@ void bmesons_new(){
   build_pdf(*ws, "nominal", c_vars);
   plot_complete_fit(*ws, c_vars);  
   if(MC == 1){return;}
-  return;
+  //return;
 
 
  
-//  validate_fit(ws, c_vars);
+  //validate_fit(ws, c_vars);
 
   //pT_analysis(*ws, n_bins[0], "pT.root", input_file_data, c_vars);     
 
@@ -213,7 +213,8 @@ void bmesons_new(){
   do_splot(*ws,c_vars); 
   histos_splot = splot_method(*ws, n_bins, variables, n_var);
  
-  
+  return; 
+
   // MONTE CARLO HISTOGRAMS
   TFile *fin_mc = new TFile(input_file_mc); //use this file to add the weights (to clone original tree) and make data-MC comparisons without weights
   //TFile *fin_mc = new TFile(input_file_reweighted_mc); //use this file to make data-MC comparisons with weights
@@ -1253,8 +1254,8 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     RooProduct* WT_yield = new RooProduct("WT_yield","WT_yield",RooArgList(*f_swap,*RT_yield));
   RooArgList constr_wt_list = RooArgList(c_pdfs_WT);
 
-  RooProdPdf* wt_pdf = new RooProdPdf("wt_pdf", "wt_pdf", constr_wt_list);
   constr_wt_list.add(*CB1_swp);
+  RooProdPdf* wt_pdf = new RooProdPdf("wt_pdf", "wt_pdf", constr_wt_list);
 
   RooAddPdf* B0_signal;
   if((particle == 2) && (MC == 0)){B0_signal = new RooAddPdf("B0_signal","B0_signal",RooArgList(*wt_pdf,*rt_pdf),*f_swap);}
@@ -2059,26 +2060,20 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
   if(particle == 2){
     sigma1_swp = w.var("sigma1_swp");
-    sigma2_swp = w.var("sigma2_swp");
-    n3 = w.var("n3");
-    n4 = w.var("n4");
+    n3 = w.var("n3");  
     mean_swp = w.var("mean_swp");
-    cofs_swp = w.var("cofs_swp");
     cofs1 = w.var("cofs1");
     alpha3 = w.var("alpha3");
-    alpha4 = w.var("alpha4");
     sigma3 = w.var("sigma3");
     
     cofs1->setConstant();
     sigma1_swp->setConstant();
     sigma3->setConstant();
-    sigma2_swp->setConstant();
     n3->setConstant();
-    n4->setConstant();
     mean_swp->setConstant();
-    cofs_swp->setConstant();
-    alpha4->setConstant();
+    
     alpha3->setConstant();
+   
   }
 
   RooMsgService::instance().setSilentMode(true);
