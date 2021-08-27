@@ -83,7 +83,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
 void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString);
 void pT_analysis(RooWorkspace& w,int n, TString, TString, RooArgSet &c_vars);
-double get_yield_syst(RooDataSet *dt, TString syst_src, RooArgSet &c_vars);
+double get_yield_syst(RooDataSet *dt, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma);
 void fit_syst_error(TString, RooArgSet &c_vars);
 void fit_syst_error_bin(TString, double a, double b, RooArgSet &c_vars);
 void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooArgSet &c_pdfs);
@@ -94,7 +94,7 @@ double MC_fit_result(TString input_file, TString inVarName);
 // 1 = Bs
 // 2 = B0
 
-#define particle 2 
+#define particle 1 
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -195,25 +195,17 @@ void bmesons_new(){
   build_pdf(*ws, "nominal", c_vars);
   plot_complete_fit(*ws, c_vars);  
   if(MC == 1){return;}
-  //return;
-
-
  
   //validate_fit(ws, c_vars);
-
-  //pT_analysis(*ws, n_bins[0], "pT.root", input_file_data, c_vars);     
-
-
-  
+  pT_analysis(*ws, n_bins[0], "pT.root", input_file_data, c_vars);     
+  return; 
+  //return; 
   // SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
   histos_sideband_sub = sideband_subtraction(*ws, n_bins, n_var);
-  
  
   // SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
   do_splot(*ws,c_vars); 
-  histos_splot = splot_method(*ws, n_bins, variables, n_var);
- 
-  return; 
+  histos_splot = splot_method(*ws, n_bins, variables, n_var); 
 
   // MONTE CARLO HISTOGRAMS
   TFile *fin_mc = new TFile(input_file_mc); //use this file to add the weights (to clone original tree) and make data-MC comparisons without weights
@@ -506,7 +498,7 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
 
 
 void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooArgSet &c_vars){
-
+  
   TString dir_name;
   if(particle == 0){dir_name = "./results/Bu/Bpt/";}
   else if(particle == 1){dir_name = "./results/Bs/Bpt/";}
@@ -521,10 +513,10 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
 
 #if particle == 0
   const int n_pt_bins = 9;
-  double pt_bins [n_pt_bins + 1] = {0,2,3,5,7,10,15,20,50,100};  
+  double pt_bins [n_pt_bins + 1] ={4,7,10,12,15,20,25,30,45,100};  
 #elif particle == 1
-  const int n_pt_bins = 5;
-  double pt_bins[n_pt_bins + 1] = {3,10,15,20,40,100};
+  const int n_pt_bins = 9;
+  double pt_bins[n_pt_bins + 1] = {4,7,10,12,15,20,25,30,45,100};
 #elif particle == 2
   const int n_pt_bins = 7;
   double pt_bins[n_pt_bins + 1] = {2,3,5,7,10,15,20,50};
@@ -549,14 +541,29 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
   RooFitResult* fit_pt;
   RooRealVar* n_sig_pt;
   RooRealVar* n_comb_pt;
- 
-  const int n_pdf_syst=3;
-  TString syst_src[n_pdf_syst] = {"nominal","bkg_poly","crystal_ball"};
+
+  int n_pdf_syst ;
+
+  #if particle == 0
+   n_pdf_syst=4;       
+   TString syst_src[4]={"nominal","bkg_poly","crystal_ball","bkg_range"};      
+    
+  #elif particle == 1
+  n_pdf_syst = 3;      
+  TString syst_src[3]={"nominal","bkg_poly","crystal_ball"};
+  
+  #elif particle == 2
+  n_pdf_syst = 2;
+  TString syst_src[2]={"nominal","bkg_poly"};
+  
+  #endif
+  
   double yield_syst[n_pt_bins][n_pdf_syst]; 
   double yield_syst_rel[n_pt_bins][n_pdf_syst];
   //value of the systematic uncertainty
 
   for(int i=0;i<n_pt_bins;i++){
+ 
     //select data subset corresponding to pT bin
     data_pt = (RooDataSet*) data->reduce(Form("Bpt>%lf",pt_bins[i]));
     data_pt = (RooDataSet*) data_pt->reduce(Form("Bpt<%lf",pt_bins[i+1]));
@@ -565,77 +572,7 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
     //perform fit and save result
     if((particle == 2) && (MC == 0)){fit_pt = model->fitTo(*data_pt, Minos(true), Save(), Constrain(c_vars));}
     else{fit_pt = model->fitTo(*data_pt, Minos(true), Save());}
-
-    //plots the fit result
-    TCanvas b;
-    b.SetTitle("");
-
-    TPad *p1 = new TPad("p1","p1",0.0,0.27,0.82,0.99);
-    p1->SetTitle("");
-    p1->SetBorderMode(1);
-    p1->SetFrameBorderMode(0);
-    p1->SetBorderSize(2);
-    p1->SetBottomMargin(0.10);
-    p1->Draw();
-
-    TPad *p2 = new TPad("p2","p2",0.0,0.065,0.82,0.24);
-    p2->SetTitle("");
-    p2->SetTopMargin(0.);
-    p2->SetBottomMargin(0.2);
-    p2->SetBorderMode(1);
-    p2->Draw();
-
-    p1->cd();
     
-    RooPlot* massframe = Bmass.frame(Title(""));
-    data_pt->plotOn(massframe,RooFit::Name("Data"));
-    model->paramOn(massframe,Layout(0.60,0.99,0.95));
-
-    model->plotOn(massframe, RooFit::Name("Fit"),Range("all"));
-
-    //TCanvas b;
-    massframe->Draw();
-    
-    RooHist* pull_hist = massframe->pullHist("Data","Fit");
-    RooPlot* pull_plot = Bmass.frame(Title(""));
-
-    pull_plot->addPlotable(static_cast<RooPlotable*>(pull_hist),"P");
-    pull_plot->SetTitle("");
-
-    pull_plot->GetXaxis()->SetTitle("");
-    pull_plot->GetXaxis()->SetTitleFont(42);
-    pull_plot->GetXaxis()->SetTitleSize(0.17);
-    pull_plot->GetXaxis()->SetTitleOffset(1.09);
-    pull_plot->GetXaxis()->SetLabelFont(42);
-    pull_plot->GetXaxis()->SetLabelSize(0.15);
-    pull_plot->GetXaxis()->SetLabelOffset(0.01);
-    pull_plot->GetXaxis()->SetTickLength(0.13);
-
-    pull_plot->GetYaxis()->SetTitle("Pull hist");
-    pull_plot->GetYaxis()->SetTitleFont(42);
-    pull_plot->GetYaxis()->SetTitleSize(0.10);
-    pull_plot->GetYaxis()->SetTitleOffset(1.09);
-    pull_plot->GetYaxis()->SetLabelFont(42);
-    pull_plot->GetYaxis()->SetLabelSize(0.13);
-    pull_plot->GetYaxis()->SetLabelOffset(0.005);
-    pull_plot->GetYaxis()->SetNdivisions(305);
-
-    p2->cd();
-    pull_plot->Draw();
-    
-    if(particle == 0){
-      b.SaveAs(Form("./results/Bu/Bpt/%lf_%lf_fit_plot_Bu.gif", pt_bins[i], pt_bins[i+1]));
-      b.SaveAs(Form("./results/Bu/Bpt/%lf_%lf_fit_plot_Bu.pdf", pt_bins[i], pt_bins[i+1]));
-    }
-    else if(particle == 1){
-      b.SaveAs(Form("./results/Bs/Bpt/%lf_%lf_fit_plot_Bs.gif", pt_bins[i], pt_bins[i+1]));
-      b.SaveAs(Form("./results/Bs/Bpt/%lf_%lf_fit_plot_Bs.pdf", pt_bins[i], pt_bins[i+1]));
-    }
-    else if(particle == 2){
-      b.SaveAs(Form("./results/B0/Bpt/%lf_%lf_fit_plot_B0.gif", pt_bins[i], pt_bins[i+1]));
-      b.SaveAs(Form("./results/B0/Bpt/%lf_%lf_fit_plot_B0.pdf", pt_bins[i], pt_bins[i+1]));
-    }
-
     //YIELD + STATISTICAL ERROR
     //floatParsFinal returns the list of floating parameters after fit
     //cout << "Value of floating parameters" << endl;
@@ -646,25 +583,30 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
     n_comb_pt = (RooRealVar*)fit_pt->floatParsFinal().find("n_combinatorial");
 
     yield[i]= n_sig_pt->getVal();
+
     yield_err_low [i] = n_sig_pt->getError(); 
     yield_err_high[i] = n_sig_pt->getError();  
 
     //cout << "test asym error:" << n_sig_pt->getErrorLo() << " " <<  n_sig_pt->getAsymErrorLo() << " symmetric: " <<  n_sig_pt->getError() <<  endl;
 
     //SYSTEMATICS
+    double val_nominal = 0.;
+    val_nominal = get_yield_syst(data_pt, syst_src[0], c_vars, pt_bins[i], pt_bins[i+1], Bmass); //gets yield value for bin i using nominal pdf choice
+    
     for(int k = 1; k<n_pdf_syst; k++){
       double val = 0.; 
-      double val_nominal = 0.;
-      val = get_yield_syst(data_pt, syst_src[k], c_vars); // gets yield value for bin i using pdf choice k
-      val_nominal = get_yield_syst(data_pt, syst_src[0], c_vars); //gets yield value for bin i using nominal pdf choice
+      val = get_yield_syst(data_pt, syst_src[k], c_vars, pt_bins[i], pt_bins[i+1], Bmass); // gets yield value for bin i using pdf choice k 
       yield_syst_rel[i][k] = (val - val_nominal)/val_nominal;
       yield_syst[i][k] = (val - val_nominal);
+      yield_err_syst[i] += pow(yield_syst[i][k],2);  // for each bin sum the square of (val - val_nomimal)
     }
 
-    //yield_err_syst[i] = pow(yield_syst[i][0],2) + pow(yield_syst[i][1],2) + pow(yield_syst[i][2],2) + pow(yield_syst[i][3],2);
-    yield_err_syst[i] = pow(yield_syst[i][0],2) + pow(yield_syst[i][1],2) + pow(yield_syst[i][2],2);
     m_yield_err_syst[i] = sqrt(yield_err_syst[i]);
-  }
+    cout << m_yield_err_syst[i] << endl;
+   
+    }  //if i-cycle ends here
+    cout << "YIELD_SYST_PRINT" << endl; 
+    cout << yield_syst[1] << endl;    
 
     //separate sPlot from the rest, because sPlot fixes parameters of the fit
     
@@ -792,15 +734,15 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
   mg->GetYaxis()->SetTitle("dN_{s}/dp_{T} [GeV^{-1}]");
      
   if(particle == 0){
-    c.SaveAs("./results/Bu/Bpt/raw_yield_pt_Bu.pdf");
+    //c.SaveAs("./results/Bu/Bpt/raw_yield_pt_Bu.pdf");
     c.SaveAs("./results/Bu/Bpt/raw_yield_pt_Bu.gif");
   }
   else if(particle == 1){
-    c.SaveAs("./results/Bs/Bpt/raw_yield_pt_Bs.pdf");
+    //c.SaveAs("./results/Bs/Bpt/raw_yield_pt_Bs.pdf");
     c.SaveAs("./results/Bs/Bpt/raw_yield_pt_Bs.gif");
   }
   else if(particle == 2){
-    c.SaveAs("./results/B0/Bpt/raw_yield_pt_B0.pdf");
+    //c.SaveAs("./results/B0/Bpt/raw_yield_pt_B0.pdf");
     c.SaveAs("./results/B0/Bpt/raw_yield_pt_B0.gif");
   }
   //save both vectors (systematic and statistical errors) in a text file
@@ -818,15 +760,15 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
   grlog->Draw("AP");
 
   if(particle == 0){
-    l.SaveAs("./results/Bu/Bpt/raw_yield_pt_logscale_Bu.pdf");
+    //l.SaveAs("./results/Bu/Bpt/raw_yield_pt_logscale_Bu.pdf");
     l.SaveAs("./results/Bu/Bpt/raw_yield_pt_logscale_Bu.gif");
   }
   else if(particle == 1){
-    l.SaveAs("./results/Bs/Bpt/raw_yield_pt_logscale_Bs.pdf");
+    //l.SaveAs("./results/Bs/Bpt/raw_yield_pt_logscale_Bs.pdf");
     l.SaveAs("./results/Bs/Bpt/raw_yield_pt_logscale_Bs.gif");
   }
   else if(particle == 2){
-    l.SaveAs("./results/B0/Bpt/raw_yield_pt_logscale_B0.pdf");
+    //l.SaveAs("./results/B0/Bpt/raw_yield_pt_logscale_B0.pdf");
     l.SaveAs("./results/B0/Bpt/raw_yield_pt_logscale_B0.gif");
   }
   //} 
@@ -1047,11 +989,9 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     constrainVar(input_file_RT, "sigma1", c_vars, c_pdfs_RT);
     constrainVar(input_file_RT, "sigma2", c_vars, c_pdfs_RT);
     constrainVar(input_file_RT, "sigma3", c_vars, c_pdfs_RT);
-    
     constrainVar(input_file_WT, "sigma1_swp", c_vars, c_pdfs_WT);
-    //constrainVar(input_file_RT, "alpha1", c_vars, c_pdfs_RT);
+    //constrainVar(input_file_WT, "sigma2_swp", c_vars, c_pdfs_WT);
     constrainVar(input_file_WT, "alpha3", c_vars, c_pdfs_WT);
-    //constrainVar(input_file_RT, "n1", c_vars, c_pdfs_RT);
     constrainVar(input_file_WT, "n3", c_vars, c_pdfs_WT);
     constrainVar(input_file_RT, "cofs", c_vars, c_pdfs_RT);
     //constrainVar(input_file_WT, "cofs_swp", c_vars, c_pdfs_WT);
@@ -1106,22 +1046,22 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     f_swap = new RooRealVar("f_swap","f_swap", fraction, 0., 1.);       
     f_swap->setConstant();
     cout << "f_swap = " << f_swap->getVal() << endl; 
-  
 
-     
+//    RooRealVar* mean_difference = new RooRealVar("mean_difference", "mean_difference", MC_fit_result(input_file_WT, "mean_swp")-MC_fit_result(input_file_RT, "mean"), -2, 2, "GeV");
+    
+    
     mean = new RooRealVar("mean", "mean", MC_fit_result(input_file_RT, "mean"), MC_fit_result(input_file_RT, "mean")-0.1, MC_fit_result(input_file_RT, "mean")+0.1);
     sigma1 = new RooRealVar("sigma1", "sigma1", MC_fit_result(input_file_RT, "sigma1"), 0.005, 0.5);
-    sigma2 = new RooRealVar("sigma2", "sigma2", MC_fit_result(input_file_RT, "sigma2"), 0.005 ,0.5);
-    sigma3 = new RooRealVar("sigma3", "sigma3", MC_fit_result(input_file_RT, "sigma3"), 0.005 ,0.5);
+    sigma2 = new RooRealVar("sigma2", "sigma2", MC_fit_result(input_file_RT, "sigma2"), 0.005 ,0.5);  
     alpha1 = new RooRealVar("alpha1", "alpha1", 5,0, 20.);
     alpha3 = new RooRealVar("alpha3", "alpha3", MC_fit_result(input_file_WT, "alpha3"), 0., 20.);
-    n1 = new RooRealVar("n1", "n1", 105, 0., 300.);
     n3 = new RooRealVar("n3", "n3", MC_fit_result(input_file_WT, "n3"), 0., 300.);
     cofs = new RooRealVar("cofs", "cofs", MC_fit_result(input_file_RT, "cofs"), 0., 1.);
-    mean_swp = new RooRealVar("mean_swp", "mean_swp", MC_fit_result(input_file_WT, "mean"), MC_fit_result(input_file_WT, "mean")-0.1, MC_fit_result(input_file_WT, "mean")+0.1);
+    mean_swp = new RooRealVar("mean_swp", "mean_swp", MC_fit_result(input_file_WT, "mean_swp"), MC_fit_result(input_file_WT, "mean_swp")-0.1, MC_fit_result(input_file_WT, "mean_swp")+0.1);
     sigma1_swp = new RooRealVar("sigma1_swp", "sigma1_swp", MC_fit_result(input_file_WT, "sigma1_swp"), 0.005, 0.5);
-    //cofs_swp = new RooRealVar("cofs_swp", "cofs_swp", MC_fit_result(input_file_WT, "cofs_swp"), 0., 1.);
+    //sigma2_swp = new RooRealVar("sigma2_swp", "sigma2_swp", MC_fit_result(input_file_WT, "sigma2_swp"), 0.005, 0.5);
     cofs1 = new RooRealVar("cofs1", "cofs1", MC_fit_result(input_file_RT, "cofs1"), 0., 1.);
+    //cofs_swp = new RooRealVar("cofs_swp", "cofs_swp", MC_fit_result(input_file_WT, "cofs_swp"), 0., 1.);
   }
   else{
     cout << "Initialising variables without constraints" << endl;
@@ -1129,19 +1069,23 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     sigma1 = new RooRealVar("sigma1","sigma1",0.02,0.005,0.5);
     sigma2 = new RooRealVar("sigma2","sigma2",0.01,0.005,0.5);
     alpha1 = new RooRealVar("alpha1", "alpha1", 5., 0., 20.); 
+    alpha3 = new RooRealVar("alpha3", "alpha3", 5., 0., 20.); 
     n1 = new RooRealVar("n1", "n1", 10., 0., 300.);
     n2 = new RooRealVar("n2", "n2", 10., 0., 300.);
+    n3 = new RooRealVar("n3", "n3", 10., 0., 300.);
     cofs = new RooRealVar("cofs", "cofs", 0.3, 0., 1.);
     mean_swp = new RooRealVar("mean_swp","mean_swp",mass_peak,mass_peak-0.1,mass_peak+0.2);
     sigma1_swp = new RooRealVar("sigma1_swp","sigma1_swp",0.02,0.005,0.5);
     sigma2_swp = new RooRealVar("sigma2_swp","sigma2_swp",0.01,0.005,0.5);
     cofs_swp = new RooRealVar("cofs_swp", "cofs_swp", 0.3, 0., 1.);
     f_swap = new RooRealVar("f_swap","f_swap",0.,0.,1.);
+  cofs1 = new RooRealVar("cofs1", "cofs1", 0.3, 0., 1.);
+
   }
 
+  cofs_swp = new RooRealVar("cofs_swp", "cofs_swp", 0.3, 0., 1.);
   sigma3 = new RooRealVar("sigma3","sigma3",0.012,0.010,0.030);
-  sigma3_swp = new RooRealVar("sigma3_swp","sigma3_swp",0.012,0.010,0.030);
-  cofs1 = new RooRealVar("cofs1", "cofs1", 0.3, 0., 1.);
+  sigma2_swp = new RooRealVar("sigma2_swp","sigma2_swp",0.012,0.010,0.030);
   m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale", 4.74168e-02, 0, 1);
   m_nonprompt_shift = new RooRealVar("m_nonprompt_shift", "m_nonprompt_shift", 5.14425, 4.5, 6.);
   lambda = new RooRealVar("lambda","lambda",-2.,-5.,1.0);
@@ -1159,28 +1103,22 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
   alpha3 = new RooRealVar("alpha3", "alpha3", 5., -20., 20.);
   alpha4 = new RooRealVar("alpha4", "alpha4", 5., -20., 20.);
   n2 = new RooRealVar("n2", "n2", 5., 0., 300.);
-  n3 = new RooRealVar("n3", "n4", 5., 0., 300.);
-  n4 = new RooRealVar("n4", "n4", 5., 0., 300.);
+  n1 = new RooRealVar("n1", "n1", 5., 0., 300.);
 
   //SIGNAL
   //sum of two gaussians
 
   RooGaussian* signal1 = new RooGaussian("signal1","signal_gauss1",Bmass,*mean,*sigma1);
-  RooGaussian* signal2 = new RooGaussian("signal2","signal_gauss2",Bmass,*mean,*sigma2);
-  
+  RooGaussian* signal2 = new RooGaussian("signal2","signal_gauss2",Bmass,*mean,*sigma2); 
   RooAddPdf* signal = new RooAddPdf("signal", "signal", RooArgList(*signal1,*signal2),*cofs);
 			
 		//B0 WT             
   RooGaussian* signal1_swp = new RooGaussian("signal1_swp","signal1_swp",Bmass,*mean_swp,*sigma1_swp);
-  //RooGaussian* signal2_swp = new RooGaussian("signal2_swp","signal2_swp",Bmass,*mean_swp,*sigma2_swp);
-  //RooAddPdf* signal_swp = new RooAddPdf("signal_swp", "signal_swp", RooArgList(*signal1_swp,*signal2_swp),*cofs_swp);      //original pdf
+  RooGaussian* signal2_swp = new RooGaussian("signal2_swp","signal2_swp",Bmass,*mean_swp,*sigma2_swp);
+  RooAddPdf* signal_swp = new RooAddPdf("signal_swp", "signal_swp", RooArgList(*signal1_swp,*signal2_swp),*cofs_swp);      //original pdf
 
   // triple gaussian
   RooGaussian* signal3 = new RooGaussian("signal3","signal3",Bmass,*mean,*sigma3);  
-  RooGaussian* signal3_swp = new RooGaussian("signal3_swp","signal_gauss3_swp",Bmass,*mean_swp,*sigma3_swp);
-  
-
-  //RooAddPdf* triple_signal_swp = new RooAddPdf("triple_signal_swp", "triple_signal_swp", RooArgList(*signal_swp,*signal3_swp),*cofs_swp);
   RooAddPdf* signal_triple = new RooAddPdf("signal_triple","signal_triple",RooArgList(*signal1,*signal2,*signal3),RooArgList(*cofs,*cofs1));
 
   // crystal ball function
@@ -1188,7 +1126,7 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
   RooCBShape* CB2 = new RooCBShape("CB2", "CB2",Bmass,*mean,*sigma2,*alpha2,*n2);
   RooAddPdf* sum_CB = new RooAddPdf("sum_CB","sum_CB",RooArgList(*CB1,*CB2),*cofs);
  
-  RooCBShape* CB1_swp = new RooCBShape("CB1_swp", "CB1_swp",Bmass,*mean,*sigma1_swp,*alpha3,*n3);
+  RooCBShape* CB1_swp = new RooCBShape("CB1_swp", "CB1_swp",Bmass,*mean_swp,*sigma1_swp,*alpha3,*n3);
   // RooCBShape* CB2_swp = new RooCBShape("CB2_swp", "CB2_swp",Bmass,*mean,*sigma2_swp,*alpha4,*n4);
   // RooAddPdf* sum_CB_swp = new RooAddPdf("sum_CB_swp","sum_CB_swp",RooArgList(*CB1_swp,*CB2_swp),*cofs_swp);
  
@@ -1245,13 +1183,13 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
   // B0 FULL MODEL
   // RT component
   RooRealVar* RT_yield = new RooRealVar("RT_yield", "RT_yield", RT_yield_initial, 0.,  data->sumEntries());
-
   RooArgList constr_rt_list = RooArgList(c_pdfs_RT);
+
   constr_rt_list.add(*signal_triple);
   RooProdPdf* rt_pdf = new RooProdPdf("rt_pdf", "rt_pdf", constr_rt_list); 
 
   // WT component
-    RooProduct* WT_yield = new RooProduct("WT_yield","WT_yield",RooArgList(*f_swap,*RT_yield));
+  RooProduct* WT_yield = new RooProduct("WT_yield","WT_yield",RooArgList(*f_swap,*RT_yield));
   RooArgList constr_wt_list = RooArgList(c_pdfs_WT);
 
   constr_wt_list.add(*CB1_swp);
@@ -1428,19 +1366,18 @@ void fit_syst_error_bin(TString fname, double bin_min, double bin_max, RooArgSet
 }
 //fit_syst_error_bin ends
 
-double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars) {
+double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma){
   //returns the yield's value per bin
   
   //cout << "aaa 0\n";
   //data_bin->Print();
   //cout << "aaa 1\n";
-
+ 
   RooWorkspace* ws = new RooWorkspace("ws");
   set_up_workspace_variables(*ws);
   ws->import(*data_bin, Rename("data"));
   //  ws->Import(data_bin);
-
-  //  TString mdl = (syst_src.Contains("range")) ? "nominal" : syst_src;
+ 
   TString rng = (syst_src.Contains("range")) ? "peakright" : "all";
   cout << "pdf = " << syst_src.Data() << endl;
   build_pdf(*ws,syst_src.Data(), c_vars);
@@ -1448,7 +1385,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars)
   RooAbsPdf* model = ws->pdf("model");
   RooFitResult* fitres;
   if((particle == 2) && (MC == 0)){fitres = model->fitTo(*data_bin,Range(rng),Save(),Constrain(c_vars));}
-  else{fitres = model->fitTo(*data_bin,Range(rng),Save());}
+  else{fitres = model->fitTo(*data_bin, Range(rng), Save());}
 
   RooRealVar* n1_var = 0;
   if( (particle == 2) && (MC == 0) ){n1_var = (RooRealVar*) fitres ->floatParsFinal().find("RT_yield");}
@@ -1456,6 +1393,77 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars)
 
   double n1 = n1_var->getVal();
 
+
+    //plot the fit result
+    TCanvas b;
+    b.SetTitle("");
+
+    TPad *p1 = new TPad("p1","p1",0.0,0.27,0.82,0.99);
+    p1->SetTitle("");
+    p1->SetBorderMode(1);
+    p1->SetFrameBorderMode(0);
+    p1->SetBorderSize(2);
+    p1->SetBottomMargin(0.10);
+    p1->Draw();
+
+    TPad *p2 = new TPad("p2","p2",0.0,0.065,0.82,0.24);
+    p2->SetTitle("");
+    p2->SetTopMargin(0.);
+    p2->SetBottomMargin(0.2);
+    p2->SetBorderMode(1);
+    p2->Draw();
+
+    p1->cd();
+    
+    RooPlot* massframe = b_ma.frame(Title(""));
+    *data_bin->plotOn(massframe,RooFit::Name("Data"),NormRange("all"));
+    model->paramOn(massframe,Layout(0.60,0.99,0.95));
+
+    model->plotOn(massframe, RooFit::Name("Fit"),Range("all"));
+
+    //TCanvas b;
+    massframe->Draw();
+    
+    RooHist* pull_hist = massframe->pullHist("Data","Fit");
+    RooPlot* pull_plot = b_ma.frame(Title(""));
+
+    pull_plot->addPlotable(static_cast<RooPlotable*>(pull_hist),"P");
+    pull_plot->SetTitle("");
+
+    pull_plot->GetXaxis()->SetTitle("");
+    pull_plot->GetXaxis()->SetTitleFont(42);
+    pull_plot->GetXaxis()->SetTitleSize(0.17);
+    pull_plot->GetXaxis()->SetTitleOffset(1.09);
+    pull_plot->GetXaxis()->SetLabelFont(42);
+    pull_plot->GetXaxis()->SetLabelSize(0.15);
+    pull_plot->GetXaxis()->SetLabelOffset(0.01);
+    pull_plot->GetXaxis()->SetTickLength(0.13);
+
+    pull_plot->GetYaxis()->SetTitle("Pull hist");
+    pull_plot->GetYaxis()->SetTitleFont(42);
+    pull_plot->GetYaxis()->SetTitleSize(0.10);
+    pull_plot->GetYaxis()->SetTitleOffset(1.09);
+    pull_plot->GetYaxis()->SetLabelFont(42);
+    pull_plot->GetYaxis()->SetLabelSize(0.13);
+    pull_plot->GetYaxis()->SetLabelOffset(0.005);
+    pull_plot->GetYaxis()->SetNdivisions(305);
+
+    p2->cd();
+    pull_plot->Draw();
+    
+    if(particle == 0){
+      b.SaveAs(Form("./results/Bu/Bpt/%lf_%lf_%s_fit_plot_Bu.gif", lower_b, higher_b, syst_src.Data()));
+      //b.SaveAs(Form("./results/Bu/Bpt/%lf_%lf_%s_fit_plot_Bu.pdf", lower_b, higher_b, syst_src.Data()));
+    }
+    else if(particle == 1){
+      b.SaveAs(Form("./results/Bs/Bpt/%lf_%lf_%s_fit_plot_Bs.gif", lower_b, higher_b, syst_src.Data()));
+      //b.SaveAs(Form("./results/Bs/Bpt/%lf_%lf_%s_fit_plot_Bs.pdf", lower_b, higher_b, syst_src.Data()));
+    }
+    else if(particle == 2){
+      b.SaveAs(Form("./results/B0/Bpt/%lf_%lf_%s_fit_plot_B0.gif", lower_b, higher_b, syst_src.Data()));
+      //b.SaveAs(Form("./results/B0/Bpt/%lf_%lf_%s_fit_plot_B0.pdf", lower_b, higher_b, syst_src.Data()));
+    }
+ 
   return n1; 
 }
 //get_yield_syst ends
@@ -2047,16 +2055,15 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   lambda = w.var("lambda");
   mean->setConstant();
   sigma1->setConstant();
+  lambda->setConstant();
 
   if(particle != 1){
      
     sigma2 = w.var("sigma2");
-    cofs = w.var("sigma2");
+    cofs = w.var("cofs");
     sigma2->setConstant();
     cofs->setConstant();
   }
-
-  lambda->setConstant();
 
   if(particle == 2){
     sigma1_swp = w.var("sigma1_swp");
@@ -2136,9 +2143,12 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   }
 
   data->plotOn(mframe);
-  model->plotOn(mframe,LineColor(kRed));
-  model->plotOn(mframe,Components(*BpModel),LineStyle(kDashed),LineColor(kOrange));
-  model->plotOn(mframe,Components(*BgModel),LineStyle(kDashed),LineColor(kBlue));
+  model->plotOn(mframe,NormRange("all"), LineColor(kRed));
+  model->plotOn(mframe,NormRange("all"), Components(*BpModel), LineStyle(kDashed),LineColor(kOrange));
+  model->plotOn(mframe,NormRange("all"), Components(*BgModel), LineStyle(kDashed),LineColor(kBlue));
+
+  model->paramOn(mframe,Layout(.060,0.99,0.95));
+
   mframe->SetTitle("Bmass");
   mframe->Draw();
 
@@ -2322,8 +2332,7 @@ std::vector<TH1D*> splot_method(RooWorkspace& w, int* n, TString* label, int n_v
   return histos;
 }
 
-void validate_fit(RooWorkspace* w, RooArgSet &c_vars)
-{
+void validate_fit(RooWorkspace* w, RooArgSet &c_vars){
   RooRealVar Bmass = *(w->var("Bmass"));
   RooAbsPdf* model  = w->pdf("model");
   
@@ -2570,8 +2579,7 @@ void AddWeights(TTree* t){
 }
 //Weights were added to TTree
 
-void set_up_workspace_variables(RooWorkspace& w)
-{
+void set_up_workspace_variables(RooWorkspace& w){
 
   if(particle == 0){
     float mass_min, mass_max;
