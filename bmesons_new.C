@@ -94,7 +94,7 @@ double MC_fit_result(TString input_file, TString inVarName);
 // 1 = Bs
 // 2 = B0
 
-#define particle 1 
+#define particle 0
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -491,9 +491,6 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
                                               );
   c_vars.add(*var);
   c_pdfs.add(*gauss_constr);
- 
-  
-
 }
 
 
@@ -545,8 +542,8 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
   int n_pdf_syst ;
 
   #if particle == 0
-   n_pdf_syst=4;       
-   TString syst_src[4]={"nominal","bkg_poly","crystal_ball","bkg_range"};      
+   n_pdf_syst=5;       
+   TString syst_src[5]={"nominal","bkg_poly","gauss_crystal","bkg_range","double_crystal"};      
     
   #elif particle == 1
   n_pdf_syst = 3;      
@@ -590,23 +587,32 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
     //cout << "test asym error:" << n_sig_pt->getErrorLo() << " " <<  n_sig_pt->getAsymErrorLo() << " symmetric: " <<  n_sig_pt->getError() <<  endl;
 
     //SYSTEMATICS
-    double val_nominal = 0.;
-    val_nominal = get_yield_syst(data_pt, syst_src[0], c_vars, pt_bins[i], pt_bins[i+1], Bmass); //gets yield value for bin i using nominal pdf choice
+    double val[n_pdf_syst];
+    //val_nominal = get_yield_syst(data_pt, syst_src[0], c_vars, pt_bins[i], pt_bins[i+1], Bmass); //gets yield value for bin i using nominal pdf choice
     
-    for(int k = 1; k<n_pdf_syst; k++){
-      double val = 0.; 
-      val = get_yield_syst(data_pt, syst_src[k], c_vars, pt_bins[i], pt_bins[i+1], Bmass); // gets yield value for bin i using pdf choice k 
-      yield_syst_rel[i][k] = (val - val_nominal)/val_nominal;
-      yield_syst[i][k] = (val - val_nominal);
+    for(int k = 0; k<n_pdf_syst; k++){
+      //double val = 0. ;
+      val[k] = get_yield_syst(data_pt, syst_src[k], c_vars, pt_bins[i], pt_bins[i+1], Bmass); // gets yield value for bin i using pdf choice k 
+      yield_syst_rel[i][k] = (val[k] - val[0])/val[0]*100;
+      yield_syst[i][k] = (val[k] - val[0]);
       yield_err_syst[i] += pow(yield_syst[i][k],2);  // for each bin sum the square of (val - val_nomimal)
     }
 
     m_yield_err_syst[i] = sqrt(yield_err_syst[i]);
-    cout << m_yield_err_syst[i] << endl;
-   
+    //cout << m_yield_err_syst[i] << endl; 
     }  //if i-cycle ends here
-    cout << "YIELD_SYST_PRINT" << endl; 
-    cout << yield_syst[1] << endl;    
+    
+
+    cout << endl;
+    cout << "RELATIVE SYSTEMATICS ERROR TABLE" << endl;
+    for (int row=0; row < n_pt_bins+1; row++){
+                      cout<< to_string(pt_bins[row])+"_"+to_string(pt_bins[row+1])+"    ";
+        for(int col=0; col < n_pdf_syst; col++){
+                      cout<< to_string(yield_syst_rel[row][col])<< "% ";}
+                      cout << endl;
+                      } 
+    cout << endl;  
+
 
     //separate sPlot from the rest, because sPlot fixes parameters of the fit
     
@@ -688,50 +694,71 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
     m_yield_err_syst[i] = m_yield_err_syst[i]/bin_width;
   }
 
+
+
+//PLOT SYSTEMATICS_RELATIVE 
+
+  double pt_zero[n_pt_bins];
+  for (int i=0;i<n_pt_bins;i++){ pt_zero[i]= 0.;}
+
+  double syst_array[n_pt_bins];
+  
+  TCanvas rel_sys_er;
+  rel_sys_er.SetGrid();
+  TLegend *leg = new TLegend();
+  TMultiGraph* mg_syst = new TMultiGraph();
+  
+  for( int col=1; col<n_pdf_syst; col++){
+     for( int row=0; row< n_pt_bins; row++){syst_array[row] = yield_syst_rel[row][col];}         //row is the pt_bin and column is the unc
+
+     TGraphErrors* pdf = new TGraphErrors(n_pt_bins, pt_mean, syst_array, pt_zero, pt_zero);
+     pdf->SetMarkerColor(col+1);
+     pdf->SetMarkerStyle(20);
+     mg_syst->Add(pdf);
+     leg->AddEntry(pdf, syst_src[col], "lp");}
+
+  mg_syst->GetXaxis()->SetTitle("p_{T}(B) [GeV]");
+  mg_syst->GetYaxis()->SetTitle("Uncertainty %");
+  mg_syst->GetXaxis()->SetLimits(0,60);
+  mg_syst->Draw("AP");
+  leg->Draw();
+  
+  if(particle == 0){
+    rel_sys_er.SaveAs("./results/Bu/Bpt/rel_systematics_Bu.gif");
+  }
+  else if(particle == 1){
+    rel_sys_er.SaveAs("./results/Bs/Bpt/rel_systematics_Bs.gif");
+  }
+  else if(particle == 2){
+    rel_sys_er.SaveAs("./results/B0/Bpt/rel_systematics_B0.gif");
+  }
+
+  
   //plot yield vs average pT
   TCanvas c;
   TMultiGraph* mg = new TMultiGraph();
 
   TGraphAsymmErrors* gr = new TGraphAsymmErrors(n_pt_bins,pt_mean,yield,pt_low,pt_high,yield_err_low,yield_err_high);
-  gr->SetTitle("");
-  gr->SetMarkerColor(4);
-  gr->SetMarkerStyle(1);
-  gr->SetLineColor(1);
-  gr->SetTitle("Differential Signal Yield");
-  gr->GetXaxis()->SetTitle("p_{T}(B) [GeV]");
-  gr->GetYaxis()->SetTitle("dN_{s}/dp_{T} [GeV^{-1}]");
-  //gr->Draw("AP");
-  f_wei->cd();
-  gr->Write();
-
-  double pt_zero[n_pt_bins];
-  for (int i=0;i<n_pt_bins;i++) pt_zero[i]= 0.;
+  //f_wei->cd();
+  //gr->Write();
+  mg->Add(gr);
 
   TGraphAsymmErrors* grs = new TGraphAsymmErrors(n_pt_bins,pt_mean,yield,pt_zero,pt_zero, m_yield_err_syst, m_yield_err_syst);
-  grs->SetTitle("");
-  grs->SetMarkerColor(4);
-  grs->SetMarkerStyle(1);
-  grs->SetLineColor(2);
-  grs->SetTitle("Differential Signal Yield");
-  grs->GetXaxis()->SetTitle("p_{T}(B) [GeV]");
-  grs->GetYaxis()->SetTitle("dN_{s}/dp_{T} [GeV^{-1}]");
-  f_wei->cd();
-  grs->Write();
-  f_wei->Close();
-  //grs->Draw("same");
-
-  mg->Add(gr);
+  grs->SetLineColor(2); 
+  //f_wei->cd();
+  //grs->Write();
+  //f_wei->Close();
   mg->Add(grs);
    
-  TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.9);
-  leg->SetFillColor(0);
-  leg->AddEntry(gr, "Statistical Uncertainty", "lp");
-  leg->AddEntry(grs, "Systematic Uncertainty", "lp");
+  TLegend *leg_d = new TLegend(0.7, 0.7, 0.9, 0.9);
+  leg_d->AddEntry(gr, "Statistical Uncertainty", "lp");
+  leg_d->AddEntry(grs, "Systematic Uncertainty", "lp");
 
   mg->Draw("AP");
-  leg->Draw();
+  leg_d->Draw();
   mg->GetXaxis()->SetTitle("p_{T}(B) [GeV]");
   mg->GetYaxis()->SetTitle("dN_{s}/dp_{T} [GeV^{-1}]");
+  mg->SetTitle("Differential Signal Yield ");
      
   if(particle == 0){
     //c.SaveAs("./results/Bu/Bpt/raw_yield_pt_Bu.pdf");
@@ -751,7 +778,6 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
   //log scale
   l.SetLogy();
   TGraphAsymmErrors* grlog = new TGraphAsymmErrors(n_pt_bins,pt_mean,yield,pt_low,pt_high,yield_err_low,yield_err_high);
-  grlog->SetTitle("");
   grlog->SetMarkerColor(4);
   grlog->SetMarkerStyle(21);
   grlog->SetTitle("Differential Signal Yield (Logscale)");
@@ -787,10 +813,10 @@ void pT_analysis(RooWorkspace& w, int n, TString ptfile, TString datafile, RooAr
  
    // Bs bins 3,10,15,20,40,100
 
-   cout << '|' << setw(15) << "Pdf" << '|' << setw(15) << "3-10" << '|' << setw(15) << "10-15" << '|' << setw(15) << "15-20" << '|' << setw(15) << "20-40" << '|' << setw(15) << "40-100" << '|' << endl;
-   cout << '|' << setw(15) << "Nominal" << '|' << setw(15) << yield_syst_rel[0][0] << '|' << setw(15) << yield_syst_rel[1][0] << '|' << setw(15) << yield_syst_rel[2][0] << '|' << setw(15) << yield_syst_rel[3][0] << '|' << setw(15) << yield_syst_rel[4][0] << '|' <<  endl;
-   cout << '|' << setw(15) << "Bkg_poly" << '|' << setw(15) << yield_syst_rel[0][1] << '|' << setw(15) << yield_syst_rel[1][1] << '|' << setw(15) << yield_syst_rel[2][1] << '|' << setw(15) << yield_syst_rel[3][1] << '|' << setw(15) << yield_syst_rel[4][1] << '|' << endl;
-   cout << '|' << setw(15) << "CB" << '|' << setw(15) << yield_syst_rel[0][2] << '|' << setw(15) << yield_syst_rel[1][2] << '|' << setw(15) << yield_syst_rel[2][2] << '|' << setw(15) << yield_syst_rel[3][2]  << '|' << setw(15) << yield_syst_rel[4][2] << '|' << endl;
+//   cout << '|' << setw(15) << "Pdf" << '|' << setw(15) << "3-10" << '|' << setw(15) << "10-15" << '|' << setw(15) << "15-20" << '|' << setw(15) << "20-40" << '|' << setw(15) << "40-100" << '|' << endl;
+//   cout << '|' << setw(15) << "Nominal" << '|' << setw(15) << yield_syst_rel[0][0] << '|' << setw(15) << yield_syst_rel[1][0] << '|' << setw(15) << yield_syst_rel[2][0] << '|' << setw(15) << yield_syst_rel[3][0] << '|' << setw(15) << yield_syst_rel[4][0] << '|' <<  endl;
+//   cout << '|' << setw(15) << "Bkg_poly" << '|' << setw(15) << yield_syst_rel[0][1] << '|' << setw(15) << yield_syst_rel[1][1] << '|' << setw(15) << yield_syst_rel[2][1] << '|' << setw(15) << yield_syst_rel[3][1] << '|' << setw(15) << yield_syst_rel[4][1] << '|' << endl;
+//   cout << '|' << setw(15) << "CB" << '|' << setw(15) << yield_syst_rel[0][2] << '|' << setw(15) << yield_syst_rel[1][2] << '|' << setw(15) << yield_syst_rel[2][2] << '|' << setw(15) << yield_syst_rel[3][2]  << '|' << setw(15) << yield_syst_rel[4][2] << '|' << endl;
    //cout << '|' << setw(15) << "CB" << '|' << setw(15) << yield_syst_rel[0][3] << '|' << setw(15) <<  yield_syst_rel[1][3] << '|' << setw(15) <<  yield_syst_rel[2][3] << '|' << setw(15) <<  yield_syst_rel[3][3] << '|' << setw(15) <<  yield_syst_rel[4][3]  << '|' << endl;
 
 
@@ -1219,12 +1245,17 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     } else if(choice == "bkg_range"){
       RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_jpsipi));
       w.import(model);
-    }else if(choice == "signal1gauss"){
+    }else if(choice == "1gauss"){
       RooAddPdf model("model","model",RooArgList(*signal3,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
       w.import(model);
-    }else if(choice == "triple_gauss"){
+    }else if(choice == "gauss_crystal"){
+      RooAddPdf model("model","model",RooArgList(*gauss_CB,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
+      w.import(model);
     }else if(choice == "crystal_ball"){
       RooAddPdf model("model","model",RooArgList(*CB1,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
+      w.import(model);
+    }else if(choice == "double_crystal"){
+      RooAddPdf model("model","model",RooArgList(*sum_CB,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
       w.import(model);
     }
   }
@@ -1236,7 +1267,7 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     }else if(choice == "bkg_poly"){
       RooAddPdf model("model","model",RooArgList(*signal1,*poly_bkg),RooArgList(*n_signal,*n_combinatorial));
       w.import(model);
-    }else if(choice == "signal1gauss"){
+    }else if(choice == "1gauss"){
       RooAddPdf model("model","model",RooArgList(*signal3,*fit_side),RooArgList(*n_signal,*n_combinatorial));
       w.import(model);
     }else if(choice == "triple_gauss"){
