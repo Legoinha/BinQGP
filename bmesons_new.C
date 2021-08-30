@@ -198,7 +198,7 @@ void bmesons_new(){
   if(MC == 1){return;}
  
   //validate_fit(ws, c_vars);
-  DIF_analysis(*ws, "Bpt", input_file_data, c_vars);     
+  DIF_analysis(*ws, "By", input_file_data, c_vars);     
   return; 
   
   //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
@@ -561,18 +561,22 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString datafile, RooA
     data_var = (RooDataSet*) data->reduce(Form("%s>%lf", variable, bins[i]));
     data_var = (RooDataSet*) data_var->reduce(Form("%s<%lf", variable, bins[i+1]));
     w.import(*data_var, Rename(Form("data_var_%d",i)));
-     
-     
+          
+    cout << "AQUI1"<<endl;
+    cout<< endl;  
+    data_var->Print("v");
+    cout << endl;
+    cout << "AQUI2"<<endl;
+
     cout << "perform fit and save result" <<endl; 
     if((particle == 2) && (MC == 0)){fit_var = model->fitTo(*data_var, Minos(true), Save(), Constrain(c_vars));}
     else{fit_var = model->fitTo(*data_var, Minos(true), Save());}
     
-    cout<< endl;
-    cout << "AQUIAQUI"<< endl;
+    cout<< endl;  
     fit_var->Print("v");
     cout << endl;
-    cout << "AQUIAQUI2"<< endl;
-    //YIELD + STATISTICAL ERROR
+ 
+   //YIELD + STATISTICAL ERROR
     //floatParsFinal returns the list of floating parameters after fit
     //cout << "Value of floating parameters" << endl;
     //fit_pt->floatParsFinal().Print("s");
