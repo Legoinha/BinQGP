@@ -131,14 +131,24 @@ void bmesons_new(){
   
   int n_var;
   TString input_file_data;
-  if(particle == 0){input_file_data = "/lstore/cms/mcarolina/BP/BPData.root";}
-  else if(particle == 1){input_file_data = "/lstore/cms/mcarolina/MoreUpdatedSamples/Bs/BsData.root";}
+  if(particle == 0){input_file_data = "/lstore/cms/nuno/ppdata2017/011114/ForHenrique/Skimmed/BPData.root";}        
+  //"/lstore/cms/mcarolina/BP/BPData.root";
+
+  else if(particle == 1){input_file_data = "/home/t3cms/u21hlegoinha/work/Bs_DATA_MC/BsData.root";}   
+  //"/home/t3cms/u21hlegoinha/work/Bs_DATA_MC/BsData.root";}   
+  //"/lstore/cms/mcarolina/MoreUpdatedSamples/Bs/BsData.root";}
+
   else if(particle == 2){input_file_data = "";}
 
   TString input_file_mc;
   TString input_file_mc_swap;
-  if(particle == 0){input_file_mc = "/lstore/cms/mcarolina/BP/BPMC.root";}
-  else if(particle == 1){input_file_mc = "/lstore/cms/mcarolina/MoreUpdatedSamples/Bs/BsMC.root";}
+  if(particle == 0){input_file_mc = "/lstore/cms/nuno/ppdata2017/011114/ForHenrique/Skimmed/OfficialMC/BPMC.root";}
+//"/lstore/cms/mcarolina/BP/BPMC.root"
+
+  else if(particle == 1){input_file_mc = "/home/t3cms/u21hlegoinha/work/Bs_DATA_MC/BsMC.root";}
+  //"/home/t3cms/u21hlegoinha/work/Bs_DATA_MC/BsMC.root";}   
+  //"/lstore/cms/mcarolina/MoreUpdatedSamples/Bs/BsMC.root";}
+
   else if(particle == 2){
     input_file_mc = "/home/t3cms/mcarolina/samples/NewBZ/BZMC.root";
     input_file_mc_swap = "/home/t3cms/mcarolina/samples/NewBZ/BZMCSwap.root";
@@ -160,9 +170,9 @@ void bmesons_new(){
   TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr","BsvpvDistance_2D","BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "BDT_pt_0_2", "BDT_pt_0_3", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50","nMult"};  
 
 #elif particle == 1
-  int n_bins[] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40};
+  int n_bins[] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40};
 
-  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr", "BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50","nMult"};
+  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr", "BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_30", "nMult", "BDT_pt_30_50"};
 
 #elif particle == 2
   int n_bins[] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40};
@@ -197,10 +207,10 @@ void bmesons_new(){
   build_pdf(*ws, "nominal", c_vars);
   plot_complete_fit(*ws, c_vars);  
   if(MC == 1){return;}
- 
+
   //validate_fit(ws, c_vars);
-  DIF_analysis(*ws, "By", "pT.root", input_file_data, c_vars);     
-  //return;  
+  DIF_analysis(*ws, "Bpt", "pT.root", input_file_data, c_vars);     
+  //return;
   //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
   histos_sideband_sub = sideband_subtraction(*ws, n_bins, n_var);
  
@@ -519,26 +529,32 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  TStri
 
   if( std::string(variable) == "By" ){ 
   	n_bins = 6;
-  	double r_bins[] = {-2.4, -1.5, -1, 0, 1, 1.5, 2.4};
-    		for(int i=0; i < n_bins +1; i++){bins[i]=r_bins[i];}  
+  	double r_bins[] = {-2.4, -1.6, -0.9 , 0, 0.9, 1.6, 2.4};
+    	for(int i=0; i < n_bins +1; i++){bins[i]=r_bins[i];}  
   	range_u1=-2.5;
 	range_u2=4;
 	leg_x = leg_var_x[0];
   	leg_y = leg_var_y[0];}
   
   else if( std::string(variable)== "Bpt"){
-  	n_bins = 9;
-  	double p_bins[] = {5,9,12,15,18,21,26,30,52,100};
-    		for(int i=0; i < n_bins +1; i++){bins[i]=p_bins[i];}
+    	#if particle == 0
+ 	n_bins = 7 ;
+        double p_bins[] = {5, 7, 10, 15, 20, 30, 50, 60}; 
+	#elif particle == 1
+ 	n_bins = 5 ;
+        double p_bins[] = {5, 7, 10, 15, 20, 50}; 
+        #endif 
+        cout << "LENGHT: " << sizeof(p_bins)<< endl;
+        for(int i=0; i < n_bins +1; i++){bins[i]=p_bins[i];}
   	range_u1=0;
-	range_u2=100;
+	range_u2=60;//105;
   	leg_x = leg_var_x[1];
   	leg_y = leg_var_y[1];}
   
   else if( std::string(variable)== "nMult"){
-        n_bins = 7;
-  	double m_bins[] = {0,10,20,30,40,50,60,140};
-      		for(int i=0; i < n_bins +1; i++){bins[i]=m_bins[i];}
+        n_bins = 6;
+  	double m_bins[] = {0,15,25,32,45,60,140};
+      	for(int i=0; i < n_bins +1; i++){bins[i]=m_bins[i];}
   	range_u1=0;
 	range_u2=140;
         leg_x = leg_var_x[2];
@@ -659,11 +675,10 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  TStri
       mean->setConstant();
       sigma1->setConstant();
       lambda->setConstant();
-      if(particle != 1){
+      
         sigma2->setConstant();
         cofs->setConstant();
-      }
-
+      
       RooRealVar* mean_swp;
       RooRealVar* sigma1_swp;
       RooRealVar* sigma2_swp;
@@ -790,6 +805,7 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  TStri
   leg_d->SetFillStyle(0);
   leg_d->SetTextSize(0);
   leg_d->Draw();
+  mg->GetXaxis()->SetLimits(range_u1,range_u2);
   mg->GetXaxis()->SetTitle(leg_x.Data());
   mg->GetYaxis()->SetTitle(leg_y.Data());
  //mg->SetTitle("Differential Signal Yield");  
@@ -908,6 +924,7 @@ void read_data(RooWorkspace& w, TString f_input){
     arg_list.add(*(w.var("BDT_pt_10_15")));
     arg_list.add(*(w.var("BDT_pt_15_20")));
     arg_list.add(*(w.var("BDT_pt_20_50")));
+
   }
   if( (particle == 1) || (particle == 2)){
     arg_list.add(*(w.var("Btrk2Pt")));
@@ -922,7 +939,9 @@ void read_data(RooWorkspace& w, TString f_input){
     arg_list.add(*(w.var("BDT_pt_7_10")));
     arg_list.add(*(w.var("BDT_pt_10_15")));
     arg_list.add(*(w.var("BDT_pt_15_20")));
-    arg_list.add(*(w.var("BDT_pt_20_50")));
+    arg_list.add(*(w.var("BDT_pt_20_30")));
+    arg_list.add(*(w.var("BDT_pt_30_50")));
+
   }
   if(particle == 2){
     arg_list.add(*(w.var("BDT_pt_0_2")));
@@ -933,6 +952,7 @@ void read_data(RooWorkspace& w, TString f_input){
     arg_list.add(*(w.var("BDT_pt_10_15")));
     arg_list.add(*(w.var("BDT_pt_15_20")));
     arg_list.add(*(w.var("BDT_pt_20_50")));
+
   }
   
   RooDataSet* data = new RooDataSet("data","data",t1_data,arg_list);
@@ -961,12 +981,12 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
 
   if(particle == 0){
     left = 5.2;
-    right = 5.35;
+    right = 5.38;
     mass_peak = 5.279;
   }
   else if(particle == 1){
-    left = 5.36;
-    right = 5.4;
+    left = 5.35;
+    right = 5.45;
     mass_peak = 5.366;
   }
   else if(particle == 2){
@@ -1063,9 +1083,9 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
     cofs1 = new RooRealVar("cofs1", "cofs1", 0.3, 0., 1.);
   }
 
-  n3 = new RooRealVar("n3", "n3", 100., 0., 300.);
-  n1 = new RooRealVar("n1", "n1", 100., 0., 300.);
-  n2 = new RooRealVar("n2", "n2", 100., 0., 300.);
+  n3 = new RooRealVar("n3", "n3", 100., 0., 400.);
+  n1 = new RooRealVar("n1", "n1", 100., 0., 400.);
+  n2 = new RooRealVar("n2", "n2", 100., 0., 400.);
   alpha1 = new RooRealVar("alpha1", "alpha1", 5., 0., 20.); 
   alpha3 = new RooRealVar("alpha3", "alpha3", 5., 0., 20.); 
   sigma_cb1 = new RooRealVar("sigma_cb1", "sigma_cb1", 0.012,0.010,0.030);
@@ -1214,7 +1234,7 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
 
   else if(particle == 1){//Bs 
     if(choice == "nominal"){
-      RooAddPdf model("model","model",RooArgList(*signal1,*fit_side),RooArgList(*n_signal,*n_combinatorial)); 
+      RooAddPdf model("model","model",RooArgList(*signal,*fit_side),RooArgList(*n_signal,*n_combinatorial)); 
       w.import(model);
     }else if(choice == "bkg_poly"){
       RooAddPdf model("model","model",RooArgList(*signal1,*poly_bkg),RooArgList(*n_signal,*n_combinatorial));
@@ -1389,7 +1409,8 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 
     p1->cd();
     
-    RooPlot* massframe = b_ma.frame(Title(""));
+    RooPlot* massframe = b_ma.frame();
+    massframe->SetName("");
     *data_bin->plotOn(massframe,RooFit::Name("Data"),NormRange("all"));
     model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
     model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
@@ -1480,9 +1501,10 @@ void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars){
   f->Close();
  
   RooPlot* massframe = Bmass.frame();
+  massframe->SetName("");
 
   if(particle == 0){
-    data->plotOn(massframe, RooFit::Name("Data"));
+    data->plotOn(massframe, RooFit::Name("Data"), MarkerSize(0.9));
     model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
     model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
     model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed)); 
@@ -1495,7 +1517,7 @@ void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars){
     data->plotOn(massframe, RooFit::Name("Data"));
     model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
     model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal1"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed));
+    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed));
     massframe->GetYaxis()->SetTitleOffset(1.3);
     massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}K^{-}) [GeV]");
   }  
@@ -1506,10 +1528,11 @@ void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars){
         model->plotOn(massframe, RooFit::Name("Corr Tag"), RooFit::Components("rt_pdf"), RooFit::NormRange("all"), RooFit::LineColor(kGreen), RooFit::LineStyle(kDashed));
         model->plotOn(massframe, RooFit::Name("Mis Tag"), RooFit::Components("wt_pdf"), RooFit::NormRange("all"), RooFit::LineColor(kRed), RooFit::LineStyle(kDashed));  
         model->plotOn(massframe, RooFit::Name("Combinatorial"), RooFit::Components("fit_side"), RooFit::NormRange("all"), RooFit::LineColor(kBlue), RooFit::LineStyle(kDashed));
-        model->plotOn(massframe, RooFit::Name("B->J/psi X"),Components("erf"),NormRange("all"),LineColor(kCyan),LineStyle(kDashed));
+        model->plotOn(massframe, RooFit::Name("B->J/#psi X"),Components("erf"),NormRange("all"),LineColor(kCyan),LineStyle(kDashed));
         massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}#pi^{-}) [GeV]");
       }
   }
+  
   model->paramOn(massframe,Layout(0.55,0.95,0.90));
 
   TCanvas d;
@@ -1561,27 +1584,29 @@ void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars){
   tex13->SetTextSize(0.04);
   */
 
-  TLegend *leg = new TLegend (0.7, 0.7, 0.9, 0.9);
+  TLegend *leg = new TLegend (0.7, 0.45, 0.9, 0.85);
 
   if(particle == 0){
-    leg->SetTextSize(0.03);
-    leg->AddEntry(massframe->findObject("Data"), "Data", "l");
-    leg->AddEntry(massframe->findObject("B->J/psi X"), "B->J/psi X", "l");
+    leg->SetTextSize(0.04);
+    leg->SetFillStyle(0);
+    leg->SetBorderSize(0);
+    leg->AddEntry(massframe->findObject("Data"), "Data", "p)");
+    leg->AddEntry(massframe->findObject("B->J/psi X"), "B->J/#psi X", "l");
     leg->AddEntry(massframe->findObject("Signal"), "Signal", "l");
     leg->AddEntry(massframe->findObject("Combinatorial"), "Combinatorial", "l");
-    leg->AddEntry(massframe->findObject("B->J/psi pi"), "B->J/psi pi", "l");
+    leg->AddEntry(massframe->findObject("B->J/psi pi"), "B->J/#psi #pi^{+}", "l");
     leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
   }
   else if(particle == 1){
-    leg->SetTextSize(0.03);
-    leg->AddEntry(massframe->findObject("Data"), "Data", "l");
+    leg->SetTextSize(0.04);
+    leg->AddEntry(massframe->findObject("Data"), "Data", "p");
     leg->AddEntry(massframe->findObject("Signal"), "Signal", "l");
     leg->AddEntry(massframe->findObject("Combinatorial"), "Combinatorial", "l");
     leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
   }
   else if(particle == 2){
     leg->SetTextSize(0.03);
-    leg->AddEntry(massframe->findObject("Data"), "Data", "l");
+    leg->AddEntry(massframe->findObject("Data"), "Data", "p");
     leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
     if(MC == 0){
       leg->AddEntry(massframe->findObject("Total Signal"), "Total sig", "l");
@@ -1653,7 +1678,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
   RooDataSet* data = (RooDataSet*) w.data("data");
   RooAbsPdf* BpModel;
   if(particle ==0 ){BpModel =  w.pdf("signal");}
-  else if(particle == 1){BpModel =  w.pdf("signal1");}
+  else if(particle == 1){BpModel =  w.pdf("signal");}
   else if(particle == 2){BpModel = w.pdf("rt_pdf");}
   RooAbsPdf* BgModel = w.pdf("fit_side");
 
@@ -1702,6 +1727,8 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
     variables.push_back(*(w.var("BDT_pt_10_15")));
     variables.push_back(*(w.var("BDT_pt_15_20")));
     variables.push_back(*(w.var("BDT_pt_20_50")));
+
+    
   }
   if((particle == 1) || (particle == 2)){
     variables.push_back(*(w.var("Btrk2Pt")));
@@ -1716,7 +1743,9 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
     variables.push_back(*(w.var("BDT_pt_7_10")));
     variables.push_back(*(w.var("BDT_pt_10_15")));
     variables.push_back(*(w.var("BDT_pt_15_20")));
-    variables.push_back(*(w.var("BDT_pt_20_50")));
+    variables.push_back(*(w.var("BDT_pt_20_30")));
+    variables.push_back(*(w.var("BDT_pt_30_50")));
+
   }
   if(particle == 2){
     variables.push_back(*(w.var("BDT_pt_0_2")));
@@ -1727,6 +1756,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
     variables.push_back(*(w.var("BDT_pt_10_15")));
     variables.push_back(*(w.var("BDT_pt_15_20")));
     variables.push_back(*(w.var("BDT_pt_20_50")));
+
   } 
   
   RooDataSet* reduceddata_side;
@@ -1820,6 +1850,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
     histos.push_back(create_histogram(variables[37], "BDT_pt_15_20",factor, reduceddata_side, reduceddata_central, data, n[36]));
     histos.push_back(create_histogram(variables[38], "BDT_pt_20_50",factor, reduceddata_side, reduceddata_central, data, n[37]));
     histos.push_back(create_histogram(variables[39], "nMult",factor, reduceddata_side, reduceddata_central, data, n[38]));
+
   }else if(particle == 1){
     histos.push_back(create_histogram(variables[1], "By",factor, reduceddata_side, reduceddata_central, data, n[0]));
     histos.push_back(create_histogram(variables[2], "Bpt",factor, reduceddata_side, reduceddata_central, data, n[1]));
@@ -1861,8 +1892,10 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
     histos.push_back(create_histogram(variables[38], "BDT_pt_7_10",factor, reduceddata_side, reduceddata_central, data, n[37]));
     histos.push_back(create_histogram(variables[39], "BDT_pt_10_15",factor, reduceddata_side, reduceddata_central, data, n[38]));
     histos.push_back(create_histogram(variables[40], "BDT_pt_15_20",factor, reduceddata_side, reduceddata_central, data, n[39]));
-    histos.push_back(create_histogram(variables[41], "BDT_pt_20_50",factor, reduceddata_side, reduceddata_central, data, n[40]));
+    histos.push_back(create_histogram(variables[41], "BDT_pt_20_30",factor, reduceddata_side, reduceddata_central, data, n[40]));
     histos.push_back(create_histogram(variables[42], "nMult",factor, reduceddata_side, reduceddata_central, data, n[41]));
+    histos.push_back(create_histogram(variables[43], "BDT_pt_30_50",factor, reduceddata_side, reduceddata_central, data, n[42]));
+
   }else if(particle == 2){
     histos.push_back(create_histogram(variables[1], "By",factor, reduceddata_side, reduceddata_central, data, n[0]));
     histos.push_back(create_histogram(variables[2], "Bpt",factor, reduceddata_side, reduceddata_central, data, n[1]));
@@ -1906,6 +1939,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
     histos.push_back(create_histogram(variables[40], "BDT_pt_15_20",factor, reduceddata_side, reduceddata_central, data, n[39]));
     histos.push_back(create_histogram(variables[41], "BDT_pt_20_50",factor, reduceddata_side, reduceddata_central, data, n[40]));
     histos.push_back(create_histogram(variables[42], "nMult",factor, reduceddata_side, reduceddata_central, data, n[41]));
+
   }
   return histos; 
 
@@ -2046,14 +2080,18 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   mean->setConstant();
   sigma1->setConstant();
   lambda->setConstant();
+    sigma2 = w.var("sigma2");
+    cofs = w.var("cofs");
+    sigma2->setConstant();
+    cofs->setConstant();
 
-  if(particle != 1){
+  /*if(particle != 1){
      
     sigma2 = w.var("sigma2");
     cofs = w.var("cofs");
     sigma2->setConstant();
     cofs->setConstant();
-  }
+ } */
 
   if(particle == 2){
     sigma1_swp = w.var("sigma1_swp");
@@ -2106,7 +2144,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
 
   if( (particle == 2) && (MC == 0) ){BpModel = w.pdf("rt_pdf");}
   else if(particle == 0){BpModel = w.pdf("signal");}
-  else if(particle == 1){BpModel = w.pdf("signal1");}
+  else if(particle == 1){BpModel = w.pdf("signal");}
   RooAbsPdf* BgModel = w.pdf("fit_side");
 
   RooRealVar* Bmass  = w.var("Bmass");
@@ -2615,6 +2653,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     float BDT_15_20_min, BDT_15_20_max;
     float BDT_20_50_min, BDT_20_50_max;
 
+
     mass_min = 5.0;
     mass_max = 6.0;
     
@@ -2735,6 +2774,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_20_50_min = -0.1;
     BDT_20_50_max = 0.41;
 
+
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);  
     RooRealVar Bpt("Bpt","Bpt",pt_min,pt_max);
@@ -2776,6 +2816,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
     RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
 
+
     w.import(Bmass);
     w.import(By);
     w.import(Bpt);
@@ -2816,6 +2857,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_10_15);
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
+
  }
       
  else if(particle == 1){
@@ -2865,7 +2907,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     double BDT_7_10_min, BDT_7_10_max;
     double BDT_10_15_min, BDT_10_15_max;
     double BDT_15_20_min, BDT_15_20_max;
-    double BDT_20_50_min, BDT_20_50_max;
+    double BDT_20_30_min, BDT_20_30_max;
+    double BDT_30_50_min, BDT_30_50_max;
 
     mass_min = 5.0;
     mass_max = 6.0;
@@ -2873,7 +2916,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     y_min = -2.4;
     y_max = 2.4;
 
-    pt_min = 0.;
+    pt_min = 0;
     pt_max = 100.;
       
     nMult_min = 0.;
@@ -3005,9 +3048,13 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_15_20_min = -0.5;
     BDT_15_20_max = 0.5;
 
-    BDT_20_50_min = -0.2;
-    BDT_20_50_max = 0.4;
+    BDT_20_30_min = -0.2;
+    BDT_20_30_max = 0.4;
 
+    BDT_30_50_min = -0.2;
+    BDT_30_50_max = 0.4;
+    
+    
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);
     RooRealVar Bpt("Bpt","Bpt",pt_min,pt_max);
@@ -3054,7 +3101,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_7_10("BDT_pt_7_10", "BDT_pt_7_10", BDT_7_10_min, BDT_7_10_max);
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
-    RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
+    RooRealVar BDT_pt_20_30("BDT_pt_20_30", "BDT_pt_20_30", BDT_20_30_min, BDT_20_30_max);
+    RooRealVar BDT_pt_30_50("BDT_pt_30_50", "BDT_pt_30_50", BDT_30_50_min, BDT_30_50_max);
 
     w.import(Bmass);
     w.import(By);
@@ -3102,7 +3150,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_7_10);
     w.import(BDT_pt_10_15);
     w.import(BDT_pt_15_20);
-    w.import(BDT_pt_20_50);
+    w.import(BDT_pt_20_30);
+    w.import(BDT_pt_30_50);
   }
 
   else if(particle == 2){
