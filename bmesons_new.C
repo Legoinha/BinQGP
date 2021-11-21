@@ -99,7 +99,7 @@ const char* VAR_dif_A = "Bpt";
 // 1 = computes differential signal yields
 // 0 = computes MC and data comparissons
 
-#define DIF_A 1
+#define DIF_A 0
 
 //particle
 // 0 = Bu
@@ -1946,7 +1946,10 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, int* n, int n_var){
 
 TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
 
-  TH1D* h = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
+  TH1D* h; 
+  if(std::string(var.GetName()) == "BsvpvDisErr"){ h = new TH1D("h","",40,0,0.05);}
+  else{h  =  new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());}
+
   TH1D* wei = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
 
   TString name_string = TString(var.GetName()) + ">>htemp(" + Form("%d",n) +"," + Form("%lf", var.getMin()) + "," + Form("%lf", var.getMax()) + ")";
@@ -1964,9 +1967,9 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
 }
 //create_histogram_mc ends
 
-TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n){
+  TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n){
 
-  cout<< "n in create_histogram = "<< n <<std::endl;
+  //cout<< "n in create_histogram = "<< n <<std::endl;
   TH1D* dist_side;
   TH1D* hist_dist_peak;
 
