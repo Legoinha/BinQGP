@@ -170,7 +170,7 @@ void bmesons_new(){
 
 #if particle == 0
 
-  TString variables[] = {"By", "nMult", "Bpt", "Btrk1Pt","Btrk1Eta", "BsvpvDisErr" /*, "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance","BsvpvDistance_2D","BsvpvDisErr_2D", "Bmumumass",*//* "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50"*/};  
+  TString variables[] = {/*"By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr",*/ "Btrk1PtErr"/*, "Bchi2cl" , "BsvpvDistance", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50"*/};  
 
 #elif particle == 1
 
@@ -1679,10 +1679,12 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   TH1D* h = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
   TString name_string;
 
-  cout << " var.GetName: " << var.GetName() << "   min: " << var.getMin() << "   max: " << var.getMax()<< endl;
+  cout << "CREATE_H  var.GetName: " << var.GetName() << "   min: " << var.getMin() << "   max: " << var.getMax()<< endl;
 
   if(std::string(var.GetName()) == "BsvpvDisErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.03)";}
   else if(std::string(var.GetName()) == "Bpt"){name_string = TString(var.GetName()) + ">>htemp(40,0,60)";}
+  else if(std::string(var.GetName()) == "Bmumumass"){name_string = TString(var.GetName()) + ">>htemp(40,3,3.2)";}
+  else if(std::string(var.GetName()) == "Bchi2cl"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,1)";}
   else{ name_string = TString(var.GetName()) + ">>htemp(" + Form("%d",n) +"," + Form("%lf", var.getMin()) + "," + Form("%lf", var.getMax()) + ")";}
 
   cout << name_string <<endl;
@@ -1700,11 +1702,12 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
 }
 //create_histogram_mc ends
 
-  TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n){
+//create_histogram
+TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n){
 
-  //cout<< "n in create_histogram = "<< n <<std::endl;
   TH1D* dist_side;
   TH1D* hist_dist_peak;
+cout << endl;
 
   if(std::string(var.GetName()) == "BsvpvDisErr"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 0.03));
@@ -1712,9 +1715,21 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   else if(std::string(var.GetName()) == "Bpt"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 60));
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 60));}
+  else if(std::string(var.GetName()) == "Bmumumass"){
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 3, 3.2));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 3, 3.2));}
+  else if(std::string(var.GetName()) == "Bchi2cl"){
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.05, 1));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.05, 1));}
+  else if(std::string(var.GetName()) == "Btrk1PtErr"){
+  		cout << "SS_var.GetName: " << var.GetName() << "   min: " << var.getMin() << "   max: " << var.getMax()<< endl;
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0,5.6));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 5.6));}
   else{
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, var.getMin(), var.getMax()));
-	dist_side  = (TH1D*) reduced->createHistogram(var.GetName(),var, Binning(n, var.getMin(), var.getMax()));}
+	dist_side      = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, var.getMin(), var.getMax()));}
+
+cout << endl;
 
   dist_side->SetMarkerColor(kRed);
   dist_side->SetLineColor(kRed);
@@ -1765,9 +1780,6 @@ TLegend *leg = new TLegend (0.7, 0.9, 0.9, 1.0);
   leg->AddEntry("hist_dist_peak", "Total", "LE");
   leg->Draw("same");
 
-  std::cout<<"name: "<<var.GetName()<<std::endl;
-  std::cout<<"histo name: "<<dist_peak->GetName()<<std::endl;
-
   if(particle == 0){
     //c.SaveAs("./results/Bu/sideband_sub/"+name + "sideband_sub_Bu.pdf");
     c.SaveAs("./results/Bu/sideband_sub/"+name + "sideband_sub_Bu.gif");
@@ -1784,7 +1796,7 @@ TLegend *leg = new TLegend (0.7, 0.9, 0.9, 1.0);
     }
 //create_histogram
 
-
+//do_splot
 void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
   RooDataSet* data = (RooDataSet*) w.data("data");   
@@ -1875,6 +1887,7 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 }
 //do_splot ends
 
+//make_splot
 TH1D* make_splot(RooWorkspace& w, int n, TString label){
 
   //saves the plots of signal distributions, background distributions and signal+background distributions
@@ -2003,9 +2016,18 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   else if(label == "Bpt"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 60));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 60));}
+  else if(label == "Bmumumass"){
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 3, 3.2));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 3, 3.2));}
+  else if(label == "Bchi2cl"){
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.05, 1));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.05, 1));}
+  else if(label == "Btrk1PtErr"){
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 5.6));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 5.6));}
   else{
-   histo_Bp_sig = (TH1D*)dataWBp->createHistogram(label,n,0,0);
-   histo_Bp_bkg = (TH1D*)dataWBg->createHistogram(label,n,0,0);}
+   histo_Bp_sig = (TH1D*)dataWBp->createHistogram(label,n,variable->getMin(),variable->getMax());
+   histo_Bp_bkg = (TH1D*)dataWBg->createHistogram(label,n,variable->getMin(),variable->getMax());}
 
 
 
@@ -2424,7 +2446,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     nMult_max = 130;
 
     trk1pt_min = 0.;
-    trk1pt_max = 70.;
+    trk1pt_max = 30.;
 
     trk1eta_min = -3;
     trk1eta_max = 3;
@@ -2447,8 +2469,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     svpvDisErr2D_min = 0.;
     svpvDisErr2D_max = 0.07;
 
-    mumumass_min = 2.925;
-    mumumass_max = 3.275; 
+    mumumass_min = 2.9;
+    mumumass_max = 3.4; 
  
     mu1eta_min = -2.4;
     mu1eta_max = 2.4;
