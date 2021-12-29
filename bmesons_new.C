@@ -102,13 +102,13 @@ const char* VAR_dif_A = "Bpt";
 // DIF_A
 // 1 = computes differential signal yields
 // 0 = computes MC and data comparissons
-#define DIF_A 1 
+#define DIF_A 0 
 
 //particle
 // 0 = Bu
 // 1 = Bs
 // 2 = B0
-#define particle 0 
+#define particle 0
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -144,16 +144,15 @@ void bmesons_new(){
   
   int n_var;
   TString input_file_data;
-  if(particle == 0){input_file_data ="~/work/B_DATA_MC/BPData.root";}        
+  if(particle == 0){input_file_data ="~/work/Skimmed/BPDataPreCut.root";}        
   //"~/work/B_DATA_MC/BPData.root"
-  else if(particle == 1){input_file_data = "~/work/B_DATA_MC/BsData.root";}   
+  else if(particle == 1){input_file_data = "~/work/Skimmed/BsDataPreCut.root";}   
   else if(particle == 2){input_file_data = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZData.root";}
-
   TString input_file_mc;
   TString input_file_mc_swap;
-  if(particle == 0){input_file_mc = "~/work/B_DATA_MC/BPMC.root";}
+  if(particle == 0){input_file_mc = "~/work/Skimmed/BPMCPreCut.root";}
   //"~/work/B_DATA_MC/BPMC.root"
-  else if(particle == 1){input_file_mc = "~/work/B_DATA_MC/BsMC.root";}   
+  else if(particle == 1){input_file_mc = "~/work/SKimmed/BsMCPreCut.root";}   
   else if(particle == 2){
     input_file_mc = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMC.root";
     input_file_mc_swap = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMCSwap2.root";}
@@ -203,7 +202,7 @@ void bmesons_new(){
   plot_complete_fit(*ws, c_vars);  
   if(MC == 1){return;}
 
-  //validate_fit(ws, c_vars);
+//validate_fit(ws, c_vars);
 //  return;
 
 
