@@ -16,7 +16,7 @@
 #include "RooAbsReal.h"
 #include "RooDoubleCBFast.h"
 #include "RooDoubleCBFast.cc"
-
+#include "CMS_lumi.C"
 #include <iomanip>
 #include <sstream>
 #include <vector>
@@ -89,7 +89,7 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
 void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString);
-void DIF_analysis(RooWorkspace& w, const char* variable, TString, TString, RooArgSet &c_vars);
+void DIF_analysis(RooWorkspace& w, const char* variable, TString, RooArgSet &c_vars);
 double get_yield_syst(RooDataSet *dt, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma, const char* name_var);
 void fit_syst_error(TString, int n_var, TString* label, RooArgSet &c_vars);
 void fit_syst_error_bin(TString, int n_var, TString* label, double a, double b, RooArgSet &c_vars);
@@ -102,13 +102,13 @@ const char* VAR_dif_A = "Bpt";
 // DIF_A
 // 1 = computes differential signal yields
 // 0 = computes MC and data comparissons
-#define DIF_A 0 
+#define DIF_A 1 
 
 //particle
 // 0 = Bu
 // 1 = Bs
 // 2 = B0
-#define particle 0
+#define particle 0 
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -144,15 +144,15 @@ void bmesons_new(){
   
   int n_var;
   TString input_file_data;
-  if(particle == 0){input_file_data ="~/work/Skimmed/BPDataPreCut.root";}        
+  if(particle == 0){input_file_data ="~/work/PreAppFiles/BPData.root";}        
   //"~/work/B_DATA_MC/BPData.root"
-  else if(particle == 1){input_file_data = "~/work/Skimmed/BsDataPreCut.root";}   
+  else if(particle == 1){input_file_data = "~/work/PreAppFiles/BsData.root";}   
   else if(particle == 2){input_file_data = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZData.root";}
   TString input_file_mc;
   TString input_file_mc_swap;
-  if(particle == 0){input_file_mc = "~/work/Skimmed/BPMCPreCut.root";}
+  if(particle == 0){input_file_mc = "~/work/BPMC.root";}
   //"~/work/B_DATA_MC/BPMC.root"
-  else if(particle == 1){input_file_mc = "~/work/SKimmed/BsMCPreCut.root";}   
+  else if(particle == 1){input_file_mc = "~/work/PreAppFiles/BsMC.root";}   
   else if(particle == 2){
     input_file_mc = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMC.root";
     input_file_mc_swap = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMCSwap2.root";}
@@ -207,9 +207,10 @@ void bmesons_new(){
 
 
   #if DIF_A == 1
-  DIF_analysis(*ws, VAR_dif_A, "pT.root", input_file_data, c_vars);     
+  DIF_analysis(*ws, VAR_dif_A, "pT.root", c_vars);     
 return;
   #elif DIF_A == 0
+
 
   //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
   histos_sideband_sub = sideband_subtraction(*ws, variables , n_var);
@@ -232,6 +233,9 @@ return;
 
   for(int i=0; i<n_var; i++){
     TString weight = "weight";
+    
+cout << "AQUI_"<<i<<endl;
+
     histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, 40, weight));
     names.push_back(TString(variables[i]));}
   
@@ -509,7 +513,7 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
 }
 
 
-void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  TString datafile, RooArgSet &c_vars){
+void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  RooArgSet &c_vars){
  
   cout << "STARTING DIFERENTIAL ANALYSIS" <<endl;
   TString dir_name;
@@ -542,8 +546,8 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  TStri
   
   else if( std::string(variable)== "Bpt"){
 	#if particle == 0  
-	n_bins = 6;
-    	double p_bins[] = {5,7,10,15,20,30,50}; 
+	n_bins = 7;
+    	double p_bins[] = {5,7,10,15,20,30,50,60}; 
 	//n_bins = 2;
 	//double p_bins[] = {5,7,10};
 
@@ -575,22 +579,23 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  TStri
   const char* meson = "Bu";
   const int n_pdf_syst=5;       
   TString syst_src[n_pdf_syst]={"nominal","bkg_poly","gauss_crystal","bkg_range","double_crystal"};      
-  dir_name = Form("./results/%s/%s/",meson,variable);
+//  dir_name = Form("./results/%s/%s/",meson,variable);
 
 #elif particle == 1
   const char* meson = "Bs";
   const int n_pdf_syst = 4;      
   TString syst_src[n_pdf_syst]={"nominal","bkg_poly","gauss","crystal_ball"};
-  dir_name = Form("./results/%s/%s/",meson,variable);
+ // dir_name = Form("./results/%s/%s/",meson,variable);
 
 #elif particle == 2
   const char* meson = "B0";
   const int n_pdf_syst = 2;
   TString syst_src[n_pdf_syst]={"nominal","bkg_poly"};
-  dir_name = Form("./results/%s/%s/",meson,variable);
+//  dir_name = Form("./results/%s/%s/",meson,variable);
 
 #endif  
 
+  dir_name = Form("./results/%s/%s/",meson,variable);
   TFile* f_wei = new TFile(dir_name + ptfile, "recreate");
   double var_mean[n_bins];
   double low[n_bins]; //bin width for the dif yields plot
@@ -627,7 +632,8 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  TStri
     data_var = (RooDataSet*) data_var->reduce(Form("%s<%lf", variable, bins[i+1]));
     
     //ANY FURTHER CONSTRAIN??
-    //data_var = (RooDataSet*) data_var->reduce(Form("(By<%lf)||(By>%lf)",-1.5,1.5));
+    if(std::string(variable) == "Bpt"){
+    if(bins[i]<10){data_var = (RooDataSet*) data_var->reduce(Form("(By<%lf)||(By>%lf)",-1.5,1.5));}}
     w.import(*data_var, Rename(Form("data_var_%d",i)));
           
     cout << "perform fit and save result" <<endl; 
@@ -663,8 +669,8 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  TStri
 */
   
     //SYSTEMATICS
-      for(int k = 0; k<n_pdf_syst; k++){
-      val[k] = get_yield_syst(data_var, syst_src[k], c_vars, bins[i], bins[i+1], Bmass, variable); // gets yield value for bin i using pdf choice k
+       for(int k = 0; k<n_pdf_syst; k++){
+       val[k] = get_yield_syst(data_var, syst_src[k], c_vars, bins[i], bins[i+1], Bmass, variable); // gets yield value for bin i using pdf choice k
        i_sys_unc_min[k] = (val[k] - val[0]);
        i_sys_unc_max[k] = i_sys_unc_min[k]; 
        if((i_sys_unc_max[k]>=0) && (i_sys_unc_max[0] < i_sys_unc_max[k])){i_sys_unc_max[0] = i_sys_unc_max[k];}
@@ -690,8 +696,8 @@ cout <<" maxU "<< bin_i_maxU[f]<< endl;}
     data_var = (RooDataSet*) data_var->reduce(Form("%s<%lf", variable, bins[i+1]));
 
     //ANY FURTHER CONSTRAIN??
-    //data_var = (RooDataSet*) data_var->reduce(Form("(By<%lf)||(By>%lf)",-1.5,1.5));
-
+    if(std::string(variable) == "Bpt"){
+    if(bins[i]<10){data_var = (RooDataSet*) data_var->reduce(Form("(By<%lf)||(By>%lf)",-1.5,1.5));}}
 
     //sPlot technique requires model parameters (other than the yields) to be fixed
     //dosp = true -> the splot technique is applied
@@ -811,9 +817,7 @@ if(std::string(variable)=="By"){
     	low_m [r]= var_mean[m_bins+r] - bins[m_bins+r]; 
         high_m[r]= bins[m_bins+1+r] - var_mean[m_bins+r]; 
         var_mean_m[r]=var_mean[m_bins+r];}
-        for(int r = 0; r< m_bins; r++){
-  cout << "ERRORS  " << yield_err_mod_l[r] << "   " << m_yield_err_syst_l_mod[r] << "   " << m_yield_err_syst_h_mod[r] << "  " << endl;
-  cout << "Prints  " << low_m[r]<< "  " <<"  "<< var_mean_m[r]<<"  " << high_m[r] << "  "  << yield_m[r]<< endl;}
+
   double zero_m[m_bins];
   for (int i=0;i<m_bins;i++){ zero_m[i]= 0.;}
   //plot MOD BY
@@ -879,16 +883,25 @@ if(std::string(variable)=="By"){
   rel_sys_er.SaveAs(ppddff);
   rel_sys_er.SaveAs(ggiiff);
 
+
+  for(int k=0; k<n_bins; k++){cout << "Uncertanty STAT " << yield_err_low[k] << "  " << yield_err_high[k]<< "   " << endl;}
+  cout << endl;
+  cout << endl;
+  for( int  k=0; k< n_bins; k++){cout << "Uncertainty syst  " << m_yield_err_syst_l[k]<<"  " << m_yield_err_syst_h[k]<<"   "<< endl;}
+
+
   //plot yield vs average pT
   TCanvas c;
   //c.SetGrid();
-  TMultiGraph* mg = new TMultiGraph();
 
+  TMultiGraph* mg = new TMultiGraph();
+   
   TGraphAsymmErrors* gr = new TGraphAsymmErrors(n_bins,var_mean,yield,low,high,yield_err_low,yield_err_high);
   gr->SetLineColor(1); 
   f_wei->cd();
   gr->Write(); 
   mg->Add(gr);
+
 
   TGraphAsymmErrors* grs = new TGraphAsymmErrors(n_bins,var_mean,yield,zero,zero, m_yield_err_syst_l, m_yield_err_syst_h);
   grs->SetLineColor(2); 
@@ -899,7 +912,7 @@ if(std::string(variable)=="By"){
   mg->Add(gr);
   mg->Add(grs);
   mg->Draw("AP");
- 
+
   TLegend *leg_d = new TLegend(0.7,0.7,0.9,0.9);
   leg_d->AddEntry(gr, "Statistical Uncertainty", "e");
   leg_d->AddEntry(grs, "Systematic Uncertainty", "e");
@@ -918,6 +931,7 @@ if(std::string(variable)=="By"){
   c.SaveAs(pathc1);
 
   TCanvas l;  //log scale
+
   l.SetLogy();
   TGraphAsymmErrors* grlog = new TGraphAsymmErrors(n_bins,var_mean,yield,low,high,yield_err_low,yield_err_high);
   grlog->SetMarkerColor(4);
@@ -990,7 +1004,9 @@ void read_data(RooWorkspace& w,int n_var, TString*label, TString f_input){
   
   RooDataSet* data = new RooDataSet("data","data",t1_data,arg_list);
   cout << "f_input = "<< f_input << "     data->sumEntries() = "<< data->sumEntries()<< endl;
+
   w.import(*data, Rename("data"));
+
 }
 
 //build_pdf
@@ -1504,22 +1520,26 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 
     //plot the fit result
     TCanvas b;
-    b.SetTitle(Form("%s: BIN %f_%f",name_var, lower_b, higher_b)  );
 
+    
+    b.SetTitle(Form("%s: BIN %f_%f",name_var, lower_b, higher_b)  );
+    
     TPad *p1 = new TPad("p1","p1",0.0,0.27,0.82,0.99);
+//CMS_lumi(p1,19011,0);
     p1->SetTitle("");
     p1->SetBorderMode(1);
     p1->SetFrameBorderMode(0);
     p1->SetBorderSize(2);
     p1->SetBottomMargin(0.10);
     p1->Draw();
+
     TPad *p2 = new TPad("p2","p2",0.0,0.065,0.82,0.24);
+//CMS_lumi(p2,19011,0);
     p2->SetTitle("");
     p2->SetTopMargin(0.);
     p2->SetBottomMargin(0.2);
     p2->SetBorderMode(1);
     p2->Draw();
-
     p1->cd();
     
     RooPlot* massframe = b_ma.frame(Title(""));
@@ -1544,8 +1564,25 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
     }  
     
     model->paramOn(massframe,Layout(0.60,0.99,0.95));
+    massframe->SetTitle(" ");
     massframe->Draw();
-    
+		
+		TLatex* tex_pt;
+		TLatex* tex_y;
+		tex_pt = new TLatex(0.6,0.75,Form("%.0f < p_{T} < %.0f GeV/c",lower_b,higher_b));
+		if(higher_b<=10){tex_y = new TLatex(0.6, 0.69,"1.5 < |y| < 2.4");}
+                else{tex_y = new TLatex(0.6,0.69,"|y| < 2.4");}	
+                tex_pt->SetNDC();
+		tex_pt->SetTextFont(42);
+		tex_pt->SetTextSize(0.045);
+		tex_pt->SetLineWidth(2);
+		tex_y->SetNDC();
+		tex_y->SetTextFont(42);
+		tex_y->SetTextSize(0.045);
+		tex_y->SetLineWidth(2);	
+		tex_pt->Draw();
+		tex_y->Draw();		
+
     p2->cd();
     RooHist* pull_hist = massframe->pullHist("Data","Fit");
     RooPlot* pull_plot = b_ma.frame(Title(""));
@@ -1567,7 +1604,6 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
     pull_plot->GetYaxis()->SetLabelSize(0.13);
     pull_plot->GetYaxis()->SetLabelOffset(0.005);
     pull_plot->GetYaxis()->SetNdivisions(305);
-
     pull_plot->Draw();
     
     if(particle == 0){
@@ -1665,6 +1701,8 @@ cout <<"ploting complete fit"<< endl;
   p2->Draw();
 
   p1->cd();
+  
+  massframe->SetTitle(" ");
   massframe->Draw();
 
   /*
@@ -1863,7 +1901,7 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
 
   TH1D* h = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
   TString name_string;
-
+  
   cout << "CREATE_H  var.GetName: " << var.GetName() << "   min: " << var.getMin() << "   max: " << var.getMax()<< endl;
 
   if(std::string(var.GetName()) == "BsvpvDisErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.03)";}
@@ -2874,7 +2912,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     mass_max = 6.0;
     
     y_min = -2.6;
-    y_max = 2.6;
+    y_max = 2.6;   //2.6
 
     pt_min = 0.;  //0 -> 100
     pt_max = 100.;
@@ -3076,7 +3114,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_20_50);
     w.import(BDT_pt_50_100);
     w.import(nMult);
- }
+}
       
  else if(particle == 1){
     double mass_min, mass_max;
