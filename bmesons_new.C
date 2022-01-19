@@ -102,7 +102,7 @@ const char* VAR_dif_A = "Bpt";
 // DIF_A
 // 1 = computes differential signal yields
 // 0 = computes MC and data comparissons
-#define DIF_A 1 
+#define DIF_A 0 
 
 //particle
 // 0 = Bu
@@ -151,8 +151,8 @@ void bmesons_new(){
   TString input_file_mc;
   TString input_file_mc_swap;
   if(particle == 0){input_file_mc = "~/work/BPMC.root";}
-  //"~/work/B_DATA_MC/BPMC.root"
-  else if(particle == 1){input_file_mc = "~/work/PreAppFiles/BsMC.root";}   
+  //"~/work/PreAppFiles/BPMC.root"
+  else if(particle == 1){input_file_mc = "~/work/BsMC.root";}   
   else if(particle == 2){
     input_file_mc = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMC.root";
     input_file_mc_swap = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMCSwap2.root";}
@@ -169,11 +169,11 @@ void bmesons_new(){
 
 #if particle == 0
 
-  TString variables[] = {"By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5",*/ "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_100" };  
+  TString variables[] = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5",*/  "BDT_pt_50_100" };  
 
 #elif particle == 1
 
-  TString variables[] = {"By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr", /*"BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5",*/ "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_30", "BDT_pt_30_50"};
+  TString variables[] = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_30", "BDT_pt_30_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr" /*,"BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5",*/ };
 
 #elif particle == 2
 
@@ -546,16 +546,21 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  RooAr
   
   else if( std::string(variable)== "Bpt"){
 	#if particle == 0  
-	n_bins = 7;
-    	double p_bins[] = {5,7,10,15,20,30,50,60}; 
-	//n_bins = 2;
-	//double p_bins[] = {5,7,10};
+	//n_bins = 7;
+    	//double p_bins[] = {5,7,10,15,20,30,50,60};
+
+ 	//FRAG RATIO
+	n_bins = 6;
+    	double p_bins[] = {5,7,10,15,20,30,50};
 
         #elif particle == 1  
 	n_bins = 4;
-    	double p_bins[] = {7,10,15,20,50}; 
-	//n_bins = 1;
-	//double p_bins[] = {7,10};
+   	double p_bins[] = {7,10,15,20,50}; 
+	
+	//FRAG RATIO
+	//n_bins = 6;
+    	//double p_bins[] = {5,7,10,15,20,30,50};
+
 	#elif particle == 2  
 	n_bins = 5;
     	double p_bins[] = {7,10,15,20,30,50}; 
@@ -895,18 +900,17 @@ if(std::string(variable)=="By"){
   //c.SetGrid();
 
   TMultiGraph* mg = new TMultiGraph();
-   
+  
   TGraphAsymmErrors* gr = new TGraphAsymmErrors(n_bins,var_mean,yield,low,high,yield_err_low,yield_err_high);
   gr->SetLineColor(1); 
   f_wei->cd();
-  gr->Write(); 
+  gr->Write("statU"); 
   mg->Add(gr);
-
 
   TGraphAsymmErrors* grs = new TGraphAsymmErrors(n_bins,var_mean,yield,zero,zero, m_yield_err_syst_l, m_yield_err_syst_h);
   grs->SetLineColor(2); 
   f_wei->cd();     
-  grs->Write();    
+  grs->Write("systU");    
   f_wei->Close();  
   
   mg->Add(gr);
@@ -1520,10 +1524,8 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 
     //plot the fit result
     TCanvas b;
-
-    
     b.SetTitle(Form("%s: BIN %f_%f",name_var, lower_b, higher_b)  );
-    
+  
     TPad *p1 = new TPad("p1","p1",0.0,0.27,0.82,0.99);
 //CMS_lumi(p1,19011,0);
     p1->SetTitle("");
@@ -1546,43 +1548,74 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
     *data_bin->plotOn(massframe,RooFit::Name("Data"),NormRange("all"));
     model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
     model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed)); 
+    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF")); 
     if(syst_src == "bkg_poly"){model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("poly_bkg"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));} 
  
     if(particle == 0){
-    model->plotOn(massframe, RooFit::Name("B->J/psi X"),Components("erf"),NormRange("all"),LineColor(kGreen+3),LineStyle(kDashed));
+    model->plotOn(massframe, RooFit::Name("B->J/psi X"),Components("erf"),NormRange("all"),LineColor(kGreen+3),LineStyle(1),LineWidth(3),FillStyle(3005),FillColor(kGreen+3),VLines(),DrawOption("LF"));
     model->plotOn(massframe, RooFit::Name("B->J/psi #pi"),Components("jpsipi"),NormRange("all"),LineColor(kPink+10),LineStyle(kDashed));
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("sum_CB"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed)); 
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("gauss_CB"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed)); 
+    model->plotOn(massframe, RooFit::Name("Signal"),Components("sum_CB")  ,NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF"));
+    model->plotOn(massframe, RooFit::Name("Signal"),Components("gauss_CB"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF"));
     massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}) [GeV]");
     }
     
     else if(particle == 1){
-    if(syst_src=="gauss"){model->plotOn(massframe, RooFit::Name("Signal"),Components("signal1"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed));}
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("CB1"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed)); 
-    massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}K^{-}) [GeV]");
-    }  
+    if(syst_src=="gauss"){model->plotOn(massframe, RooFit::Name("Signal"),Components("signal1"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF"));}
+    model->plotOn(massframe, RooFit::Name("Signal"),Components("CB1"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF"));
+    massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}K^{-}) [GeV]");}  
     
-    model->paramOn(massframe,Layout(0.60,0.99,0.95));
+    //model->paramOn(massframe,Layout(0.60,0.99,0.95));
     massframe->SetTitle(" ");
     massframe->Draw();
 		
 		TLatex* tex_pt;
 		TLatex* tex_y;
-		tex_pt = new TLatex(0.6,0.75,Form("%.0f < p_{T} < %.0f GeV/c",lower_b,higher_b));
-		if(higher_b<=10){tex_y = new TLatex(0.6, 0.69,"1.5 < |y| < 2.4");}
-                else{tex_y = new TLatex(0.6,0.69,"|y| < 2.4");}	
+		if(std::string(name_var)=="Bpt"){		
+		tex_pt = new TLatex(0.4,0.75,Form("%.0f < p_{T} < %.0f GeV/c",lower_b,higher_b));
+		if(higher_b<=10){tex_y = new TLatex(0.4, 0.69,"1.5 < |y| < 2.4");}
+                else{tex_y = new TLatex(0.4,0.69,"|y| < 2.4");}	
                 tex_pt->SetNDC();
 		tex_pt->SetTextFont(42);
-		tex_pt->SetTextSize(0.045);
+		tex_pt->SetTextSize(0.04);
 		tex_pt->SetLineWidth(2);
 		tex_y->SetNDC();
 		tex_y->SetTextFont(42);
-		tex_y->SetTextSize(0.045);
+		tex_y->SetTextSize(0.04);
 		tex_y->SetLineWidth(2);	
 		tex_pt->Draw();
-		tex_y->Draw();		
+		tex_y->Draw();}
 
+  TLatex* tex11 = new TLatex(0.66,0.92,"302.3 pb^{-1} (pp) 5.02 TeV");
+  tex11->SetNDC(kTRUE);
+  tex11->SetLineWidth(2);
+  tex11->SetTextSize(0.04);
+  tex11->Draw();
+  tex11 = new TLatex(0.1,0.92,"CMS Preliminary");
+  tex11->SetNDC(kTRUE);
+  tex11->SetTextFont(42);
+  tex11->SetTextSize(0.04);
+  tex11->SetLineWidth(2);
+  tex11->Draw();
+ 
+  TLegend *leg = new TLegend (0.6, 0.4, 0.9, 0.85);
+    leg->AddEntry(massframe->findObject("Data"), "Data", "p");
+    leg->AddEntry(massframe->findObject("Signal"), "Signal", "f");
+    leg->AddEntry(massframe->findObject("Combinatorial"), "Combinatorial", "l");
+    leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
+
+  if(particle == 0){
+    if(syst_src=="bkg_range"){leg->AddEntry(massframe->findObject("B->J/psi #pi"), "B->J/#psi #pi^{+}", "l");}
+    else{ 
+	 leg->AddEntry(massframe->findObject("B->J/psi X"), "B->J/#psi X", "f");
+    	 leg->AddEntry(massframe->findObject("B->J/psi #pi"), "B->J/#psi #pi^{+}", "l");}
+	}
+
+  leg->SetTextSize(0.06);
+  leg->SetBorderSize(0);
+  leg->SetFillStyle(0);
+  leg->Draw("same");
+ 
+ 
     p2->cd();
     RooHist* pull_hist = massframe->pullHist("Data","Fit");
     RooPlot* pull_plot = b_ma.frame(Title(""));
@@ -1650,27 +1683,32 @@ cout <<"ploting complete fit"<< endl;
  
   RooPlot* massframe = Bmass.frame();
 
+
+
   if(particle == 0){
     data->plotOn(massframe, RooFit::Name("Data"), MarkerSize(0.9));
+    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF")); 
     model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
     model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed)); 
-    model->plotOn(massframe, RooFit::Name("B->J/psi X"),Components("erf"),NormRange("all"),LineColor(kGreen+3),LineStyle(kDashed));
+
+    model->plotOn(massframe, RooFit::Name("B->J/psi X"),Components("erf"),NormRange("all"),LineColor(kGreen+3),LineStyle(1),LineWidth(3),FillStyle(3005),FillColor(kGreen+3),VLines(),DrawOption("LF"));
     model->plotOn(massframe, RooFit::Name("B->J/psi pi"),Components("jpsipi"),NormRange("all"),LineColor(kPink+10),LineStyle(kDashed));
     massframe->GetYaxis()->SetTitleOffset(1.3);
     massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}) [GeV]");
   }
   else if(particle == 1){
-    data->plotOn(massframe, RooFit::Name("Data"));
+    data->plotOn(massframe, RooFit::Name("Data"), MarkerSize(0.9));
+    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF")); 
     model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
     model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange),LineStyle(kDashed));
     massframe->GetYaxis()->SetTitleOffset(1.3);
     massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}K^{-}) [GeV]");
   }  
   else if(particle == 2){
-      data->plotOn(massframe, RooFit::Name("Data"));
-      model->plotOn(massframe, RooFit::Name("Fit"), RooFit::NormRange("all"), RooFit::LineColor(kMagenta), RooFit::LineStyle(1), RooFit::LineWidth(2));
+    data->plotOn(massframe, RooFit::Name("Data"), MarkerSize(0.9));
+    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF")); 
+    model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
+    model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
       if(MC == 0){
         model->plotOn(massframe, RooFit::Name("Corr Tag"), RooFit::Components("rt_pdf"), RooFit::NormRange("all"), RooFit::LineColor(kGreen), RooFit::LineStyle(kDashed));
         model->plotOn(massframe, RooFit::Name("Mis Tag"), RooFit::Components("wt_pdf"), RooFit::NormRange("all"), RooFit::LineColor(kRed), RooFit::LineStyle(kDashed));  
@@ -1705,19 +1743,19 @@ cout <<"ploting complete fit"<< endl;
   massframe->SetTitle(" ");
   massframe->Draw();
 
-  /*
-  TLatex* tex11 = new TLatex(0.6,0.8,"302.3 pb^{-1} (pp) 5.02 TeV");
+  
+  TLatex* tex11 = new TLatex(0.66,0.92,"302.3 pb^{-1} (pp) 5.02 TeV");
   tex11->SetNDC(kTRUE);
   tex11->SetLineWidth(2);
   tex11->SetTextSize(0.04);
   tex11->Draw();
-  tex11 = new TLatex(0.6,0.85,"CMS Preliminary");
+  tex11 = new TLatex(0.1,0.92,"CMS Preliminary");
   tex11->SetNDC(kTRUE);
   tex11->SetTextFont(42);
   tex11->SetTextSize(0.04);
   tex11->SetLineWidth(2);
   tex11->Draw();
-  
+ /* 
   double lambda_str = lambda->getVal();
   double lambda_err = lambda->getError();
   double chis = massframe->chiSquare();
@@ -1732,31 +1770,20 @@ cout <<"ploting complete fit"<< endl;
   tex13->SetTextFont(42);
   tex13->SetTextSize(0.04);
   */
-
   TLegend *leg = new TLegend (0.7, 0.45, 0.9, 0.85);
-
-  if(particle == 0){
     leg->SetTextSize(0.04);
     leg->SetFillStyle(0);
     leg->SetBorderSize(0);
     leg->AddEntry(massframe->findObject("Data"), "Data", "p)");
+    leg->AddEntry(massframe->findObject("Signal"), "Signal", "f");
+    leg->AddEntry(massframe->findObject("Combinatorial"), "Combinatorial", "l");
+    leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
+
+  if(particle == 0){
     leg->AddEntry(massframe->findObject("B->J/psi X"), "B->J/#psi X", "l");
-    leg->AddEntry(massframe->findObject("Signal"), "Signal", "l");
-    leg->AddEntry(massframe->findObject("Combinatorial"), "Combinatorial", "l");
     leg->AddEntry(massframe->findObject("B->J/psi pi"), "B->J/#psi #pi^{+}", "l");
-    leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
-  }
-  else if(particle == 1){
-    leg->SetTextSize(0.04);
-    leg->AddEntry(massframe->findObject("Data"), "Data", "p");
-    leg->AddEntry(massframe->findObject("Signal"), "Signal", "l");
-    leg->AddEntry(massframe->findObject("Combinatorial"), "Combinatorial", "l");
-    leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
   }
   else if(particle == 2){
-    leg->SetTextSize(0.03);
-    leg->AddEntry(massframe->findObject("Data"), "Data", "p");
-    leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
     if(MC == 0){
       leg->AddEntry(massframe->findObject("Total Signal"), "Total sig", "l");
       leg->AddEntry(massframe->findObject("Corr Tag"), "Corr. sig", "l");
@@ -1765,7 +1792,6 @@ cout <<"ploting complete fit"<< endl;
     }
   }
   leg->SetBorderSize(0);
-  leg->SetFillStyle(0);
   leg->Draw("same");
   //pull dists
 
@@ -1953,7 +1979,7 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   t->Draw(name_string, weight);
   h = (TH1D*)gDirectory->Get("htemp")->Clone();
   h->SetTitle("");
-  h->SetMarkerStyle(29);
+  //h->SetMarkerStyle(29);
   h->SetMarkerColor(kGreen);
   h->SetMarkerSize(1);
   h->SetLineColor(kGreen);
