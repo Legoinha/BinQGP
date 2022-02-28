@@ -108,7 +108,7 @@ const char* VAR_dif_A = "Bpt";
 // 0 = Bu
 // 1 = Bs
 // 2 = B0
-#define particle 0 
+#define particle 1 
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -144,15 +144,18 @@ void bmesons_new(){
   
   int n_var;
   TString input_file_data;
-  if(particle == 0){input_file_data ="~/work/PreAppFiles/BPData.root";}        
+  if(particle == 0){input_file_data ="~/work/public/BPData.root";}        
   //"~/work/B_DATA_MC/BPData.root"
-  else if(particle == 1){input_file_data = "~/work/PreAppFiles/BsData.root";}   
-  else if(particle == 2){input_file_data = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZData.root";}
+  //"~/work/PreAppFiles/BPData.root"
+  else if(particle == 1){input_file_data = "~/work/public/BsData_update.root";}   
+  else if(particle == 2){input_file_data = "";}
   TString input_file_mc;
   TString input_file_mc_swap;
-  if(particle == 0){input_file_mc = "~/work/BPMC.root";}
+  if(particle == 0){input_file_mc = "~/work/public/BPMC.root";}
   //"~/work/PreAppFiles/BPMC.root"
-  else if(particle == 1){input_file_mc = "~/work/BsMC.root";}   
+  else if(particle == 1){input_file_mc = "~/work/public/BsMC_update.root";}   
+  //"~/work/BsMC_update.root"
+
   else if(particle == 2){
     input_file_mc = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMC.root";
     input_file_mc_swap = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMCSwap2.root";}
@@ -169,11 +172,11 @@ void bmesons_new(){
 
 #if particle == 0
 
-  TString variables[] = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5",*/  "BDT_pt_50_100" };  
+  TString variables[] = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt" /*"BDT_pt_3_5",*/ };  
 
 #elif particle == 1
 
-  TString variables[] = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_30", "BDT_pt_30_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr" /*,"BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5",*/ };
+  TString variables[] = {/*"BDT_pt_5_7", "BDT_pt_7_10",*/ "BDT_pt_10_15" , "BDT_pt_15_20"/*, "BDT_pt_20_30", "BDT_pt_30_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"*/ /*,"BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5",*/ };
 
 #elif particle == 2
 
@@ -983,7 +986,7 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,  std::vector<TSt
     
     TCanvas c;
     h_aux->Draw();    
-    c.SaveAs(dir_name+"/pdfs/"+v_name.at(i) + "_weights.pdf");   
+    c.SaveAs(dir_name+"pdfs/"+v_name.at(i) + "_weights.pdf");   
     c.SaveAs(dir_name+v_name.at(i) + "_weights.gif");
     //output: a root file and plots 
   }
@@ -1964,7 +1967,6 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   else if(std::string(var.GetName()) == "BDT_pt_10_15"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,0.32)";}
   else if(std::string(var.GetName()) == "BDT_pt_15_20"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,0.35)";}
   else if(std::string(var.GetName()) == "BDT_pt_20_50"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,0.4)";}
-  else if(std::string(var.GetName()) == "BDT_pt_50_100"){name_string = TString(var.GetName()) + ">>htemp(40,0.5,1)";}
   #elif particle == 1
   else if(std::string(var.GetName()) == "BDT_pt_5_7"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.3)";}
   else if(std::string(var.GetName()) == "BDT_pt_7_10"){name_string = TString(var.GetName()) + ">>htemp(40,-0.25,0.2)";}
@@ -2094,9 +2096,6 @@ cout << endl;
   else if(std::string(var.GetName()) == "BDT_pt_20_50"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.4));
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.4));}
-  else if(std::string(var.GetName()) == "BDT_pt_50_100"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.5, 1));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.5, 1));}
   #elif particle == 1
   else if(std::string(var.GetName()) == "BDT_pt_5_7"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.40, 0.3));
@@ -2503,9 +2502,6 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   else if(label == "BDT_pt_20_50"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.05, 0.4));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.05, 0.4));}
-  else if(label == "BDT_pt_50_100"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.5, 1));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.5, 1));}
 
   #elif particle == 1
   else if(label == "BDT_pt_5_7"){
@@ -2932,8 +2928,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     float BDT_10_15_min, BDT_10_15_max;
     float BDT_15_20_min, BDT_15_20_max;
     float BDT_20_50_min, BDT_20_50_max;
-    float BDT_50_100_min, BDT_50_100_max;
-
+   
     mass_min = 5.0;
     mass_max = 6.0;
     
@@ -3054,9 +3049,6 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_20_50_min = -0.16;
     BDT_20_50_max = 0.48;
 
-    BDT_50_100_min = 0.5;
-    BDT_50_100_max = 1;
-    
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);  
     RooRealVar Bpt("Bpt","Bpt",pt_min,pt_max);
@@ -3097,7 +3089,6 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
     RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
-    RooRealVar BDT_pt_50_100("BDT_pt_50_100", "BDT_pt_50_100", BDT_50_100_min, BDT_50_100_max);
 
     w.import(Bmass);
     w.import(By);
@@ -3138,7 +3129,6 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_10_15);
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
-    w.import(BDT_pt_50_100);
     w.import(nMult);
 }
       
