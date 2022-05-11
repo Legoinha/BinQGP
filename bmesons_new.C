@@ -87,6 +87,7 @@ void AddWeights(TTree* t);
 void read_data(RooWorkspace& w,int n_var, TString *label, TString f_input);
 void build_pdf (RooWorkspace& w, std::string choice, RooArgSet &c_vars);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars);
+void read_mc(RooWorkspace& w,int n_var, TString *label, TString f_input);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
@@ -200,10 +201,30 @@ void bmesons_new(){
 
   if( (MC == 1) && (component == 0) ){read_data(*ws,n_var, variables, input_file_mc);}
   else if( (MC == 1) && (component == 1)){read_data(*ws,n_var, variables, input_file_mc_swap);}
-  else if(MC == 0){read_data(*ws,n_var, variables, input_file_data);}
+  else if(MC == 0) {
+    read_data(*ws,n_var, variables, input_file_data);
+    read_mc(*ws, n_var, variables, input_file_mc);
+  }
 
   if(MC == 1){cout << "Running fit on MC" << endl;}
   else if(MC == 0){cout << "Running fit on data" << endl;}
+
+  // TFile fin(input_file_data);
+  // auto tin = (TTree*) fin.Get("ntKp");
+  // auto bdt57 = *ws->var("BDT_pt_5_7");
+  // // RooDataSet data("data", "data", tin, RooArgSet(bdt57));
+  // RooArgList arg_list ("arg_list");
+
+  // arg_list.add(*(ws->var("Bmass")));
+  // for(int i=0; i<n_var; i++){arg_list.add(*(ws->var(variables[i])));}
+  // // RooDataSet data("data", "data", tin, RooArgSet(bdt57));
+  // RooDataSet data("data", "data", tin, arg_list);
+  // cout << "f_input = " << "     data->sumEntries() = "<< data.sumEntries()<< endl;
+  // TH1D* hdeb = (TH1D*) data.createHistogram("BDT_pt_5_7", bdt57);
+  // TCanvas cdeb("cdeb", "cdeb");
+  // hdeb->Draw();
+  // cdeb.SaveAs("hdebug.png");
+  // return;
 
   RooArgSet c_vars;
 
@@ -1019,8 +1040,35 @@ void read_data(RooWorkspace& w,int n_var, TString*label, TString f_input){
   RooDataSet* data = new RooDataSet("data","data",t1_data,arg_list);
   cout << "f_input = "<< f_input << "     data->sumEntries() = "<< data->sumEntries()<< endl;
 
+  // debug
+  // TH1D* hdeb = (TH1D*) reduceddata_central->createHistogram("BDT_pt_5_7", *w.var("BDT_pt_5_7"));
+
+  // auto* data = ws->data("data");
+  // TH1D* hdeb = (TH1D*) data->createHistogram("BDT_pt_5_7", *w.var("BDT_pt_5_7"));
+  // TCanvas cdeb("cdeb", "cdeb");
+  // hdeb->Draw();
+  // cdeb.SaveAs("hdebug.png");
+  // return;
   w.import(*data, Rename("data"));
 
+}
+
+void read_mc(RooWorkspace& w,int n_var, TString*label, TString f_input){
+  TFile* fin_mc = new TFile(f_input);
+  TTree* t1_mc;
+
+  if(particle == 0){t1_mc = (TTree*) fin_mc->Get("ntKp");}
+  else if(particle == 1){t1_mc = (TTree*)fin_mc->Get("ntphi");}
+
+  RooArgList arg_list ("arg_list");
+
+  arg_list.add(*(w.var("Bmass")));
+  for(int i=0; i<n_var; i++){arg_list.add(*(w.var(label[i])));}
+
+  RooDataSet* mc = new RooDataSet("mc","mc",t1_mc,arg_list);
+  cout << "f_input = "<< f_input << "     mc->sumEntries() = "<< mc->sumEntries()<< endl;
+
+  w.import(*mc, Rename("mc"));
 }
 
 //build_pdf
@@ -1669,14 +1717,26 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars){
 cout <<"ploting complete fit"<< endl;
   RooAbsPdf*  model = w.pdf("model");
+  RooAbsPdf*  signal = w.pdf("signal");
   RooDataSet* data = (RooDataSet*) w.data("data");
+  RooDataSet* mc = (RooDataSet*) w.data("mc");
   data->Print();
 
   RooRealVar Bmass = *(w.var("Bmass"));
   RooRealVar* lambda   = w.var("lambda");
+  RooRealVar* n_signal   = w.var("n_signal");
+  RooAddPdf modelmc("modelmc","modelmc",RooArgList(*signal), RooArgList(*n_signal));
 
-  if( (particle == 2) && (MC == 0) ){model->fitTo(*data,Range("all"),Constrain(c_vars),Extended(kTRUE));}
-  else{model->fitTo(*data,Range("all"));}
+  if( (particle == 2) && (MC == 0) ){
+    model->fitTo(*data,Range("all"),Constrain(c_vars),Extended(kTRUE));
+  } else{
+    // determine gaussian width with MC
+
+    Bmass.setRange("bmc", 5.15, 5.4);
+    // modelmc.fitTo(*mc, Range("bmc"), Extended(kTRUE));
+    signal->fitTo(*mc, Range("bmc"));
+    cout << "MC fit complete" << "\n";
+
 
   TFile* f;
   if(MC == 1){
@@ -1685,16 +1745,43 @@ cout <<"ploting complete fit"<< endl;
   }
   else if(MC == 0){f = new TFile("./results/B0/MC/DATA_fit.root", "RECREATE");}
 
+  RooPlot* massframeMC = Bmass.frame();
+
+
+  mc->plotOn(massframeMC, RooFit::Name("MC"), MarkerSize(0.9));
+  // modelmc.plotOn(massframeMC, RooFit::Name("MCFit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
+  signal->plotOn(massframeMC, RooFit::Name("MCFit"),NormRange("bmc"),LineColor(kRed),LineStyle(1),LineWidth(2));
+
+  TCanvas can_mc;
+  can_mc.SetTitle("");
+
+  TPad *mcp1 = new TPad("p1","p1",0.0,0.27,0.82,0.99);
+  mcp1->SetTitle("");
+  mcp1->SetBorderMode(1); 
+  mcp1->SetFrameBorderMode(0); 
+  mcp1->SetBorderSize(2);
+  mcp1->SetBottomMargin(0.10);
+  mcp1->Draw();
+
+  mcp1->cd();
+  massframeMC->SetTitle(" ");
+  massframeMC->Draw();
+  if (particle == 0) {
+    can_mc.SaveAs("./results/Bu/" + subname + "/mc_fit_Bu.pdf");
+  } else if (particle == 1) {
+    can_mc.SaveAs("./results/Bs/" + subname + "/mc_fit_Bs.pdf");
+  }
+  massframeMC->Clear();
+  mcp1->Clear();
+  can_mc.Clear();
+
   RooFitResult* r = model->fitTo(*data,Range("all"),Save());
   r->Print();
   f->cd();
   r->Write();
   f->Close();
- 
+
   RooPlot* massframe = Bmass.frame();
-
-
-
   if(particle == 0){
     data->plotOn(massframe, RooFit::Name("Data"), MarkerSize(0.9));
     model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF")); 
