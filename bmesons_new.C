@@ -70,6 +70,8 @@
 #include <RooFormulaVar.h>
 #include <string>
 #include <stdio.h>
+constexpr bool early = false;
+// constexpr bool early = true;
 
 using namespace RooStats;
 using namespace RooFit;
@@ -203,6 +205,7 @@ void bmesons_new(){
 
   build_pdf(*ws, "nominal", c_vars);
   plot_complete_fit(*ws, c_vars);  
+  if (early) {return;}
   if(MC == 1){return;}
 
 //validate_fit(ws, c_vars);
