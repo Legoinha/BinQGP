@@ -85,8 +85,8 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight);
 TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n); 
 void AddWeights(TTree* t);
 void read_data(RooWorkspace& w,int n_var, TString *label, TString f_input);
-void build_pdf (RooWorkspace& w, std::string choice, RooArgSet &c_vars);
 void read_mc(RooWorkspace& w,int n_var, TString *label, TString f_input);
+void build_pdf (RooWorkspace& w, std::string choice, RooArgSet &c_vars, bool polybkg);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
@@ -111,7 +111,7 @@ const char* VAR_dif_A = "Bpt";
 // 0 = Bu
 // 1 = Bs
 // 2 = B0
-#define particle 1 
+#define particle 0
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -135,7 +135,7 @@ const char* VAR_dif_A = "Bpt";
 // 1 = does fit to MC 
 // 0 = does fit to data
 
-# define MC 0 
+# define MC 0
 
 //component
 // 1 = WT
@@ -239,7 +239,8 @@ void bmesons_new(int ipt = 3){
 
   RooArgSet c_vars;
 
-  build_pdf(*ws, "nominal", c_vars);
+  bool use_polynomial_for_background = (ipt == 0);
+  build_pdf(*ws, "nominal", c_vars, use_polynomial_for_background);
   // build_pdf(*ws, "bkg_poly", c_vars);
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
   plot_complete_fit(*ws, c_vars, subname);
@@ -703,6 +704,10 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  RooAr
     cout<< endl;  
     fit_var->Print("v");
     cout << endl;
+    if (fit_var->status() != 0) {
+      cout << "fit problem. halting" << "\n";
+      return;
+    }
  
    //YIELD + STATISTICAL ERROR
     //floatParsFinal returns the list of floating parameters after fit
@@ -1184,6 +1189,10 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
   RooRealVar* scale_factor = new RooRealVar("scale_factor", "scale_factor", 1., 0., 2.);
   RooRealVar* mean_difference = 0;
 
+  RooRealVar* p1 = 0;
+  RooRealVar* p2 = 0;
+  RooRealVar* p3 = 0;
+
   if( (particle == 2) && (MC == 0)){
 
 if( choice != "scale_factor"){ 
@@ -1272,9 +1281,12 @@ if( choice != "scale_factor"){
    f_swap = new RooRealVar("f_swap","f_swap",0.,0.,1.);
    cofs1 = new RooRealVar("cofs1", "cofs1", 0.3, 0., 1.);
    lambda = new RooRealVar("lambda","lambda",-2.,-10.,1.0);
-   slope = new RooRealVar("slope","slope",0,-5,5);
+   slope = new RooRealVar("slope","slope", -500, -1000, 1);
    n3 = new RooRealVar("n3", "n3", 100., 0., 400.);
    sigma3 = new RooRealVar("sigma3","sigma3",0.012,0.010,0.030);
+   p1 = new RooRealVar("p1", "p1", -23.198, -100., 100.);
+   p2 = new RooRealVar("p2", "p2", 9.5195, -10., 10.);
+   p3 = new RooRealVar("p3", "p3", -0.90087, -10., 10.);
 
   m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale", 4.74168e-02, 0, 1);
   m_nonprompt_shift = new RooRealVar("m_nonprompt_shift", "m_nonprompt_shift", 5.14425, 4.5, 6.);
@@ -1320,12 +1332,25 @@ cout << "Defining PDF" << endl;
   m_nonprompt_shift->setConstant(kTRUE);
   m_nonprompt_scale->setConstant(kTRUE);
   RooGenericPdf* erf = new RooGenericPdf("erf","erf","TMath::Erfc((Bmass-m_nonprompt_shift)/m_nonprompt_scale)",RooArgList(Bmass,*m_nonprompt_scale,*m_nonprompt_shift));
+  TString npfit_old = "701.019629*TMath::Erf((Bmass-5.140349)/-0.035471)+701.019629+16.946432*TMath::Gaus(Bmass,5.343914,0.040000)/(sqrt(2*3.14159)*0.040000)";
+  // (std::vector<double> &) { 755.17868, 5.0924095, -0.10751896, 34.380383, 5.1021800, 0.029428403, 23.219185, 5.3528568, 0.062959266 }
+
+  TString npfit_bdt = " 755.17868*TMath::Erf((Bmass-5.0924095)/-0.10751896)+ 755.17868 + 34.380383*TMath::Gaus(Bmass, 5.10218, 0.029428403)/(sqrt(2*3.14159)*0.029428403) + 23.219185*TMath::Gaus(Bmass, 5.3528568,0.062959266)/(sqrt(2*3.14159)*23.219185)";
+
+  TString npfit_nobdt = "4840.77*TMath::Erf((Bmass-4.6)/-0.860721)+ 4840.77 + 81.3536*TMath::Gaus(Bmass, 5.06, 0.069)/(sqrt(2*3.14159)*0.069) + 0.1032*TMath::Gaus(Bmass, 5.36,0.0914)/(sqrt(2*3.14159)*0.0914)";
+  // RooGenericPdf* erf = new RooGenericPdf("erf","erf", npfit_bdt, RooArgSet(Bmass));
  
-  //exponential (for combinatorial background)
-  RooExponential* fit_side = new RooExponential("fit_side","fit_side",Bmass,*lambda);
+  RooPolynomial* fit_side = 0;
+  if (use_polynomial_for_background) {
+    //exponential (for combinatorial background)
+    RooExponential* fit_side = new RooExponential("fit_side","fit_side",Bmass,*lambda);
+  } else {
+    RooPolynomial* fit_side = new RooPolynomial("fit_side", "fit_side", Bmass, RooArgList(*p1, *p2, *p3), 1);
+  }
 
   // 1st order polynomial (combinatorial background - pdf systematics)
   RooPolynomial* poly_bkg = new RooPolynomial("poly_bkg","poly_bkg",Bmass,*slope);
+
 
   //jpsi_pi component (for jpsi background)
   m_jpsipi_mean1->setConstant(kTRUE);
@@ -1400,11 +1425,16 @@ cout << "Definig B0 model" << endl;
   RooRealVar* n_signal = new RooRealVar("n_signal","n_signal",n_signal_initial,0.,(data->sumEntries())*2);
   RooRealVar* n_signal_swp = new RooRealVar("n_signal_swp","n_signal_swp",n_signal_initial,0.,(data->sumEntries())*2);
   RooRealVar* n_combinatorial = new RooRealVar("n_combinatorial","n_combinatorial",n_combinatorial_initial,0.,data->sumEntries());
-  RooRealVar* f_erf = new RooRealVar("f_erf","f_erf",0.2,0.,1.);
+  RooRealVar* f_erf = new RooRealVar("f_erf","f_erf",0.2,0.,5);
   RooProduct* n_erf = new RooProduct("n_erf","n_erf",RooArgList(*n_signal,*f_erf));
   RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.038, 0.040);
   f_jpsipi->setConstant(kTRUE);
   RooProduct* n_jpsipi = new RooProduct("n_jpsipi","n_jpsipi",RooArgList(*n_signal,*f_jpsipi)); 
+
+  // don't fit the peaking backgrounds for lower pT
+  // if (ipt < 2) {
+    // f_erf->setConstant(kTRUE);
+  // }
 
   //mean difference constraint
   RooFitResult* fr;
@@ -1434,8 +1464,12 @@ cout << "Definig B0 model" << endl;
 
   if(particle == 0){//B+
     if(choice == "nominal"){
-      RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
+      // RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
+      RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*jpsipi), RooArgList(*n_signal,*n_combinatorial, *n_jpsipi));
+      // RooAddPdf model("model","model",RooArgList(*signal1,*fit_side),RooArgList(*n_signal,*n_combinatorial));
       w.import(model);
+      w.import(*lambda);
+      w.import(*f_erf);
     }else if(choice == "bkg_poly"){
       RooAddPdf model("model","model",RooArgList(*signal,*poly_bkg,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
       w.import(model);
@@ -1461,6 +1495,8 @@ cout << "Definig B0 model" << endl;
     if(choice == "nominal"){
       RooAddPdf model("model","model",RooArgList(*signal,*fit_side),RooArgList(*n_signal,*n_combinatorial)); 
       w.import(model);
+      w.import(*lambda);
+      w.import(*f_erf);
     }else if(choice == "bkg_poly"){
       RooAddPdf model("model","model",RooArgList(*signal,*poly_bkg),RooArgList(*n_signal,*n_combinatorial));
       w.import(model);
@@ -2416,6 +2452,7 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
     n2_swp->setConstant();
     mean_difference->setConstant();}
 
+  cout << "before splot" << "\n";
   RooMsgService::instance().setSilentMode(true);
 
   //add sWeights to dataset based on model and yield variables
