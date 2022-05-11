@@ -3098,7 +3098,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     //RooRealVar BDT_pt_1_2("BDT_pt_1_2", "BDT_pt_1_2", BDT_1_2_min, BDT_1_2_max);
     //RooRealVar BDT_pt_2_3("BDT_pt_2_3", "BDT_pt_2_3", BDT_2_3_min, BDT_2_3_max);
     RooRealVar BDT_pt_3_5("BDT_pt_3_5", "BDT_pt_3_5", BDT_3_5_min, BDT_3_5_max);
-    RooRealVar BDT_pt_5_7("BDT_pt_5_7", "BDT_pt_3_5", BDT_5_7_min, BDT_5_7_max);
+    RooRealVar BDT_pt_5_7("BDT_pt_5_7", "BDT_pt_5_7", BDT_5_7_min, BDT_5_7_max);
     RooRealVar BDT_pt_7_10("BDT_pt_7_10", "BDT_pt_7_10", BDT_7_10_min, BDT_7_10_max);
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
@@ -3137,7 +3137,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(Bmumupt);
     //w.import(BDT_pt_1_2);
     //w.import(BDT_pt_2_3);
-    w.import(BDT_pt_3_5);
+    // w.import(BDT_pt_3_5);
     w.import(BDT_pt_5_7);
     w.import(BDT_pt_7_10);
     w.import(BDT_pt_10_15);
@@ -3193,8 +3193,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     double BDT_7_10_min, BDT_7_10_max;
     double BDT_10_15_min, BDT_10_15_max;
     double BDT_15_20_min, BDT_15_20_max;
-    double BDT_20_30_min, BDT_20_30_max;
-    double BDT_30_50_min, BDT_30_50_max;
+    // double BDT_20_30_min, BDT_20_30_max;
+    // double BDT_30_50_min, BDT_30_50_max;
 
     mass_min = 5.0;
     mass_max = 6.0;
@@ -3382,12 +3382,12 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_1_2("BDT_pt_1_2", "BDT_pt_1_2", BDT_1_2_min, BDT_1_2_max);
     RooRealVar BDT_pt_2_3("BDT_pt_2_3", "BDT_pt_2_3", BDT_2_3_min, BDT_2_3_max);
     RooRealVar BDT_pt_3_5("BDT_pt_3_5", "BDT_pt_3_5", BDT_3_5_min, BDT_3_5_max);
-    RooRealVar BDT_pt_5_7("BDT_pt_5_7", "BDT_pt_3_5", BDT_5_7_min, BDT_5_7_max);
+    RooRealVar BDT_pt_5_7("BDT_pt_5_7", "BDT_pt_5_7", BDT_5_7_min, BDT_5_7_max);
     RooRealVar BDT_pt_7_10("BDT_pt_7_10", "BDT_pt_7_10", BDT_7_10_min, BDT_7_10_max);
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
-    RooRealVar BDT_pt_20_30("BDT_pt_20_30", "BDT_pt_20_30", BDT_20_30_min, BDT_20_30_max);
-    RooRealVar BDT_pt_30_50("BDT_pt_30_50", "BDT_pt_30_50", BDT_30_50_min, BDT_30_50_max);
+    // RooRealVar BDT_pt_20_30("BDT_pt_20_30", "BDT_pt_20_30", BDT_20_30_min, BDT_20_30_max);
+    // RooRealVar BDT_pt_30_50("BDT_pt_30_50", "BDT_pt_30_50", BDT_30_50_min, BDT_30_50_max);
 
     w.import(Bmass);
     w.import(By);
@@ -3434,8 +3434,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_7_10);
     w.import(BDT_pt_10_15);
     w.import(BDT_pt_15_20);
-    w.import(BDT_pt_20_30);
-    w.import(BDT_pt_30_50);
+    // w.import(BDT_pt_20_30);
+    // w.import(BDT_pt_30_50);
     w.import(nMult);
   }
 
@@ -3671,7 +3671,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_0_2("BDT_pt_0_2", "BDT_pt_0_2", BDT_0_2_min, BDT_0_2_max);
     RooRealVar BDT_pt_2_3("BDT_pt_2_3", "BDT_pt_2_3", BDT_2_3_min, BDT_2_3_max);
     RooRealVar BDT_pt_3_5("BDT_pt_3_5", "BDT_pt_3_5", BDT_3_5_min, BDT_3_5_max);
-    RooRealVar BDT_pt_5_7("BDT_pt_5_7", "BDT_pt_3_5", BDT_5_7_min, BDT_5_7_max);
+    RooRealVar BDT_pt_5_7("BDT_pt_5_7", "BDT_pt_5_7", BDT_5_7_min, BDT_5_7_max);
     RooRealVar BDT_pt_7_10("BDT_pt_7_10", "BDT_pt_7_10", BDT_7_10_min, BDT_7_10_max);
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
