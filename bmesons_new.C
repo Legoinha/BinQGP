@@ -453,6 +453,10 @@ cout << "AQUI_"<<i<<endl;
     rp->Draw();
     rp->GetLowerRefYaxis()->SetTitle("Data(sp)/MC");
     rp->GetUpperRefYaxis()->SetTitle("normalized entries");
+    rp->GetLowerRefGraph()->SetMinimum(-1);
+    rp->GetLowerRefGraph()->SetMaximum(3);
+    // rp->GetUpperRefXaxis()->SetRange(0., 0.825);
+    // rp->GetLowerRefXaxis()->SetRange(0., 0.825);
     b.Update();
      
     TLegend* leg;	
