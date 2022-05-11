@@ -1146,7 +1146,9 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
   RooRealVar* mean = 0;
   RooRealVar* mean_swp = 0;
   RooRealVar* sigma1 = 0;
-  RooRealVar* sigma2 = 0;
+  // RooRealVar* sigma2 = 0;
+  RooProduct* sigma2;
+  RooRealVar* ratio_sigma12 = 0;
   RooRealVar* sigma3 = 0;
   RooRealVar* sigma_cb1 = 0;
   RooRealVar* sigma_cb2 = 0;
@@ -1263,8 +1265,10 @@ if( choice != "scale_factor"){
     n2_swp = new RooRealVar("n2_swp", "n2_swp", 10., 0., 300.);
     }
 
-   sigma1 = new RooRealVar("sigma1","sigma1",0.02,0.005,0.5);
-   sigma2 = new RooRealVar("sigma2","sigma2",0.01,0.005,0.5);
+   sigma1 = new RooRealVar("sigma1","sigma1",0.02,0.005,0.035);
+   ratio_sigma12 = new RooRealVar("ratio_sigma12","ratio_sigma12", 2, 0.01, 10);
+   // sigma2 = new RooRealVar("sigma2","sigma2",0.01,0.005,0.5);
+   sigma2 = new RooProduct("sigma2", "sigma2", RooArgList(*sigma1, *ratio_sigma12));
    f_swap = new RooRealVar("f_swap","f_swap",0.,0.,1.);
    cofs1 = new RooRealVar("cofs1", "cofs1", 0.3, 0., 1.);
    lambda = new RooRealVar("lambda","lambda",-2.,-10.,1.0);
@@ -1290,9 +1294,11 @@ cout << "Defining PDF" << endl;
   //GAUSSIANS
   RooGaussian* signal1 = new RooGaussian("signal1","signal_gauss1",Bmass,*mean,*sigma1);
   RooGaussian* signal2 = new RooGaussian("signal2","signal_gauss2",Bmass,*mean,*sigma2); 
-	// double gaussian  	
+	// double gaussian
 	RooAddPdf* signal = new RooAddPdf("signal", "signal", RooArgList(*signal1,*signal2),*cofs);
-  		// triple gaussian
+       // single gaussian
+       // RooGaussian* signal = new RooGaussian(*signal1, "signal");
+      // triple gaussian
   		RooGaussian* signal3 = new RooGaussian("signal3","signal3",Bmass,*mean,*sigma3);  
   		RooAddPdf* signal_triple = new RooAddPdf("signal_triple","signal_triple",RooArgList(*signal1,*signal2,*signal3),RooArgList(*cofs,*cofs1));
 	
@@ -1768,6 +1774,15 @@ cout <<"ploting complete fit"<< endl;
     signal->fitTo(*mc, Range("bmc"));
     cout << "MC fit complete" << "\n";
 
+    RooRealVar* sigma1 = w.var("sigma1");
+    RooRealVar* sigma2 = w.var("sigma2");
+    RooRealVar* ratio_sigma12 = w.var("ratio_sigma12");
+    RooRealVar* cofs = w.var("cofs");
+    RooRealVar* mean = w.var("mean");
+    ratio_sigma12->setConstant();
+    cofs->setConstant();
+    mean->setConstant();
+  }
 
   TFile* f;
   if(MC == 1){
@@ -1998,14 +2013,20 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, TString* label, int n_va
 
   double left;
   double right;
+  double max, min;
+  double bpmass = 5.27929;
+  double b0mass = 5.36682;
 
   if(particle == 0){
     left = 5.2;
-    right = 5.4;
+    right = bpmass + 0.25;
+    max = bpmass + 0.30;
   }
   else if(particle == 1){
-    left = 5.3;
-    right = 5.45;
+    left = b0mass - 0.20;
+    min = b0mass - 0.30;
+    right = b0mass + 0.20;
+    max = b0mass + 0.30;
   }
   else if(particle == 2){
     left = 5.22;
@@ -2018,11 +2039,14 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace w, TString* label, int n_va
   Bmass.setRange("peakright",left,Bmass.getMax());
   Bmass.setRange("total", Bmass.getMin(), Bmass.getMax());
   
-  if(particle == 0){reduceddata_side = (RooDataSet*)data->reduce(Form("Bmass>%lf", right));}   //only events w bigger mass than the peak ?partlialy recosntructed  background ? 
-  else if( (particle == 1) || (particle == 2) ){reduceddata_side =  (RooDataSet*)data->reduce(Form("Bmass>%lf || Bmass<%lf", right, left));}
+  if(particle == 0){reduceddata_side = (RooDataSet*)data->reduce(Form("Bmass>%lf", right))->reduce(Form("Bmass < %lf", max));}   //only events w bigger mass than the peak ?partlialy recosntructed  background ? 
+  else if( (particle == 1) || (particle == 2) ){
+    reduceddata_side =  (RooDataSet*)data->reduce(Form("Bmass>%lf || Bmass<%lf", right, left))->reduce(Form("Bmass > %lf && Bmass < %lf", min, max));
+  }
 
   reduceddata_central = (RooDataSet*)data->reduce(Form("Bmass>%lf",left));
   reduceddata_central = (RooDataSet*)reduceddata_central->reduce(Form("Bmass<%lf",right));
+
 
   //Integrating the background distribution 
   RooAbsReal* int_fit_side_right = BgModel->createIntegral(Bmass, Bmass, "right");
@@ -2352,15 +2376,19 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   RooRealVar* mean = w.var("mean");
   RooRealVar* cofs = w.var("cofs");
   RooRealVar* lambda = w.var("lambda") ;
-    mean->setConstant();
-    cofs->setConstant();
-    lambda->setConstant();
+  RooRealVar* slope = w.var("slope") ;
+  mean->setConstant();
+  cofs->setConstant();
+  lambda->setConstant();
+  // slope->setConstant();
+  RooRealVar* f_erf = w.var("f_erf") ;
+  f_erf->setConstant();
 
   if(particle != 2){  //both Bu and Bs nominal model are a double gaussian
   sigma1 = w.var("sigma1");
   sigma2 = w.var("sigma2");
     sigma1->setConstant();
-    sigma2->setConstant();
+    // sigma2->setConstant();
   }
   else{
   sigma1_swp = w.var("sigma1_swp");
@@ -2396,7 +2424,8 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
   cout << endl <<  "Yield of B+ is "
        << BpYield->getVal() << ".  From sWeights it is "
-       << sData->GetYieldFromSWeight("RT_yield") << endl;
+       // << sData->GetYieldFromSWeight("RT_yield") << endl;
+       << sData->GetYieldFromSWeight("n_signal") << endl;
 
   cout << "Yield of background is "
        << BgYield->getVal() << ".  From sWeights it is "
