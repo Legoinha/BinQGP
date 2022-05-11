@@ -86,12 +86,12 @@ TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* r
 void AddWeights(TTree* t);
 void read_data(RooWorkspace& w,int n_var, TString *label, TString f_input);
 void build_pdf (RooWorkspace& w, std::string choice, RooArgSet &c_vars);
-void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars);
 void read_mc(RooWorkspace& w,int n_var, TString *label, TString f_input);
+void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
-void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString);
+void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString, int, int);
 void DIF_analysis(RooWorkspace& w, const char* variable, TString, RooArgSet &c_vars);
 double get_yield_syst(RooDataSet *dt, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma, const char* name_var);
 void fit_syst_error(TString, int n_var, TString* label, RooArgSet &c_vars);
@@ -143,25 +143,35 @@ const char* VAR_dif_A = "Bpt";
 
 # define component 1
 
-void bmesons_new(){
-  
+   // for B+, ipt is 0--4
+   // for Bs, ipt is 1--4
+void bmesons_new(int ipt = 3){
+
+  gROOT->SetBatch();
+
+  std::vector<int> ptlist = {5, 7, 10, 15, 20, 50};
+
   int n_var;
   TString input_file_data;
-  if(particle == 0){input_file_data ="~/work/public/BPData.root";}        
+  // if(particle == 0){input_file_data ="braa/BPData.root";}        
+  if(particle == 0){input_file_data = Form("../files/BPData_noBDT_trk5_%i_%i.root",
+                                           ptlist.at(ipt), ptlist.at(ipt+1));}
   //"~/work/B_DATA_MC/BPData.root"
-  //"~/work/PreAppFiles/BPData.root"
-  else if(particle == 1){input_file_data = "~/work/public/BsData_update.root";}   
-  else if(particle == 2){input_file_data = "";}
+  else if(particle == 1){input_file_data = Form("../files/BsData_noBDT_trk5_%i_%i.root",
+                                           ptlist.at(ipt), ptlist.at(ipt+1));}
+
+  // else if(particle == 2){input_file_data = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZData.root";}
   TString input_file_mc;
   TString input_file_mc_swap;
-  if(particle == 0){input_file_mc = "~/work/public/BPMC.root";}
+  // if(particle == 0){input_file_mc = "braa/BPMC.root";}
+  if(particle == 0){input_file_mc = Form("../files/BPMC_noBDT_trk5_%i_%i.root",
+                                           ptlist.at(ipt), ptlist.at(ipt+1));}
   //"~/work/PreAppFiles/BPMC.root"
-  else if(particle == 1){input_file_mc = "~/work/public/BsMC_update.root";}   
-  //"~/work/BsMC_update.root"
-
-  else if(particle == 2){
-    input_file_mc = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMC.root";
-    input_file_mc_swap = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMCSwap2.root";}
+  else if(particle == 1){input_file_mc = Form("../files/BsMC_noBDT_trk5_%i_%i.root",
+                                                ptlist.at(ipt), ptlist.at(ipt+1));}
+  // else if(particle == 2){
+  //   input_file_mc = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMC.root";
+  //   input_file_mc_swap = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMCSwap2.root";}
 /*
   TString input_file_reweighted_mc;
   if(particle == 0){input_file_reweighted_mc = "./results/Bu/mc_validation_plots/weights/tree_with_weight.root";}
@@ -197,6 +207,7 @@ void bmesons_new(){
   cout << "number of variables in TString: "<< n_var << endl;
 
    RooWorkspace* ws = new RooWorkspace("ws");
+
    set_up_workspace_variables(*ws);
 
   if( (MC == 1) && (component == 0) ){read_data(*ws,n_var, variables, input_file_mc);}
@@ -229,7 +240,9 @@ void bmesons_new(){
   RooArgSet c_vars;
 
   build_pdf(*ws, "nominal", c_vars);
-  plot_complete_fit(*ws, c_vars);  
+  // build_pdf(*ws, "bkg_poly", c_vars);
+  TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
+  plot_complete_fit(*ws, c_vars, subname);
   if (early) {return;}
   if(MC == 1){return;}
 
@@ -246,6 +259,7 @@ return;
   //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
   histos_sideband_sub = sideband_subtraction(*ws, variables , n_var);
  
+
   //SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
   do_splot(*ws,c_vars); 
   histos_splot = splot_method(*ws, variables, n_var); 
@@ -271,7 +285,9 @@ cout << "AQUI_"<<i<<endl;
     names.push_back(TString(variables[i]));}
   
   // RATIO BETWEEN DATA (SPLOT) AND MC
-  if (weights == 1){get_ratio(histos_splot, histos_mc, names,"weights.root");}
+  if (weights == 1){
+    get_ratio(histos_splot, histos_mc, names,"weights.root", ptlist[ipt], ptlist[ipt+1]);
+  }
   
   // ADDS WEIGHTS TO MC TREE (use to reweight MC)
   if (add_weights == 1){AddWeights(t1_mc);}  
@@ -326,12 +342,16 @@ cout << "AQUI_"<<i<<endl;
     leg->Draw("same");
    
     if(particle == 0){
-      c.SaveAs("./results/Bu/mc_validation_plots/ss_mc/pdfs/" + names[i]+"_mc_validation_Bu.pdf");
-      c.SaveAs("./results/Bu/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bu.gif");
+      TString ptdir = Form("./results/Bu/%i_%i", ptlist[ipt], ptlist[ipt+1]);
+      gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/ss_mc/pdfs/");
+      c.SaveAs(ptdir + "/mc_validation_plots/ss_mc/pdfs/" + names[i]+"_mc_validation_Bu.pdf");
+      c.SaveAs(ptdir + "/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bu.gif");
     } 
     else if(particle == 1){
-      c.SaveAs("./results/Bs/mc_validation_plots/ss_mc/pdfs/" + names[i]+"_mc_validation_Bs.pdf");
-      c.SaveAs("./results/Bs/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bs.gif");
+      TString ptdir = Form("./results/Bs/%i_%i", ptlist[ipt], ptlist[ipt+1]);
+      gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/ss_mc/pdfs/");
+      c.SaveAs(ptdir + "/mc_validation_plots/ss_mc/pdfs/" + names[i]+"_mc_validation_Bs.pdf");
+      c.SaveAs(ptdir + "/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bs.gif");
     }
     else if(particle == 2){
       c.SaveAs("./results/B0/mc_validation_plots/ss_mc/pdfs/" + names[i]+"_mc_validation_B0.pdf");
@@ -442,12 +462,16 @@ cout << "AQUI_"<<i<<endl;
     leg->Draw("same");
 	
     if(particle == 0){
-      b.SaveAs("./results/Bu/mc_validation_plots/mc_sp/pdfs/" + names[i]+"_mc_validation_Bu.pdf");
-      b.SaveAs("./results/Bu/mc_validation_plots/mc_sp/" + names[i]+"_mc_validation_Bu.gif");
+      TString ptdir = Form("./results/Bu/%i_%i", ptlist[ipt], ptlist[ipt+1]);
+      gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/mc_sp/pdfs/");
+      b.SaveAs(ptdir + "/mc_validation_plots/mc_sp/pdfs/" + names[i]+"_mc_validation_Bu.pdf");
+      b.SaveAs(ptdir + "/mc_validation_plots/mc_sp/" + names[i]+"_mc_validation_Bu.gif");
     }
     else if(particle == 1){
-      b.SaveAs("./results/Bs/mc_validation_plots/mc_sp/pdfs/"+names[i]+"_mc_validation_Bs.pdf");
-      b.SaveAs("./results/Bs/mc_validation_plots/mc_sp/"+names[i]+"_mc_validation_Bs.gif");
+      TString ptdir = Form("./results/Bs/%i_%i", ptlist[ipt], ptlist[ipt+1]);
+      gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/mc_sp/pdfs/");
+      b.SaveAs(ptdir + "/mc_validation_plots/mc_sp/pdfs/"+names[i]+"_mc_validation_Bs.pdf");
+      b.SaveAs(ptdir + "/mc_validation_plots/mc_sp/"+names[i]+"_mc_validation_Bs.gif");
     }
     else if(particle == 2){
       b.SaveAs("./results/B0/mc_validation_plots/mc_sp/pdfs/"+names[i]+"_mc_validation_B0.pdf");
@@ -982,13 +1006,20 @@ if(std::string(variable)=="By"){
 //DIF_analysis end
 
 //get the ratio between the data (splot method) and the MC and save it in a root file
-void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,  std::vector<TString> v_name, TString filename){
+void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,  std::vector<TString> v_name, TString filename,
+                int pti, int ptf){
 
   TString dir_name;
-  if(particle == 0){dir_name = "./results/Bu/mc_validation_plots/weights/";}
-  else if(particle == 1){dir_name = "./results/Bs/mc_validation_plots/weights/";}
-  else if(particle == 2){dir_name = "./results/B0/mc_validation_plots/weights/";}
+  TString ptdir;
+  if (particle == 0) {
+    ptdir = Form("./results/Bu/%i_%i", pti, ptf);
+  } else if (particle == 1) {
+    ptdir = Form("./results/Bs/%i_%i", pti, ptf);
+  }
+  dir_name = ptdir + "/mc_validation_plots/weights/";
+  if(particle == 2){dir_name = "./results/B0/mc_validation_plots/weights/";}
 
+  gSystem->Exec("mkdir -p " + dir_name);
   TFile* f_wei = new TFile(dir_name + filename, "recreate");
 
   TH1D* h_aux;
@@ -1714,7 +1745,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 }
 //get_yield_syst ends
 
-void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars){
+void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname){
 cout <<"ploting complete fit"<< endl;
   RooAbsPdf*  model = w.pdf("model");
   RooAbsPdf*  signal = w.pdf("signal");
@@ -1920,12 +1951,12 @@ cout <<"ploting complete fit"<< endl;
   pull_plot->Draw();
   
   if(particle == 0){
-    d.SaveAs("./results/Bu/complete_fit_Bu.pdf");
-    d.SaveAs("./results/Bu/complete_fit_Bu.gif");
+    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu.pdf");
+    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu.gif");
   }
   else if(particle == 1){
-    d.SaveAs("./results/Bs/complete_fit_Bs.pdf");
-    d.SaveAs("./results/Bs/complete_fit_Bs.gif");
+    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs.pdf");
+    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs.gif");
   }
   else if(particle == 2){
     if(MC == 0){
@@ -2818,7 +2849,7 @@ void validate_fit(RooWorkspace* w, RooArgSet &c_vars){
 
 void AddWeights(TTree* t){
   TString input_file;
-  input_file = particle ? "~/public/BinQGP/results/Bs/mc_validation_plots/weights/weights.root": "~/public/BinQGP/results/Bu/mc_validation_plots/weights/weights.root";
+  input_file = particle ? "./results/Bs/mc_validation_plots/weights/weights.root": "./results/Bu/mc_validation_plots/weights/weights.root";
   TFile* f_wei = new TFile(input_file, "read");
  
   TH1D* h_bdt_pt_3_5 = (TH1D*)f_wei->Get(TString("weights_BDT_pt_3_5;1"));
