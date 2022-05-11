@@ -1969,18 +1969,19 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   else if(std::string(var.GetName()) == "Btrk2PtErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.1)";}
   else if(std::string(var.GetName()) == "Btrk2Pt"){name_string = TString(var.GetName()) + ">>htemp(40,0,8)";}
   #if particle == 0
-  else if(std::string(var.GetName()) == "BDT_pt_5_7"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.4)";}
-  else if(std::string(var.GetName()) == "BDT_pt_7_10"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.35)";}
-  else if(std::string(var.GetName()) == "BDT_pt_10_15"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,0.32)";}
-  else if(std::string(var.GetName()) == "BDT_pt_15_20"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,0.35)";}
-  else if(std::string(var.GetName()) == "BDT_pt_20_50"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,0.4)";}
+  else if(std::string(var.GetName()) == "BDT_pt_5_7"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.8)";}
+  else if(std::string(var.GetName()) == "BDT_pt_7_10"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.83)";}
+  else if(std::string(var.GetName()) == "BDT_pt_10_15"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.8)";}
+  else if(std::string(var.GetName()) == "BDT_pt_15_20"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.8)";}
+  else if(std::string(var.GetName()) == "BDT_pt_20_50"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.74)";}
+  // else if(std::string(var.GetName()) == "BDT_pt_50_100"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.9)";}
   #elif particle == 1
-  else if(std::string(var.GetName()) == "BDT_pt_5_7"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.3)";}
-  else if(std::string(var.GetName()) == "BDT_pt_7_10"){name_string = TString(var.GetName()) + ">>htemp(40,-0.25,0.2)";}
-  else if(std::string(var.GetName()) == "BDT_pt_10_15"){name_string = TString(var.GetName()) + ">>htemp(40,-0.2,0.2)";}
-  else if(std::string(var.GetName()) == "BDT_pt_15_20"){name_string = TString(var.GetName()) + ">>htemp(40,-0.3,0.3)";}
-  else if(std::string(var.GetName()) == "BDT_pt_20_30"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.26)";}
-  else if(std::string(var.GetName()) == "BDT_pt_30_50"){name_string = TString(var.GetName()) + ">>htemp(40,-0.65,0.5)";}
+  // else if(std::string(var.GetName()) == "BDT_pt_5_7"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.3)";}
+  else if(std::string(var.GetName()) == "BDT_pt_7_10"){name_string = TString(var.GetName()) + ">>htemp(40,0.,0.86)";}
+  else if(std::string(var.GetName()) == "BDT_pt_10_15"){name_string = TString(var.GetName()) + ">>htemp(40,0.,0.8)";}
+  else if(std::string(var.GetName()) == "BDT_pt_15_20"){name_string = TString(var.GetName()) + ">>htemp(40,0.,0.8)";}
+  // else if(std::string(var.GetName()) == "BDT_pt_20_30"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.8)";}
+  // else if(std::string(var.GetName()) == "BDT_pt_30_50"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.8)";}
   #endif
   else{ name_string = TString(var.GetName()) + ">>htemp(" + Form("%d",n) +"," + Form("%lf", var.getMin()) + "," + Form("%lf", var.getMax()) + ")";}
 
@@ -2089,39 +2090,42 @@ cout << endl;
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n,0 , 8));}
   #if particle == 0
   else if(std::string(var.GetName()) == "BDT_pt_5_7"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 0.4));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 0.4));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
   else if(std::string(var.GetName()) == "BDT_pt_7_10"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 0.35));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 0.35));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
   else if(std::string(var.GetName()) == "BDT_pt_10_15"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.32));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.32));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
   else if(std::string(var.GetName()) == "BDT_pt_15_20"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.35));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.35));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
   else if(std::string(var.GetName()) == "BDT_pt_20_50"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.4));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.4));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
+  else if(std::string(var.GetName()) == "BDT_pt_50_100"){
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.2, 0.85));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.2, 0.85));}
   #elif particle == 1
-  else if(std::string(var.GetName()) == "BDT_pt_5_7"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.40, 0.3));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.4, 0.3));}
+  // else if(std::string(var.GetName()) == "BDT_pt_5_7"){
+	// hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.40, 0.3));
+	// dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.4, 0.3));}
    else if(std::string(var.GetName()) == "BDT_pt_7_10"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.25, 0.2));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.25, 0.2));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 0.9));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 0.9));}
    else if(std::string(var.GetName()) == "BDT_pt_10_15"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.2, 0.2));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.2, 0.2));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
    else if(std::string(var.GetName()) == "BDT_pt_15_20"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.3, 0.30));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.3, 0.30));}
-   else if(std::string(var.GetName()) == "BDT_pt_20_30"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.4, 0.26));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.4, 0.26));}
-   else if(std::string(var.GetName()) == "BDT_pt_30_50"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.65, 0.5));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.65, 0.5));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
+  //  else if(std::string(var.GetName()) == "BDT_pt_20_30"){
+	// hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	// dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
+  //  else if(std::string(var.GetName()) == "BDT_pt_30_50"){
+	// hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
+	// dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
  #endif
   else{
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, var.getMin(), var.getMax()));
@@ -2495,40 +2499,43 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 8));}
   #if particle == 0
   else if(label == "BDT_pt_5_7"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.4));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.4));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.8));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.8));}
   else if(label == "BDT_pt_7_10"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.35));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.35));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.83));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.83));}
   else if(label == "BDT_pt_10_15"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.05, 0.32));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.05, 0.32));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.8));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.8));}
   else if(label == "BDT_pt_15_20"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.05, 0.35));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.05, 0.35));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.8));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.8));}
   else if(label == "BDT_pt_20_50"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.05, 0.4));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.05, 0.4));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.74));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.74));}
+  else if(label == "BDT_pt_50_100"){
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.9));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.9));}
 
   #elif particle == 1
-  else if(label == "BDT_pt_5_7"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.4, 0.3));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.4, 0.3));}
+  // else if(label == "BDT_pt_5_7"){
+  //        histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.4, 0.3));
+ 	//  histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.4, 0.3));}
   else if(label == "BDT_pt_7_10"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.25, 0.2));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.25, 0.2));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0., 0.86));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0., 0.86));}
   else if(label == "BDT_pt_10_15"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.2, 0.2));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.2, 0.2));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0., 0.8));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0., 0.8));}
   else if(label == "BDT_pt_15_20"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.3, 0.30));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.3, 0.30));}
-  else if(label == "BDT_pt_20_30"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.4, 0.26));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.4, 0.26));}
-  else if(label == "BDT_pt_30_50"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.65, 0.5));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.65, 0.5));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.0, 0.8));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.0, 0.8));}
+  // else if(label == "BDT_pt_20_30"){
+  //        histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.4, 0.8));
+ 	//  histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.4, 0.8));}
+  // else if(label == "BDT_pt_30_50"){
+  //        histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.4, 0.8));
+ 	//  histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.4, 0.8));}
   #endif
   else{
    	histo_Bp_sig = (TH1D*)dataWBp->createHistogram(label,n,variable->getMin(),variable->getMax());
@@ -3038,23 +3045,23 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_2_3_min = -0.85;
     BDT_2_3_max = 0.25;
 */
-    BDT_3_5_min = -0.25;
-    BDT_3_5_max = 0.45;
+    BDT_3_5_min = -0.2;
+    BDT_3_5_max = 0.85;
 
-    BDT_5_7_min = -0.2;
-    BDT_5_7_max = 0.4;
+    BDT_5_7_min = -1;
+    BDT_5_7_max = 1;
 
-    BDT_7_10_min = -0.2;
-    BDT_7_10_max = 0.4;
+    BDT_7_10_min = -1;
+    BDT_7_10_max = 1;
 
-    BDT_10_15_min = -0.2;
-    BDT_10_15_max = 0.35;
+    BDT_10_15_min = -1;
+    BDT_10_15_max = 1;
 
-    BDT_15_20_min = -0.2;
-    BDT_15_20_max = 0.4;
+    BDT_15_20_min = -1;
+    BDT_15_20_max = 1;
 
-    BDT_20_50_min = -0.16;
-    BDT_20_50_max = 0.48;
+    BDT_20_50_min = -1;
+    BDT_20_50_max = 1;
 
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);  
@@ -3315,23 +3322,23 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_3_5_min = -0.55;
     BDT_3_5_max = 0.1;
 
-    BDT_5_7_min = -0.55;
-    BDT_5_7_max = 0.3;
+    BDT_5_7_min = -1;
+    BDT_5_7_max = 1;
 
-    BDT_7_10_min = -0.4;
-    BDT_7_10_max = 0.2;
+    BDT_7_10_min = -1;
+    BDT_7_10_max = 1;
 
-    BDT_10_15_min = -0.3;
-    BDT_10_15_max = 0.2;
+    BDT_10_15_min = -1;
+    BDT_10_15_max = 1;
 
-    BDT_15_20_min = -0.45;
-    BDT_15_20_max = 0.3;
+    BDT_15_20_min = -1;
+    BDT_15_20_max = 1;
 
-    BDT_20_30_min = -0.6;
-    BDT_20_30_max = 0.4;
+    // BDT_20_30_min = -0.6;
+    // BDT_20_30_max = 0.85;
 
-    BDT_30_50_min = -0.7;
-    BDT_30_50_max = 0.5;
+    // BDT_30_50_min = -0.7;
+    // BDT_30_50_max = 0.85;
 
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);
@@ -3608,13 +3615,13 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_3_5_max = 0.5;
 
     BDT_5_7_min = -0.5;
-    BDT_5_7_max = 0.5;
+    BDT_5_7_max = 0.8;
 
     BDT_7_10_min = -0.4;
-    BDT_7_10_max = 0.5;
+    BDT_7_10_max = 0.8;
 
     BDT_10_15_min = -0.45;
-    BDT_10_15_max = 0.7;
+    BDT_10_15_max = 0.8;
 
     BDT_15_20_min = -0.6;
     BDT_15_20_max = 0.8;
