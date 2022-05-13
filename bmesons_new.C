@@ -70,8 +70,37 @@
 #include <RooFormulaVar.h>
 #include <string>
 #include <stdio.h>
+#include <unordered_map>
 constexpr bool early = false;
 // constexpr bool early = true;
+
+// should be constexpr, but let's simplify runtime arguments and omit that for now
+const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20"};
+const std::vector<TString> BDTvar_bp = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20"};
+
+const std::vector<TString> BDTdir = {"Bu", "Bs"};
+const std::unordered_map<std::string, unsigned> iBDT_bs = {
+  {"BDT_pt_7_10", 0},
+  {"BDT_pt_10_15", 1},
+  {"BDT_pt_15_20", 2},
+  {"BDT_pt_20_50", 3}};
+const std::unordered_map<std::string, unsigned> iBDT_bp = {
+  {"BDT_pt_5_7", 0},
+  {"BDT_pt_7_10", 1},
+  {"BDT_pt_10_15", 2},
+  {"BDT_pt_15_20", 3},
+  {"BDT_pt_20_50", 4}};
+
+// min and max for BDT histograms
+const std::vector<double> BDTmin_bs = {-0.2, -0.2, -0.05};
+const std::vector<double> BDTmax_bs = {0.88, 0.8, 0.9};
+
+const std::vector<double> BDTmin_bp = {-0.3, -0.16, -0.18, -0.12, -0.1};
+const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.8};
+
+// number of bins
+const std::vector<int> BDTnbins_bs = {20, 30, 20};
+const std::vector<int> BDTnbins_bp(5, 40);
 
 using namespace RooStats;
 using namespace RooFit;
@@ -143,8 +172,25 @@ const char* VAR_dif_A = "Bpt";
 
 # define component 1
 
+
+#if particle == 0
+auto BDTvars = BDTvar_bp;
+auto BDTmin = BDTmin_bp;
+auto BDTmax = BDTmax_bp;
+auto BDTnbins = BDTnbins_bp;
+auto indexBDT = iBDT_bp;
+#elif particle == 1
+auto BDTvars = BDTvar_bs;
+auto BDTmin = BDTmin_bs;
+auto BDTmax = BDTmax_bs;
+auto BDTnbins = BDTnbins_bs;
+auto indexBDT = iBDT_bs;
+#endif
+
+
    // for B+, ipt is 0--4
    // for Bs, ipt is 1--4
+
 void bmesons_new(int ipt = 3){
 
   gROOT->SetBatch();
@@ -1829,7 +1875,7 @@ cout <<"ploting complete fit"<< endl;
     if(component == 0){f = new TFile("./results/B0/MC/RT_fit.root", "RECREATE");}
     else if(component == 1){f = new TFile("./results/B0/MC/WT_fit.root", "RECREATE");}
   }
-  else if(MC == 0){f = new TFile("./results/B0/MC/DATA_fit.root", "RECREATE");}
+  else if(MC == 0){f = new TFile("./results/" + BDTdir[particle] + "/" + subname + "/DATA_fit.root", "RECREATE");}
 
   RooPlot* massframeMC = Bmass.frame();
 
@@ -2121,7 +2167,7 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   TString name_string;
   
   cout << "CREATE_H  var.GetName: " << var.GetName() << "   min: " << var.getMin() << "   max: " << var.getMax()<< endl;
-
+  std::string varName = var.GetName();
   if(std::string(var.GetName()) == "BsvpvDisErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.03)";}
   else if(std::string(var.GetName()) == "Bpt"){name_string = TString(var.GetName()) + ">>htemp(40,5,100)";}
   else if(std::string(var.GetName()) == "BsvpvDistance"){name_string = TString(var.GetName()) + ">>htemp(40,0,1)";}
@@ -2150,24 +2196,16 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   else if(std::string(var.GetName()) == "Btrk1PtErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.1)";}
   else if(std::string(var.GetName()) == "Btrk2PtErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.1)";}
   else if(std::string(var.GetName()) == "Btrk2Pt"){name_string = TString(var.GetName()) + ">>htemp(40,0,8)";}
-  #if particle == 0
-  else if(std::string(var.GetName()) == "BDT_pt_5_7"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.8)";}
-  else if(std::string(var.GetName()) == "BDT_pt_7_10"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.83)";}
-  else if(std::string(var.GetName()) == "BDT_pt_10_15"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.8)";}
-  else if(std::string(var.GetName()) == "BDT_pt_15_20"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.8)";}
-  else if(std::string(var.GetName()) == "BDT_pt_20_50"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.74)";}
-  // else if(std::string(var.GetName()) == "BDT_pt_50_100"){name_string = TString(var.GetName()) + ">>htemp(40,0, 0.9)";}
-  #elif particle == 1
-  // else if(std::string(var.GetName()) == "BDT_pt_5_7"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.3)";}
-  else if(std::string(var.GetName()) == "BDT_pt_7_10"){name_string = TString(var.GetName()) + ">>htemp(40,0.,0.86)";}
-  else if(std::string(var.GetName()) == "BDT_pt_10_15"){name_string = TString(var.GetName()) + ">>htemp(40,0.,0.8)";}
-  else if(std::string(var.GetName()) == "BDT_pt_15_20"){name_string = TString(var.GetName()) + ">>htemp(40,0.,0.8)";}
-  // else if(std::string(var.GetName()) == "BDT_pt_20_30"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.8)";}
-  // else if(std::string(var.GetName()) == "BDT_pt_30_50"){name_string = TString(var.GetName()) + ">>htemp(40,-0.4,0.8)";}
-  #endif
+  else if (indexBDT.count(varName)) {
+    auto iBDT = indexBDT.at(varName);
+    name_string = varName + TString::Format(">>htemp(%i, %f, %f)",
+                                            BDTnbins[iBDT],
+                                            BDTmin[iBDT],
+                                            BDTmax[iBDT]);
+  }
   else{ name_string = TString(var.GetName()) + ">>htemp(" + Form("%d",n) +"," + Form("%lf", var.getMin()) + "," + Form("%lf", var.getMax()) + ")";}
 
- // cout << name_string <<endl;
+ cout << name_string << endl;
   t->Draw(name_string, weight);
   h = (TH1D*)gDirectory->Get("htemp")->Clone();
   h->SetTitle("");
@@ -2270,45 +2308,17 @@ cout << endl;
   else if(std::string(var.GetName()) == "Btrk2Pt"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n,0 , 8));
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n,0 , 8));}
-  #if particle == 0
-  else if(std::string(var.GetName()) == "BDT_pt_5_7"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
-  else if(std::string(var.GetName()) == "BDT_pt_7_10"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
-  else if(std::string(var.GetName()) == "BDT_pt_10_15"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
-  else if(std::string(var.GetName()) == "BDT_pt_15_20"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
-  else if(std::string(var.GetName()) == "BDT_pt_20_50"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
-  else if(std::string(var.GetName()) == "BDT_pt_50_100"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.2, 0.85));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.2, 0.85));}
-  #elif particle == 1
-  // else if(std::string(var.GetName()) == "BDT_pt_5_7"){
-	// hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, -0.40, 0.3));
-	// dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, -0.4, 0.3));}
-   else if(std::string(var.GetName()) == "BDT_pt_7_10"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 0.9));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 0.9));}
-   else if(std::string(var.GetName()) == "BDT_pt_10_15"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
-   else if(std::string(var.GetName()) == "BDT_pt_15_20"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
-  //  else if(std::string(var.GetName()) == "BDT_pt_20_30"){
-	// hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	// dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
-  //  else if(std::string(var.GetName()) == "BDT_pt_30_50"){
-	// hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));
-	// dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.9));}
- #endif
+  else if (indexBDT.count(var.GetName())) {
+    auto iBDT = indexBDT.at(var.GetName());
+    hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var,
+                                                      Binning(BDTnbins[iBDT],
+                                                              BDTmin[iBDT],
+                                                              BDTmax[iBDT]));
+    dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var,
+                                                 Binning(BDTnbins[iBDT],
+                                                         BDTmin[iBDT],
+                                                         BDTmax[iBDT]));
+  }
   else{
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, var.getMin(), var.getMax()));
 	dist_side      = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, var.getMin(), var.getMax()));}
@@ -2685,46 +2695,17 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   else if(label == "Btrk2Pt"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 8));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 8));}
-  #if particle == 0
-  else if(label == "BDT_pt_5_7"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.8));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.8));}
-  else if(label == "BDT_pt_7_10"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.83));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.83));}
-  else if(label == "BDT_pt_10_15"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.8));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.8));}
-  else if(label == "BDT_pt_15_20"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.8));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.8));}
-  else if(label == "BDT_pt_20_50"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.74));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.74));}
-  else if(label == "BDT_pt_50_100"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 0.9));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.9));}
-
-  #elif particle == 1
-  // else if(label == "BDT_pt_5_7"){
-  //        histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.4, 0.3));
- 	//  histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.4, 0.3));}
-  else if(label == "BDT_pt_7_10"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0., 0.86));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0., 0.86));}
-  else if(label == "BDT_pt_10_15"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0., 0.8));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0., 0.8));}
-  else if(label == "BDT_pt_15_20"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.0, 0.8));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.0, 0.8));}
-  // else if(label == "BDT_pt_20_30"){
-  //        histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.4, 0.8));
- 	//  histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.4, 0.8));}
-  // else if(label == "BDT_pt_30_50"){
-  //        histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, -0.4, 0.8));
- 	//  histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, -0.4, 0.8));}
-  #endif
+  else if (indexBDT.count(label.Data())) {
+    auto iBDT = indexBDT.at(label.Data());
+    histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,
+                                                    Binning(BDTnbins[iBDT],
+                                                            BDTmin[iBDT],
+                                                            BDTmax[iBDT]));
+    histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,
+                                                    Binning(BDTnbins[iBDT],
+                                                            BDTmin[iBDT],
+                                                            BDTmax[iBDT]));
+  }
   else{
    	histo_Bp_sig = (TH1D*)dataWBp->createHistogram(label,n,variable->getMin(),variable->getMax());
    	histo_Bp_bkg = (TH1D*)dataWBg->createHistogram(label,n,variable->getMin(),variable->getMax());}
