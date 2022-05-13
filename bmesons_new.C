@@ -115,7 +115,7 @@ TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* r
 void AddWeights(TTree* t);
 void read_data(RooWorkspace& w,int n_var, TString *label, TString f_input);
 void read_mc(RooWorkspace& w,int n_var, TString *label, TString f_input);
-void build_pdf (RooWorkspace& w, std::string choice, RooArgSet &c_vars, bool polybkg);
+void build_pdf (RooWorkspace& w, std::string choice, RooArgSet &c_vars, int ipt);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
@@ -285,9 +285,7 @@ void bmesons_new(int ipt = 3){
 
   RooArgSet c_vars;
 
-  bool use_polynomial_for_background = (ipt == 0);
-  build_pdf(*ws, "nominal", c_vars, use_polynomial_for_background);
-  // build_pdf(*ws, "bkg_poly", c_vars);
+  build_pdf(*ws, "nominal", c_vars, ipt);
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
   plot_complete_fit(*ws, c_vars, subname);
   if (early) {return;}
@@ -1158,7 +1156,7 @@ void read_mc(RooWorkspace& w,int n_var, TString*label, TString f_input){
 }
 
 //build_pdf
-void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars){
+void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars, int ipt=3){
 
   RooRealVar Bmass = *(w.var("Bmass"));
   RooDataSet* data = (RooDataSet*)w.data("data");
