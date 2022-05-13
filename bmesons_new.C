@@ -102,6 +102,11 @@ const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.8};
 const std::vector<int> BDTnbins_bs = {20, 30, 20};
 const std::vector<int> BDTnbins_bp(5, 40);
 
+// initial values for error function / signal ratio
+const std::vector<double> ini_f_erf = {1, 1, 0.2, 0.2, 0.2};
+// // using polynomial functions
+// const std::vector<unsigned> 
+
 using namespace RooStats;
 using namespace RooFit;
 using namespace std;
@@ -1322,7 +1327,7 @@ if( choice != "scale_factor"){
     n2_swp = new RooRealVar("n2_swp", "n2_swp", 10., 0., 300.);
     }
 
-   sigma1 = new RooRealVar("sigma1","sigma1",0.02,0.005,0.035);
+   sigma1 = new RooRealVar("sigma1","sigma1",0.02,0.005,0.02);
    ratio_sigma12 = new RooRealVar("ratio_sigma12","ratio_sigma12", 2, 0.01, 10);
    // sigma2 = new RooRealVar("sigma2","sigma2",0.01,0.005,0.5);
    sigma2 = new RooProduct("sigma2", "sigma2", RooArgList(*sigma1, *ratio_sigma12));
@@ -1379,21 +1384,28 @@ cout << "Defining PDF" << endl;
   //error function (for JPsi X peaking background)
   m_nonprompt_shift->setConstant(kTRUE);
   m_nonprompt_scale->setConstant(kTRUE);
-  RooGenericPdf* erf = new RooGenericPdf("erf","erf","TMath::Erfc((Bmass-m_nonprompt_shift)/m_nonprompt_scale)",RooArgList(Bmass,*m_nonprompt_scale,*m_nonprompt_shift));
+  RooGenericPdf* erf = 0;
+  if (ipt > 0) {
+    erf = new RooGenericPdf("erf","erf","TMath::Erfc((Bmass-m_nonprompt_shift)/m_nonprompt_scale)",RooArgList(Bmass,*m_nonprompt_scale,*m_nonprompt_shift));
+  }
   TString npfit_old = "701.019629*TMath::Erf((Bmass-5.140349)/-0.035471)+701.019629+16.946432*TMath::Gaus(Bmass,5.343914,0.040000)/(sqrt(2*3.14159)*0.040000)";
   // (std::vector<double> &) { 755.17868, 5.0924095, -0.10751896, 34.380383, 5.1021800, 0.029428403, 23.219185, 5.3528568, 0.062959266 }
 
   TString npfit_bdt = " 755.17868*TMath::Erf((Bmass-5.0924095)/-0.10751896)+ 755.17868 + 34.380383*TMath::Gaus(Bmass, 5.10218, 0.029428403)/(sqrt(2*3.14159)*0.029428403) + 23.219185*TMath::Gaus(Bmass, 5.3528568,0.062959266)/(sqrt(2*3.14159)*23.219185)";
 
   TString npfit_nobdt = "4840.77*TMath::Erf((Bmass-4.6)/-0.860721)+ 4840.77 + 81.3536*TMath::Gaus(Bmass, 5.06, 0.069)/(sqrt(2*3.14159)*0.069) + 0.1032*TMath::Gaus(Bmass, 5.36,0.0914)/(sqrt(2*3.14159)*0.0914)";
-  // RooGenericPdf* erf = new RooGenericPdf("erf","erf", npfit_bdt, RooArgSet(Bmass));
- 
-  RooPolynomial* fit_side = 0;
+  if (ipt <= 0) {
+    erf = new RooGenericPdf("erf","erf", npfit_bdt, RooArgSet(Bmass));
+  }
+
+  RooAbsPdf* fit_side = 0;
+  bool use_polynomial_for_background = (ipt == 0);
+
   if (use_polynomial_for_background) {
-    //exponential (for combinatorial background)
-    RooExponential* fit_side = new RooExponential("fit_side","fit_side",Bmass,*lambda);
+    fit_side = new RooPolynomial("fit_side", "fit_side", Bmass, RooArgList(*p1, *p2, *p3), 1);
   } else {
-    RooPolynomial* fit_side = new RooPolynomial("fit_side", "fit_side", Bmass, RooArgList(*p1, *p2, *p3), 1);
+    //exponential (for combinatorial background)
+    fit_side = new RooExponential("fit_side","fit_side",Bmass,*lambda);
   }
 
   // 1st order polynomial (combinatorial background - pdf systematics)
@@ -1473,10 +1485,13 @@ cout << "Definig B0 model" << endl;
   RooRealVar* n_signal = new RooRealVar("n_signal","n_signal",n_signal_initial,0.,(data->sumEntries())*2);
   RooRealVar* n_signal_swp = new RooRealVar("n_signal_swp","n_signal_swp",n_signal_initial,0.,(data->sumEntries())*2);
   RooRealVar* n_combinatorial = new RooRealVar("n_combinatorial","n_combinatorial",n_combinatorial_initial,0.,data->sumEntries());
-  RooRealVar* f_erf = new RooRealVar("f_erf","f_erf",0.2,0.,5);
+  RooRealVar* f_erf = new RooRealVar("f_erf","f_erf", ini_f_erf[ipt], 0.2, 5);
   RooProduct* n_erf = new RooProduct("n_erf","n_erf",RooArgList(*n_signal,*f_erf));
-  RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.038, 0.040);
-  f_jpsipi->setConstant(kTRUE);
+  // RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.038, 0.040);
+  RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.038, 1);
+  if (ipt > 0) {
+    f_jpsipi->setConstant(kTRUE);
+  }
   RooProduct* n_jpsipi = new RooProduct("n_jpsipi","n_jpsipi",RooArgList(*n_signal,*f_jpsipi)); 
 
   // don't fit the peaking backgrounds for lower pT
@@ -1512,9 +1527,8 @@ cout << "Definig B0 model" << endl;
 
   if(particle == 0){//B+
     if(choice == "nominal"){
-      // RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
-      RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*jpsipi), RooArgList(*n_signal,*n_combinatorial, *n_jpsipi));
-      // RooAddPdf model("model","model",RooArgList(*signal1,*fit_side),RooArgList(*n_signal,*n_combinatorial));
+      RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
+      // RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*jpsipi), RooArgList(*n_signal,*n_combinatorial, *n_jpsipi));
       w.import(model);
       w.import(*lambda);
       w.import(*f_erf);
