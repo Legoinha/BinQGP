@@ -114,15 +114,17 @@ using namespace RooStats;
 using namespace RooFit;
 using namespace std;
 
-std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, TString* label, int n_var);
-std::vector<TH1D*> splot_method(RooWorkspace& w, TString* label, int n_var);
+std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> label, int n_var);
+std::vector<TH1D*> splot_method(RooWorkspace& w, std::vector<TString> label, int n_var);
 
 void set_up_workspace_variables(RooWorkspace& w);
 TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight); 
 TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n); 
 void AddWeights(TTree* t);
-void read_data(RooWorkspace& w,int n_var, TString *label, TString f_input);
-void read_mc(RooWorkspace& w,int n_var, TString *label, TString f_input);
+void read_data(RooWorkspace& w, std::vector<TString> label, TString f_input);
+void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input);
+void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
+void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
 void build_pdf (RooWorkspace& w, std::string choice, RooArgSet &c_vars, int ipt);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
@@ -131,8 +133,8 @@ void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
 void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString, int, int);
 void DIF_analysis(RooWorkspace& w, const char* variable, TString, RooArgSet &c_vars);
 double get_yield_syst(RooDataSet *dt, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma, const char* name_var);
-void fit_syst_error(TString, int n_var, TString* label, RooArgSet &c_vars);
-void fit_syst_error_bin(TString, int n_var, TString* label, double a, double b, RooArgSet &c_vars);
+void fit_syst_error(TString, int n_var, std::vector<TString> label, RooArgSet &c_vars);
+void fit_syst_error_bin(TString, int n_var, std::vector<TString> label, double a, double b, RooArgSet &c_vars);
 void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooArgSet &c_pdfs);
 double MC_fit_result(TString input_file, TString inVarName);
 
@@ -239,37 +241,38 @@ void bmesons_new(int ipt = 3){
 
 #if particle == 0
 
-  // TString variables[] = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5", "BDT_pt_50_100" */};  
-  TString variables[] = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50"};
+  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5", "BDT_pt_50_100" */};  
+  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By"};
 
-  // TString variables[] = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt"};
+  // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt"};
 
 #elif particle == 1
 
-  // TString variables[] = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr" /*,"BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5",*/ };
-  TString variables[] = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20"};
+  // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV","Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr" /*,"BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5",*/ };
+  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By"};
 
 #elif particle == 2
 
-  TString variables[] = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr", "BDT_pt_0_2", "BDT_pt_2_3", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50","nMult"};
+  std::vector<TString> variables = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr", "BDT_pt_0_2", "BDT_pt_2_3", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50","nMult"};
 
 #endif
 
   if( (particle != 2) && (MC == 1) ){return;} // only fits the MC for B0
 
-  n_var = sizeof(variables)/sizeof(variables[0]);
+  n_var = variables.size();
   cout << "number of variables in TString: "<< n_var << endl;
 
    RooWorkspace* ws = new RooWorkspace("ws");
 
    set_up_workspace_variables(*ws);
 
-  if( (MC == 1) && (component == 0) ){read_data(*ws,n_var, variables, input_file_mc);}
-  else if( (MC == 1) && (component == 1)){read_data(*ws,n_var, variables, input_file_mc_swap);}
+  if( (MC == 1) && (component == 0) ){read_data(*ws, variables, input_file_mc);}
+  else if( (MC == 1) && (component == 1)){read_data(*ws, variables, input_file_mc_swap);}
   else if(MC == 0) {
-    read_data(*ws,n_var, variables, input_file_data);
-    read_mc(*ws, n_var, variables, input_file_mc);
+    read_data(*ws, variables, input_file_data);
+    read_mc(*ws, variables, input_file_mc);
   }
+
 
   if(MC == 1){cout << "Running fit on MC" << endl;}
   else if(MC == 0){cout << "Running fit on data" << endl;}
@@ -1121,51 +1124,57 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,  std::vector<TSt
 //get_ratio ends
 
 //read_data
-void read_data(RooWorkspace& w,int n_var, TString*label, TString f_input){
-  TFile* fin_data = new TFile(f_input);
-  TTree* t1_data;
-  
-  if(particle == 0){t1_data = (TTree*)fin_data->Get("ntKp");}
-  else if(particle == 1){t1_data = (TTree*)fin_data->Get("ntphi");}
-  else if(particle == 2){t1_data = (TTree*)fin_data->Get("ntKstar");}
-
-  RooArgList arg_list ("arg_list");
-
-  arg_list.add(*(w.var("Bmass")));
-  for(int i=0; i<n_var; i++){arg_list.add(*(w.var(label[i])));}
-  
-  RooDataSet* data = new RooDataSet("data","data",t1_data,arg_list);
-  cout << "f_input = "<< f_input << "     data->sumEntries() = "<< data->sumEntries()<< endl;
-
-  // debug
-  // TH1D* hdeb = (TH1D*) reduceddata_central->createHistogram("BDT_pt_5_7", *w.var("BDT_pt_5_7"));
-
-  // auto* data = ws->data("data");
-  // TH1D* hdeb = (TH1D*) data->createHistogram("BDT_pt_5_7", *w.var("BDT_pt_5_7"));
-  // TCanvas cdeb("cdeb", "cdeb");
-  // hdeb->Draw();
-  // cdeb.SaveAs("hdebug.png");
-  // return;
-  w.import(*data, Rename("data"));
-
+void read_data(RooWorkspace& w, std::vector<TString> label, TString f_input){
+  TString treeName;
+  if(particle == 0) {
+    treeName = "ntKp";
+  } else if (particle == 1) {
+    treeName = "ntphi";
+  } else {
+    treeName = "ntKstar";
+  }
+  read_samples(w, label, f_input, treeName, "data");
 }
 
-void read_mc(RooWorkspace& w,int n_var, TString*label, TString f_input){
-  TFile* fin_mc = new TFile(f_input);
-  TTree* t1_mc;
+void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input){
+  TString treeName;
+  if(particle == 0) {
+    treeName = "ntKp";
+  } else if (particle == 1) {
+    treeName = "ntphi";
+  } else {
+    std::cerr << "Invalid particle type: " << particle << "!\n";
+    return;
+  }
+  read_samples(w, label, f_input, treeName, "mc");
+}
 
-  if(particle == 0){t1_mc = (TTree*) fin_mc->Get("ntKp");}
-  else if(particle == 1){t1_mc = (TTree*)fin_mc->Get("ntphi");}
+void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input){
+  std::vector<TString> jpsi_vars = {"By", "Bpt"};
+  read_samples(w, jpsi_vars, f_input, "ntnp", "jpsinp");
+}
+
+// work horse to read data/MC/jpsi
+void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TString treeName, TString sample){
+  TFile* fin = new TFile(fName);
+  TTree* t1;
+
+  t1 = (TTree*) fin->Get(treeName);
+  int n_var = label.size();
+  cout << "size: " << n_var  << "\n";
+
 
   RooArgList arg_list ("arg_list");
-
+  // read the fitting variable
   arg_list.add(*(w.var("Bmass")));
-  for(int i=0; i<n_var; i++){arg_list.add(*(w.var(label[i])));}
+  // read additional variables
+  for(auto lab : label){
+    arg_list.add(*(w.var(lab)));
+  }
 
-  RooDataSet* mc = new RooDataSet("mc","mc",t1_mc,arg_list);
-  cout << "f_input = "<< f_input << "     mc->sumEntries() = "<< mc->sumEntries()<< endl;
-
-  w.import(*mc, Rename("mc"));
+  RooDataSet* ds = new RooDataSet(sample, sample, t1, arg_list);
+  cout << "input filename = " << fName << "; entries: " << ds->sumEntries() << endl;
+  w.import(*ds, Rename(sample));
 }
 
 //build_pdf
@@ -1606,12 +1615,12 @@ cout << "Definig B0 model" << endl;
 } 
 //build_pdf ends
 
- void fit_syst_error(TString fname, int n_var, TString* label, RooArgSet &c_vars){
+void fit_syst_error(TString fname, int n_var, std::vector<TString> label, RooArgSet &c_vars){
   //returns the yield's systematic uncertainty
   
   RooWorkspace* ws = new RooWorkspace("ws");
   set_up_workspace_variables(*ws);
-  read_data(*ws, n_var, label, fname);
+  read_data(*ws, label, fname);
 
   RooDataSet* data = (RooDataSet*) ws->data("data");
 
@@ -1649,12 +1658,12 @@ cout << "Definig B0 model" << endl;
 }
 //fit_syst_error ends
 
-void fit_syst_error_bin(TString fname, int n_var, TString* label, double bin_min, double bin_max, RooArgSet &c_vars){
+void fit_syst_error_bin(TString fname, int n_var, std::vector<TString> label, double bin_min, double bin_max, RooArgSet &c_vars){
   //prints the yield's systematic uncertainty per bin
   
   RooWorkspace* ws = new RooWorkspace("ws");
   set_up_workspace_variables(*ws);
-  read_data(*ws,n_var, label,fname);
+  read_data(*ws, label, fname);
 
   //  RooRealVar* Bpt  = ws->var("Bpt");
   RooDataSet* data = (RooDataSet*) ws->data("data");
@@ -2099,7 +2108,7 @@ cout <<"ploting complete fit"<< endl;
 //plot_complete_fit ends
 
 //SIDEBAND SUBTRACTION//
-std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, TString* label, int n_var) {
+std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> label, int n_var) {
   
   RooDataSet* data = (RooDataSet*) w.data("data");
   RooAbsPdf* BpModel;
@@ -2834,7 +2843,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
 //make_splot ends
 
 //SPLOT_METHOD//
-std::vector<TH1D*> splot_method(RooWorkspace& w, TString* label, int n_var){
+std::vector<TH1D*> splot_method(RooWorkspace& w, std::vector<TString> label, int n_var){
 
   std::vector<TH1D*> histos;
   for(int i = 0;i<n_var;i++){histos.push_back(make_splot(w,40,label[i]));}
