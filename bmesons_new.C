@@ -114,7 +114,7 @@ using namespace RooStats;
 using namespace RooFit;
 using namespace std;
 
-std::vector<TH1D*> sideband_subtraction(RooWorkspace w, TString* label, int n_var);
+std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, TString* label, int n_var);
 std::vector<TH1D*> splot_method(RooWorkspace& w, TString* label, int n_var);
 
 void set_up_workspace_variables(RooWorkspace& w);
