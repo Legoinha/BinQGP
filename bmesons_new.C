@@ -2099,7 +2099,7 @@ cout <<"ploting complete fit"<< endl;
 //plot_complete_fit ends
 
 //SIDEBAND SUBTRACTION//
-std::vector<TH1D*> sideband_subtraction(RooWorkspace w, TString* label, int n_var) {
+std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, TString* label, int n_var) {
   
   RooDataSet* data = (RooDataSet*) w.data("data");
   RooAbsPdf* BpModel;
