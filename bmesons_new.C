@@ -454,10 +454,12 @@ cout << "AQUI_"<<i<<endl;
     leg->Draw("same");
  
     if(particle == 0){
+      gSystem->Exec("mkdir -p ./results/Bu/mc_validation_plots/ss_sp/pdfs/" );
       a.SaveAs("./results/Bu/mc_validation_plots/ss_sp/pdfs/" + names[i]+"_mc_validation_Bu.pdf");
       a.SaveAs("./results/Bu/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bu.gif");
     }
     else if(particle == 1){
+      gSystem->Exec("mkdir -p ./results/Bs/mc_validation_plots/ss_sp/pdfs/" );
       a.SaveAs("./results/Bs/mc_validation_plots/ss_sp/pdfs/" + names[i]+"_mc_validation_Bs.pdf");
       a.SaveAs("./results/Bs/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bs.gif");
     }
@@ -575,10 +577,12 @@ cout << "AQUI_"<<i<<endl;
     leg->Draw("same");
 	
     if(particle == 0){
+      gSystem->Exec("mkdir -p ./results/Bu/mc_validation_plots/ss_mc_sp/pdfs/" );
       d.SaveAs("./results/Bu/mc_validation_plots/ss_mc_sp/pdfs/"+names[i]+"_mc_validation_Bu.pdf");
       d.SaveAs("./results/Bu/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bu.gif");
     }
     else if(particle == 1){
+      gSystem->Exec("mkdir -p ./results/Bs/mc_validation_plots/ss_mc_sp/pdfs/" );
       d.SaveAs("./results/Bs/mc_validation_plots/ss_mc_sp/pdfs/"+names[i]+"_mc_validation_Bs.pdf");
       d.SaveAs("./results/Bs/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bs.gif");
     }
@@ -1103,6 +1107,7 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,  std::vector<TSt
     
     TCanvas c;
     h_aux->Draw();    
+    gSystem->Exec("mkdir -p " + dir_name + "pdfs");
     c.SaveAs(dir_name+"pdfs/"+v_name.at(i) + "_weights.pdf");   
     c.SaveAs(dir_name+v_name.at(i) + "_weights.gif");
     //output: a root file and plots 
@@ -2387,9 +2392,11 @@ TLegend *leg = new TLegend (0.7, 0.9, 0.9, 1.0);
   leg->Draw("same");
 
   if(particle == 0){
+    gSystem->Exec("mkdir -p ./results/Bu/sideband_sub/pdfs");
     c.SaveAs("./results/Bu/sideband_sub/pdfs/"+name + "sideband_sub_Bu.pdf");
     c.SaveAs("./results/Bu/sideband_sub/"+name + "sideband_sub_Bu.gif");
     }else if(particle == 1){
+    gSystem->Exec("mkdir -p ./results/Bs/sideband_sub/pdfs");
     c.SaveAs("./results/Bs/sideband_sub/pdfs/"+name + "sideband_sub_Bs.pdf");
     c.SaveAs("./results/Bs/sideband_sub/"+name + "sideband_sub_Bs.gif");
     }else if(particle == 2){
@@ -2609,9 +2616,11 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   cdata->cd(4);  ptframe2Bg->Draw();
 
   if(particle == 0){
+    gSystem->Exec("mkdir -p ./results/Bu/splot/Bmass/");
     cdata->SaveAs("./results/Bu/splot/Bmass/"+label+"sPlot_Bu.gif");
     //cdata->SaveAs("./results/Bu/splot/Bmass/pdfs/"+label+"sPlot_Bu.pdf");
   }else if(particle == 1){
+    gSystem->Exec("mkdir -p ./results/Bs/splot/Bmass/");
     cdata->SaveAs("./results/Bs/splot/Bmass/"+label+"sPlot_Bs.gif");
     //cdata->SaveAs("./results/Bs/splot/Bmass/pdfs/"+label+"sPlot_Bs.pdf");
   }else if(particle == 2){
@@ -2798,9 +2807,11 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   legend->Draw();
 
   if(particle == 0){
+    gSystem->Exec("mkdir -p ./results/Bu/splot/sig_bkg/pdfs");
     sig_bkg->SaveAs("./results/Bu/splot/sig_bkg/"+label+"sPlot_Bu.gif");
     sig_bkg->SaveAs("./results/Bu/splot/sig_bkg/pdfs/"+label+"sPlot_Bu.pdf");
   }else if(particle == 1){
+    gSystem->Exec("mkdir -p ./results/Bs/splot/sig_bkg/pdfs");
     sig_bkg->SaveAs("./results/Bs/splot/sig_bkg/"+label+"sPlot_Bs.gif");
     sig_bkg->SaveAs("./results/Bs/splot/sig_bkg/pdfs/"+label+"sPlot_Bs.pdf");
   }else if(particle == 2){
