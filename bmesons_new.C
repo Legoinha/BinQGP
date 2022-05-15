@@ -14,8 +14,8 @@
 #include <math.h>
 #include "RooRealProxy.h"
 #include "RooAbsReal.h"
-#include "RooDoubleCBFast.h"
-#include "RooDoubleCBFast.cc"
+// #include "RooDoubleCBFast.h"
+// #include "RooDoubleCBFast.cc"
 #include "CMS_lumi.C"
 #include <iomanip>
 #include <sstream>
@@ -71,6 +71,9 @@
 #include <string>
 #include <stdio.h>
 #include <unordered_map>
+#include "TROOT.h"
+#include "TGraphErrors.h"
+#include "RooCBShape.h"
 constexpr bool early = false;
 // constexpr bool early = true;
 
@@ -1383,7 +1386,7 @@ cout << "Defining PDF" << endl;
   RooAddPdf* two_gauss_CB = new RooAddPdf("two_gauss_CB","two_gauss_CB",RooArgList(*signal,*CB1),*cofs);
 
   //FOR B0, WT COMPONENT             
-  RooDoubleCBFast* double_CB_swp = new RooDoubleCBFast("double_CB_swp", "double_CB_swp", Bmass, *mean_swp, *sigma1_swp, *alpha1_swp, *n1_swp, *alpha2_swp, *n2_swp);
+  // RooDoubleCBFast* double_CB_swp = new RooDoubleCBFast("double_CB_swp", "double_CB_swp", Bmass, *mean_swp, *sigma1_swp, *alpha1_swp, *n1_swp, *alpha2_swp, *n2_swp);
 
 //BACKGROUND//
   //error function (for JPsi X peaking background)
@@ -1460,7 +1463,7 @@ cout << "Definig B0 model" << endl;
 
   // WT component
   RooFormulaVar* mass_swp;
-  RooDoubleCBFast* double_CB_wt;
+  // RooDoubleCBFast* double_CB_wt;
   if((particle == 2)&&(MC==0)){ 
     mean_difference = new RooRealVar("mean_difference", "mean_difference", MC_fit_result(input_file_WT, "mean_swp") - MC_fit_result(input_file_RT, "mean"), -2, 2, "GeV");
     RooProduct* mean_difference_fix = 0;
@@ -1470,7 +1473,7 @@ cout << "Definig B0 model" << endl;
       mass_swp = new RooFormulaVar("mass_swp", "mass_swp", "@0+@1", RooArgList(*mean,*mean_difference_fix));
     }else if (choice != "scale_factor"){mass_swp = new RooFormulaVar("mass_swp", "mass_swp", "@0+@1", RooArgList(*mean,*mean_difference));}
 
-  double_CB_wt = new RooDoubleCBFast("double_CB_wt", "double_CB_wt", Bmass, *mass_swp, *sigma1_swp, *alpha1_swp, *n1_swp, *alpha2_swp, *n2_swp);
+  // double_CB_wt = new RooDoubleCBFast("double_CB_wt", "double_CB_wt", Bmass, *mass_swp, *sigma1_swp, *alpha1_swp, *n1_swp, *alpha2_swp, *n2_swp);
   }
   RooProduct* WT_yield = new RooProduct("WT_yield","WT_yield",RooArgList(*f_swap,*RT_yield));
   
@@ -1478,12 +1481,12 @@ cout << "Definig B0 model" << endl;
   RooCBShape* cb1_rt_sf;
   RooCBShape* cb2_rt_sf; 
   RooAddPdf* sum_cb_rt_sf; 
-  RooDoubleCBFast* double_CB_wt_sf;
-  if((particle == 2) && (MC == 0) && (choice == "scale_factor")){
-    cb1_rt_sf = new RooCBShape("cb1_rt_sf","cb1_rt_sf",Bmass,*mean,*sigma1_fix,*alpha1,*n1);
-    cb2_rt_sf = new RooCBShape("cb2_rt_sf","cb2_rt_sf",Bmass,*mean,*sigma2_fix,*alpha2,*n2);
-    sum_cb_rt_sf = new RooAddPdf("sum_cb_rt_sf","sum_cb_rt_sf",RooArgList(*cb1_rt_sf,*cb2_rt_sf),*cofs);
-    double_CB_wt_sf = new RooDoubleCBFast("double_CB_wt_sf", "double_CB_wt_sf", Bmass, *mass_swp, *sigma1_swp_fix, *alpha1_swp, *n1_swp, *alpha2_swp, *n2_swp);}
+  // RooDoubleCBFast* double_CB_wt_sf;
+  // if((particle == 2) && (MC == 0) && (choice == "scale_factor")){
+  //   cb1_rt_sf = new RooCBShape("cb1_rt_sf","cb1_rt_sf",Bmass,*mean,*sigma1_fix,*alpha1,*n1);
+  //   cb2_rt_sf = new RooCBShape("cb2_rt_sf","cb2_rt_sf",Bmass,*mean,*sigma2_fix,*alpha2,*n2);
+  //   sum_cb_rt_sf = new RooAddPdf("sum_cb_rt_sf","sum_cb_rt_sf",RooArgList(*cb1_rt_sf,*cb2_rt_sf),*cofs);
+  //   double_CB_wt_sf = new RooDoubleCBFast("double_CB_wt_sf", "double_CB_wt_sf", Bmass, *mass_swp, *sigma1_swp_fix, *alpha1_swp, *n1_swp, *alpha2_swp, *n2_swp);}
 
   // NORMALISATIONS
   double n_combinatorial_initial = data->sumEntries() - n_signal_initial;
@@ -1525,7 +1528,7 @@ cout << "Definig B0 model" << endl;
   c_vars.add(*mean_difference);
   constr_wt_list = RooArgList(c_pdfs_WT);
   constr_wt_list.add(*mean_constr);
-  constr_wt_list.add(*double_CB_wt);
+  // constr_wt_list.add(*double_CB_wt);
   wt_pdf = new RooProdPdf("wt_pdf", "wt_pdf", constr_wt_list);
   }
 
@@ -1585,8 +1588,8 @@ cout << "Definig B0 model" << endl;
         RooAddPdf model("model","model",RooArgList(*rt_pdf,*wt_pdf,*poly_bkg),RooArgList(*RT_yield,*WT_yield,*n_combinatorial));
         w.import(model);
       }else if(choice == "scale_factor"){
-        RooAddPdf model("model","model",RooArgList(*sum_cb_rt_sf,*double_CB_wt_sf,*fit_side),RooArgList(*RT_yield,*WT_yield,*n_combinatorial));
-        w.import(model);
+        // RooAddPdf model("model","model",RooArgList(*sum_cb_rt_sf,*double_CB_wt_sf,*fit_side),RooArgList(*RT_yield,*WT_yield,*n_combinatorial));
+        // w.import(model);
       }
     }
     else if(MC == 1){
@@ -1595,8 +1598,8 @@ cout << "Definig B0 model" << endl;
         w.import(model);
       }
       else if(component == 1){ //WT
-        RooAddPdf model("model", "model",RooArgList(*double_CB_swp),RooArgList(*n_signal_swp));
-        w.import(model);
+        // RooAddPdf model("model", "model",RooArgList(*double_CB_swp),RooArgList(*n_signal_swp));
+        // w.import(model);
       }
     }
   }
