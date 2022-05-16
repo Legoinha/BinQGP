@@ -77,6 +77,11 @@
 constexpr bool early = false;
 // constexpr bool early = true;
 
+// Whether to fit B mass in different y bins
+constexpr bool fit_ybins = true;
+// Use NP Jpsi shape for mass fitting (Err fn + Gaussians)
+constexpr bool include_np = true;
+
 // should be constexpr, but let's simplify runtime arguments and omit that for now
 const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20"};
 const std::vector<TString> BDTvar_bp = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20"};
@@ -110,6 +115,25 @@ const std::vector<double> ini_f_erf = {1, 1, 0.2, 0.2, 0.2};
 // // using polynomial functions
 // const std::vector<unsigned> 
 
+using d_matrix = std::vector<std::vector<double> >;
+   // initial values for NP Jpsi fit
+const d_matrix ini_jpsi_g1_f = {{0.2, 0.2},
+                                {0.6, 0.4},
+                                {0.2, 0.2},
+                                {0.4, 0.4},
+                                {0.4, 0.4}};
+const d_matrix ini_jpsi_poly_f = {{0.9, 0.9},
+                                  {0.8, 0.9},
+                                  {0.8, 0.8},
+                                  {0.6, 0.6},
+                                  {0.6, 0.6}};
+// slope of the continuum bg
+const d_matrix ini_jpsi_p1 = {{0, -0.15},
+                              {0, -0.05},
+                              {0, -0.1},
+                              {0, -0.15},
+                              {0, -0.1}};
+
 using namespace RooStats;
 using namespace RooFit;
 using namespace std;
@@ -125,8 +149,10 @@ void read_data(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
-void build_pdf (RooWorkspace& w, std::string choice, RooArgSet &c_vars, int ipt);
-void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname);
+void reduce_ybins(RooWorkspace& w, int iy);
+void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
+void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy);
+void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
@@ -137,8 +163,10 @@ void fit_syst_error(TString, int n_var, std::vector<TString> label, RooArgSet &c
 void fit_syst_error_bin(TString, int n_var, std::vector<TString> label, double a, double b, RooArgSet &c_vars);
 void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooArgSet &c_pdfs);
 double MC_fit_result(TString input_file, TString inVarName);
+TString ystring(int iy);
+void save_validation_plot(TCanvas& can, TString name, TString comp, int ipt, int iy);
 
-const char* VAR_dif_A = "Bpt";
+const char* VAR_dif_A = "By";
 // change according to what we want to compute: "Bpt"  or  "By"  or  "nMul"
 
 // DIF_A
@@ -198,14 +226,17 @@ auto indexBDT = iBDT_bs;
 #endif
 
 
+const std::vector<int> ptlist = {5, 7, 10, 15, 20, 50};
+const std::vector<double> ylist = {0, 1.5, 2.4};
+const std::vector<TString> particleList = {"Bu", "Bs"};
+
    // for B+, ipt is 0--4
    // for Bs, ipt is 1--4
 
-void bmesons_new(int ipt = 3){
+void bmesons_new(int ipt = 3, int iy = 1){
 
   gROOT->SetBatch();
 
-  std::vector<int> ptlist = {5, 7, 10, 15, 20, 50};
 
   int n_var;
   TString input_file_data;
@@ -235,6 +266,7 @@ void bmesons_new(int ipt = 3){
   else if(particle == 2){input_file_reweighted_mc = "./results/B0/mc_validation_plots/weights/tree_with_weight.root";}
 */
   
+  TString input_file_jpsi = "../files/jpsinp.root";
   std::vector<TH1D*> histos_sideband_sub;
   std::vector<TH1D*> histos_mc;
   std::vector<TH1D*> histos_splot;
@@ -271,6 +303,7 @@ void bmesons_new(int ipt = 3){
   else if(MC == 0) {
     read_data(*ws, variables, input_file_data);
     read_mc(*ws, variables, input_file_mc);
+    read_jpsinp(*ws, variables, input_file_jpsi);
   }
 
 
@@ -296,9 +329,18 @@ void bmesons_new(int ipt = 3){
 
   RooArgSet c_vars;
 
-  build_pdf(*ws, "nominal", c_vars, ipt);
+  reduce_ybins(*ws, iy);
+  TString signal_shape = (ipt == 0)? "sig3gauss" : "nominal";
+  cout << "choice:" << signal_shape << "\n";
+
+  build_pdf(*ws, signal_shape, c_vars, ipt, iy);
+  if (include_np) {
+    fit_jpsinp(*ws, "nominal", c_vars, ipt, iy);
+  }
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
-  plot_complete_fit(*ws, c_vars, subname);
+  plot_complete_fit(*ws, c_vars, subname, iy);
+  auto data = ws->data("data");
+  data->Print();
   if (early) {return;}
   if(MC == 1){return;}
 
@@ -397,22 +439,7 @@ cout << "AQUI_"<<i<<endl;
     leg->SetTextSize(0.03);
     leg->Draw("same");
    
-    if(particle == 0){
-      TString ptdir = Form("./results/Bu/%i_%i", ptlist[ipt], ptlist[ipt+1]);
-      gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/ss_mc/pdfs/");
-      c.SaveAs(ptdir + "/mc_validation_plots/ss_mc/pdfs/" + names[i]+"_mc_validation_Bu.pdf");
-      c.SaveAs(ptdir + "/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bu.gif");
-    } 
-    else if(particle == 1){
-      TString ptdir = Form("./results/Bs/%i_%i", ptlist[ipt], ptlist[ipt+1]);
-      gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/ss_mc/pdfs/");
-      c.SaveAs(ptdir + "/mc_validation_plots/ss_mc/pdfs/" + names[i]+"_mc_validation_Bs.pdf");
-      c.SaveAs(ptdir + "/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_Bs.gif");
-    }
-    else if(particle == 2){
-      c.SaveAs("./results/B0/mc_validation_plots/ss_mc/pdfs/" + names[i]+"_mc_validation_B0.pdf");
-      c.SaveAs("./results/B0/mc_validation_plots/ss_mc/" + names[i]+"_mc_validation_B0.gif");
-    } 
+    save_validation_plot(c, names[i], "ss_mc", ipt, iy);
   }
   
   //SPlot vs. Sideband subtraction
@@ -523,22 +550,7 @@ cout << "AQUI_"<<i<<endl;
     leg->SetTextSize(0.03);
     leg->Draw("same");
 	
-    if(particle == 0){
-      TString ptdir = Form("./results/Bu/%i_%i", ptlist[ipt], ptlist[ipt+1]);
-      gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/mc_sp/pdfs/");
-      b.SaveAs(ptdir + "/mc_validation_plots/mc_sp/pdfs/" + names[i]+"_mc_validation_Bu.pdf");
-      b.SaveAs(ptdir + "/mc_validation_plots/mc_sp/" + names[i]+"_mc_validation_Bu.gif");
-    }
-    else if(particle == 1){
-      TString ptdir = Form("./results/Bs/%i_%i", ptlist[ipt], ptlist[ipt+1]);
-      gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/mc_sp/pdfs/");
-      b.SaveAs(ptdir + "/mc_validation_plots/mc_sp/pdfs/"+names[i]+"_mc_validation_Bs.pdf");
-      b.SaveAs(ptdir + "/mc_validation_plots/mc_sp/"+names[i]+"_mc_validation_Bs.gif");
-    }
-    else if(particle == 2){
-      b.SaveAs("./results/B0/mc_validation_plots/mc_sp/pdfs/"+names[i]+"_mc_validation_B0.pdf");
-      b.SaveAs("./results/B0/mc_validation_plots/mc_sp/"+names[i]+"_mc_validation_B0.gif");
-    }
+    save_validation_plot(b, names[i], "mc_sp", ipt, iy);
   }
  
   //Sideband subtraction vs. Monte Carlo vs SPlot
@@ -1174,11 +1186,28 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
 
   RooDataSet* ds = new RooDataSet(sample, sample, t1, arg_list);
   cout << "input filename = " << fName << "; entries: " << ds->sumEntries() << endl;
-  w.import(*ds, Rename(sample));
+  w.import(*ds, Rename(sample + "_raw"));
+}
+
+void reduce_ybins(RooWorkspace& w, int iy) {
+  RooDataSet* data_raw = (RooDataSet*) w.data("data_raw");
+  RooDataSet* mc_raw = (RooDataSet*) w.data("mc_raw");
+  RooDataSet* data = data_raw;
+  RooDataSet* mc = mc_raw;
+  if (fit_ybins) {
+    data = (RooDataSet*) data->
+      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
+    mc = (RooDataSet*) mc->
+      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
+  }
+  w.import(*data, Rename("data"));
+  w.import(*mc, Rename("mc"));
+  RooDataSet* jpsi = (RooDataSet*) w.data("jpsinp_raw");
+  w.import(*jpsi, Rename("jpsinp"));
 }
 
 //build_pdf
-void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars, int ipt=3){
+void build_pdf(RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt=3, int iy=1){
 
   RooRealVar Bmass = *(w.var("Bmass"));
   RooDataSet* data = (RooDataSet*)w.data("data");
@@ -1224,7 +1253,9 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars, int ipt=3
   // RooRealVar* sigma2 = 0;
   RooProduct* sigma2;
   RooRealVar* ratio_sigma12 = 0;
-  RooRealVar* sigma3 = 0;
+  RooRealVar* ratio_sigma13 = 0;
+  // RooRealVar* sigma3 = 0;
+  RooProduct* sigma3 = 0;
   RooRealVar* sigma_cb1 = 0;
   RooRealVar* sigma_cb2 = 0;
   RooRealVar* sigma1_swp = 0;
@@ -1262,6 +1293,12 @@ void build_pdf(RooWorkspace& w, std::string choice, RooArgSet &c_vars, int ipt=3
   RooRealVar* p1 = 0;
   RooRealVar* p2 = 0;
   RooRealVar* p3 = 0;
+
+  // non-prompt jpsi
+  RooRealVar np_p0("np_p0", "np_p0", 100, 0, 2000);
+  RooRealVar np_p1("np_p1", "np_p1", ini_jpsi_p1[ipt][iy], -10., 10.);
+  RooRealVar np_mean1("np_mean1", "np_mean1", 5.2, 5, 6);
+  RooRealVar np_sigma1("np_sigma1", "np_sigma1", 0.02, 0.005, 0.5);
 
   if( (particle == 2) && (MC == 0)){
 
@@ -1346,6 +1383,7 @@ if( choice != "scale_factor"){
 
    sigma1 = new RooRealVar("sigma1","sigma1",0.02,0.005,0.02);
    ratio_sigma12 = new RooRealVar("ratio_sigma12","ratio_sigma12", 2, 0.01, 10);
+   ratio_sigma13 = new RooRealVar("ratio_sigma13","ratio_sigma13", 2, 0.01, 10);
    // sigma2 = new RooRealVar("sigma2","sigma2",0.01,0.005,0.5);
    sigma2 = new RooProduct("sigma2", "sigma2", RooArgList(*sigma1, *ratio_sigma12));
    f_swap = new RooRealVar("f_swap","f_swap",0.,0.,1.);
@@ -1353,12 +1391,13 @@ if( choice != "scale_factor"){
    lambda = new RooRealVar("lambda","lambda",-2.,-10.,1.0);
    slope = new RooRealVar("slope","slope", -500, -1000, 1);
    n3 = new RooRealVar("n3", "n3", 100., 0., 400.);
-   sigma3 = new RooRealVar("sigma3","sigma3",0.012,0.010,0.030);
+   // sigma3 = new RooRealVar("sigma3","sigma3",0.012,0.010,0.030);
+   sigma3 = new RooProduct("sigma3", "sigma3", RooArgList(*sigma1, *ratio_sigma13));
    p1 = new RooRealVar("p1", "p1", -23.198, -100., 100.);
    p2 = new RooRealVar("p2", "p2", 9.5195, -10., 10.);
    p3 = new RooRealVar("p3", "p3", -0.90087, -10., 10.);
 
-  m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale", 4.74168e-02, 0, 1);
+  m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale", 1e-02, 0, 1);
   m_nonprompt_shift = new RooRealVar("m_nonprompt_shift", "m_nonprompt_shift", 5.14425, 4.5, 6.);
   m_jpsipi_mean1 = new RooRealVar("m_jpsipi_mean1","m_jpsipi_mean1",5.34693, 5.346, 5.347);
   m_jpsipi_sigma1l = new RooRealVar("m_jpsipi_sigma1l","m_jpsipi_sigma1l",0.0290762,0.010,0.150);
@@ -1381,7 +1420,7 @@ cout << "Defining PDF" << endl;
        // single gaussian
        // RooGaussian* signal = new RooGaussian(*signal1, "signal");
       // triple gaussian
-  		RooGaussian* signal3 = new RooGaussian("signal3","signal3",Bmass,*mean,*sigma3);  
+  		RooGaussian* signal3 = new RooGaussian("signal3","signal3",Bmass, *mean, *sigma3);
   		RooAddPdf* signal_triple = new RooAddPdf("signal_triple","signal_triple",RooArgList(*signal1,*signal2,*signal3),RooArgList(*cofs,*cofs1));
 	
   //CRYSTAL BALL
@@ -1399,21 +1438,39 @@ cout << "Defining PDF" << endl;
 
 //BACKGROUND//
   //error function (for JPsi X peaking background)
-  m_nonprompt_shift->setConstant(kTRUE);
-  m_nonprompt_scale->setConstant(kTRUE);
-  RooGenericPdf* erf = 0;
-  if (ipt > 0) {
-    erf = new RooGenericPdf("erf","erf","TMath::Erfc((Bmass-m_nonprompt_shift)/m_nonprompt_scale)",RooArgList(Bmass,*m_nonprompt_scale,*m_nonprompt_shift));
-  }
+  // m_nonprompt_shift->setConstant(kTRUE);
+  // m_nonprompt_scale->setConstant(kTRUE);
+  // RooAddPdf* erf = 0;
+  // RooGenericPdf poly_jpsi("poly_jpsi", "poly_jpsi", "np_p0 + Bmass * np_p1",
+  //                         RooArgList(Bmass, np_p0, np_p1));
+  RooPolynomial poly_jpsi("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1));
   TString npfit_old = "701.019629*TMath::Erf((Bmass-5.140349)/-0.035471)+701.019629+16.946432*TMath::Gaus(Bmass,5.343914,0.040000)/(sqrt(2*3.14159)*0.040000)";
   // (std::vector<double> &) { 755.17868, 5.0924095, -0.10751896, 34.380383, 5.1021800, 0.029428403, 23.219185, 5.3528568, 0.062959266 }
 
   TString npfit_bdt = " 755.17868*TMath::Erf((Bmass-5.0924095)/-0.10751896)+ 755.17868 + 34.380383*TMath::Gaus(Bmass, 5.10218, 0.029428403)/(sqrt(2*3.14159)*0.029428403) + 23.219185*TMath::Gaus(Bmass, 5.3528568,0.062959266)/(sqrt(2*3.14159)*23.219185)";
 
   TString npfit_nobdt = "4840.77*TMath::Erf((Bmass-4.6)/-0.860721)+ 4840.77 + 81.3536*TMath::Gaus(Bmass, 5.06, 0.069)/(sqrt(2*3.14159)*0.069) + 0.1032*TMath::Gaus(Bmass, 5.36,0.0914)/(sqrt(2*3.14159)*0.0914)";
-  if (ipt <= 0) {
-    erf = new RooGenericPdf("erf","erf", npfit_bdt, RooArgSet(Bmass));
-  }
+
+  // erf = new RooGenericPdf("erf","erf", npfit_bdt, RooArgSet(Bmass));
+  RooGenericPdf erfn ("erfn", "erfn", "TMath::Erfc((Bmass-m_nonprompt_shift)/m_nonprompt_scale)",
+                      RooArgList(Bmass, *m_nonprompt_scale, *m_nonprompt_shift));
+
+  RooGaussian jpsinp_g1("jpsinp_g1","jpsinp_g1",
+                        Bmass, np_mean1, np_sigma1);
+  RooRealVar jpsinp_poly_fraction("jpsinp_poly_fraction", "fraction",
+                                  ini_jpsi_poly_f[ipt][iy], 0.01, 1);
+  RooRealVar jpsinp_g1_fraction("jpsinp_g1_fraction", "fraction",
+                                  ini_jpsi_g1_f[ipt][iy], 0., 1);
+  // RooAddPdf model_jpsinp("m_jpsinp", "model for jpsi nonprompt bg",
+  RooAddPdf* erf = new RooAddPdf("erf", "model for jpsi nonprompt bg",
+                         RooArgList(jpsinp_g1, erfn),
+                         RooArgList(jpsinp_g1_fraction));
+  RooAddPdf model_jpsinp_all("m_jpsinp_all", "model for jpsi nonprompt bg",
+                             RooArgList(poly_jpsi, *erf),
+                             RooArgList(jpsinp_poly_fraction));
+  // erf = new RooAddPdf(model_jpsinp, "erf");
+  w.import(model_jpsinp_all);
+  // w.import(*erf);
 
   RooAbsPdf* fit_side = 0;
   bool use_polynomial_for_background = (ipt == 0);
@@ -1544,12 +1601,24 @@ cout << "Definig B0 model" << endl;
 
   if(particle == 0){//B+
     if(choice == "nominal"){
-      RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
-      // RooAddPdf model("model","model",RooArgList(*signal,*fit_side,*jpsipi), RooArgList(*n_signal,*n_combinatorial, *n_jpsipi));
-      w.import(model);
+      RooAddPdf model("model", "model",
+                      RooArgList(*signal, *fit_side, *erf, *jpsipi), RooArgList(*n_signal, *n_combinatorial, *n_erf, *n_jpsipi));
+      RooAddPdf model_nonp("model_nonp","model",RooArgList(*signal,*fit_side,*jpsipi), RooArgList(*n_signal,*n_combinatorial, *n_jpsipi));
+      if (include_np) {
+        w.import(model, RecycleConflictNodes());
+      } else {
+        model_nonp.SetName("model");
+        w.import(model_nonp, RecycleConflictNodes());
+      }
       w.import(*lambda);
       w.import(*f_erf);
-    }else if(choice == "bkg_poly"){
+    } else if (choice == "sig3gauss") {
+      RooAddPdf model("model","model",RooArgList(*signal_triple, *fit_side, *jpsipi), RooArgList(*n_signal, *n_combinatorial, *n_jpsipi));
+      // RooAddPdf model("model","model",RooArgList(*signal_triple, *fit_side),
+                      // RooArgList(*n_signal, *n_combinatorial));
+      signal_triple->SetName("signal");
+    w.import(model);
+    } else if(choice == "bkg_poly"){
       RooAddPdf model("model","model",RooArgList(*signal,*poly_bkg,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
       w.import(model);
     } else if(choice == "bkg_range"){
@@ -1866,13 +1935,64 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 }
 //get_yield_syst ends
 
-void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname){
+void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy) {
+  int pti = ptlist[ipt];
+  int ptf = ptlist[ipt + 1];
+  double yi = ylist[iy];
+  double yf = ylist[iy + 1];
+  RooAbsPdf*  model = w.pdf("m_jpsinp_all");
+  RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
+  RooDataSet* ds = (RooDataSet*) fullds->
+    reduce(TString::Format("Bpt > %f && Bpt < %f", (double) pti, (double) ptf))->
+    reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
+
+
+  RooRealVar g1f = *(w.var("jpsinp_g1_fraction"));
+  model->fitTo(*ds, Save());
+
+  RooRealVar Bmass = *(w.var("Bmass"));
+  Bmass.setRange("bmass", 5.0, 6.0);
+  RooPlot* massframe = Bmass.frame(Title(""));
+  ds->plotOn(massframe, RooFit::Name("NP"), MarkerSize(0.9));
+  model->plotOn(massframe, RooFit::Name("NP Fit"), NormRange("bmass"),
+                LineColor(kRed), LineStyle(1), LineWidth(2));
+  model->plotOn(massframe, RooFit::Name("peaking"),
+                Components("erf"), NormRange("bmass"),
+                LineColor(kGreen+3), LineStyle(1), LineWidth(3), FillStyle(3005),
+                FillColor(kGreen+3), VLines(), DrawOption("LF"));
+  model->plotOn(massframe, RooFit::Name("poly"),
+                Components("poly_jpsi"), NormRange("bmass"),
+                LineColor(kBlue), LineStyle(kDashed));
+  TCanvas can_np;
+  can_np.SetTitle("");
+  massframe->Draw();
+
+  TLegend *leg = new TLegend (0.65, 0.55, 0.85, 0.85);
+  leg->SetTextSize(0.04);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  leg->AddEntry(massframe->findObject("NP"), "NP MC", "p)");
+  leg->AddEntry(massframe->findObject("peaking"), "peaking bg", "f");
+  leg->AddEntry(massframe->findObject("poly"), "combinatorial", "l");
+  leg->AddEntry(massframe->findObject("NP Fit"),"Fit","l");
+  leg->Draw();
+  can_np.SaveAs("./results/Bu/" + TString::Format("%i_%i/np_fit_pt%i-%i_y%.0f-%.0f.pdf",
+                                                  pti, ptf, pti, ptf, 10 * yi, 10 * yf));
+}
+
+void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy=1){
 cout <<"ploting complete fit"<< endl;
   RooAbsPdf*  model = w.pdf("model");
   RooAbsPdf*  signal = w.pdf("signal");
   RooDataSet* data = (RooDataSet*) w.data("data");
   RooDataSet* mc = (RooDataSet*) w.data("mc");
-  data->Print();
+
+  double yi = ylist[iy];
+  double yf = ylist[iy + 1];
+  TString ystr = "";
+  if (fit_ybins) {
+    ystr = ystring(iy)
+  }
 
   RooRealVar Bmass = *(w.var("Bmass"));
   RooRealVar* lambda   = w.var("lambda");
@@ -1892,11 +2012,17 @@ cout <<"ploting complete fit"<< endl;
     RooRealVar* sigma1 = w.var("sigma1");
     RooRealVar* sigma2 = w.var("sigma2");
     RooRealVar* ratio_sigma12 = w.var("ratio_sigma12");
+    RooRealVar* ratio_sigma13 = w.var("ratio_sigma13");
     RooRealVar* cofs = w.var("cofs");
+    RooRealVar* cofs1 = w.var("cofs1");
     RooRealVar* mean = w.var("mean");
     ratio_sigma12->setConstant();
     cofs->setConstant();
     mean->setConstant();
+    if (ratio_sigma13 != nullptr) {
+      ratio_sigma13->setConstant();
+      cofs1->setConstant();
+    }
   }
 
   TFile* f;
@@ -1935,6 +2061,19 @@ cout <<"ploting complete fit"<< endl;
   massframeMC->Clear();
   mcp1->Clear();
   can_mc.Clear();
+
+  // fix signal and NP Jpsi parameters
+  auto fixedVars = w.defineSet("fixedVars", "np_mean1,np_sigma1,np_p1,m_nonprompt_shift,m_nonprompt_scale,jpsinp_g1_fraction");
+  // w.set("fixedVars")->Print();
+  for (auto& v : *w.set("fixedVars")) {
+    RooRealVar* var = (RooRealVar*) v;
+    var->setConstant(kTRUE);
+  }
+
+  // if (ipt == 0) {
+  // RooRealVar* sigma1 = w.var("sigma1");
+  //   sigma1->setConstant(kTRUE);
+  // }
 
   RooFitResult* r = model->fitTo(*data,Range("all"),Save());
   r->Print();
@@ -2081,12 +2220,12 @@ cout <<"ploting complete fit"<< endl;
   pull_plot->Draw();
   
   if(particle == 0){
-    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu.pdf");
-    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu.gif");
+    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu" + ystr + ".pdf");
+    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu" + ystr + ".gif");
   }
   else if(particle == 1){
-    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs.pdf");
-    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs.gif");
+    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs" + ystr + ".pdf");
+    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs" + ystr + ".gif");
   }
   else if(particle == 2){
     if(MC == 0){
@@ -3930,3 +4069,25 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(nMult);
   }
 }
+
+// get ystring
+TString ystring(int iy) {
+  TString str = TString::Format("y%.0f-%.0f", 10 * ylist[iy], 10 * ylist[iy + 1]);
+  return str;
+}
+
+// save the plots MC/SS, MC/
+ void save_validation_plot(TCanvas& can, TString name, TString comp, int ipt, int iy) {
+   TString pdfstr, gifstr;
+   TString ptdir = "./results/" + particleList.at(particle) +
+     Form("/%i_%i", ptlist[ipt], ptlist[ipt+1]);
+   gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/" + comp + "/pdfs/");
+   pdfstr.Form("%s/mc_validation_plots/%s/pdfs/%s_mc_validation_%s_%s.%s",
+               ptdir.Data(), comp.Data(), name.Data(),
+               particleList.at(particle).Data(), ystring(iy).Data(), "pdf");
+   gifstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s_%s.%s",
+               ptdir.Data(), comp.Data(), name.Data(),
+               particleList.at(particle).Data(), ystring(iy).Data(), "gif");
+   can.SaveAs(pdfstr);
+   can.SaveAs(gifstr);
+ }
