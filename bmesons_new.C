@@ -647,7 +647,7 @@ void DIF_analysis(RooWorkspace& w, const char*  variable, TString ptfile,  RooAr
 
   TString leg_var_x[]={"y(B)","p_{T}(B) [GeV]","multiplicity"};
   TString leg_var_y[]={"dN_{s}/dy","dN_{s}/dp_{T} [GeV^{-1}]","dN_{s}/dM"};
-  int n_bins;
+  int n_bins = 6;
   double bins[n_bins+1]; 
   double range_u1;
   double range_u2;
