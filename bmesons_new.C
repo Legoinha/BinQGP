@@ -1991,7 +1991,7 @@ cout <<"ploting complete fit"<< endl;
   double yf = ylist[iy + 1];
   TString ystr = "";
   if (fit_ybins) {
-    ystr = ystring(iy)
+    ystr = ystring(iy);
   }
 
   RooRealVar Bmass = *(w.var("Bmass"));
@@ -2220,12 +2220,12 @@ cout <<"ploting complete fit"<< endl;
   pull_plot->Draw();
   
   if(particle == 0){
-    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu" + ystr + ".pdf");
-    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu" + ystr + ".gif");
+    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu_" + ystr + ".pdf");
+    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu_" + ystr + ".gif");
   }
   else if(particle == 1){
-    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs" + ystr + ".pdf");
-    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs" + ystr + ".gif");
+    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs_" + ystr + ".pdf");
+    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs_" + ystr + ".gif");
   }
   else if(particle == 2){
     if(MC == 0){
