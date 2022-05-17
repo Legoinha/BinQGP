@@ -1618,6 +1618,8 @@ cout << "Definig B0 model" << endl;
                       // RooArgList(*n_signal, *n_combinatorial));
       signal_triple->SetName("signal");
     w.import(model);
+    w.import(*lambda);
+    w.import(*f_erf);
     } else if(choice == "bkg_poly"){
       RooAddPdf model("model","model",RooArgList(*signal,*poly_bkg,*erf,*jpsipi),RooArgList(*n_signal,*n_combinatorial,*n_erf,*n_jpsipi));
       w.import(model);
