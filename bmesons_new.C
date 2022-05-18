@@ -1945,8 +1945,11 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
   RooAbsPdf*  model = w.pdf("m_jpsinp_all");
   RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
   RooDataSet* ds = (RooDataSet*) fullds->
-    reduce(TString::Format("Bpt > %f && Bpt < %f", (double) pti, (double) ptf))->
-    reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
+    reduce(TString::Format("Bpt > %f && Bpt < %f", (double) pti, (double) ptf));
+  if (fit_ybins) {
+    ds = (RooDataSet*) ds->
+      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
+  }
 
 
   RooRealVar g1f = *(w.var("jpsinp_g1_fraction"));
