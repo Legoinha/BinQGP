@@ -361,8 +361,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
   plot_complete_fit(*ws, c_vars, subname, iy);
-  auto data = ws->data("data");
-  data->Print();
   if (early) {return;}
   if(MC == 1){return;}
 
