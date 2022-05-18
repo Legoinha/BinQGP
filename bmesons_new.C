@@ -1472,15 +1472,50 @@ cout << "Defining PDF" << endl;
   w.import(model_jpsinp_all);
   // w.import(*erf);
 
-  RooAbsPdf* fit_side = 0;
-  bool use_polynomial_for_background = (ipt == 0);
+  // polynomials for continuum background
+  RooRealVar p2nd2("p2nd2", "", -3, -20., 20.);
+  RooRealVar p2ratio("p2ratio", "", -2 * 5.7, -50, 50);
+  // RooRealVar p2nd1("p2nd1", "", -2 * 5.7 * p2nd2.getVal(), -1000., 1000.);
+  RooProduct p2nd1("p2nd1", "", RooArgList(p2nd2, p2ratio));
 
-  if (use_polynomial_for_background) {
-    fit_side = new RooPolynomial("fit_side", "fit_side", Bmass, RooArgList(*p1, *p2, *p3), 1);
-  } else {
-    //exponential (for combinatorial background)
-    fit_side = new RooExponential("fit_side","fit_side",Bmass,*lambda);
+  // RooRealVar cont_mean1("cont_mean1", "cont_mean1", 5.7, 5.5, 5.8);
+  RooRealVar cont_mean1("cont_mean1", "cont_mean1", 5.7, 5.2, 5.8);
+  RooRealVar cont_sigma1("cont_sigma1", "cont_sigma1", 0.4, 0.05, 2);
+  RooGaussian cont_g1("cont_g1","cont_g1", Bmass, cont_mean1, cont_sigma1);
+  RooRealVar cont_g1_fraction("cont_g1_fraction", "fraction", 0.2, 0., 1);
+
+  RooRealVar cont_mean2("cont_mean2", "cont_mean2", 5.5, 5.3, 5.6);
+  RooRealVar cont_sigma2("cont_sigma2", "cont_sigma2", 0.1, 0.05, 1);
+  RooGaussian cont_g2("cont_g2","cont_g2", Bmass, cont_mean2, cont_sigma2);
+  RooRealVar cont_g2_fraction("cont_g2_fraction", "fraction", 0.2, 0., 1);
+
+  RooRealVar cont_p1_1("cont_p1_1", "cont_p1_1", 0, -10, 10);
+  RooPolynomial cont_p1("cont_p1", "cont_p1", Bmass, RooArgList(cont_p1_1), 1);
+
+  RooAbsPdf* fit_side = 0;
+  bool use_polynomial_for_background = (ipt <= 1);
+  const int poly_order = 3 - ipt;
+
+  switch (poly_order) {
+  case 3: {
+    // fit_side = new RooPolynomial("fit_side", "fit_side", Bmass, RooArgList(*p1, *p2, *p3), 1);
+    fit_side = new RooAddPdf("fit_side","fit_side",
+                             RooArgList(cont_g1, cont_p1),
+                             RooArgList(cont_g1_fraction));
+    break;
+  } case 2: {
+      // fit_side = new RooAddPdf("fit_side","fit_side",
+      //                          RooArgList(cont_g1, cont_p1),
+      //                          RooArgList(cont_g1_fraction));
+      fit_side = new RooExponential("fit_side","fit_side",Bmass,*lambda);
+    break;
+  } default:
+  //exponential (for combinatorial background)
+  fit_side = new RooExponential("fit_side","fit_side",Bmass,*lambda);
+    break;
   }
+  fit_side->Print();
+
 
   // 1st order polynomial (combinatorial background - pdf systematics)
   RooPolynomial* poly_bkg = new RooPolynomial("poly_bkg","poly_bkg",Bmass,*slope);
