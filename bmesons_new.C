@@ -1978,8 +1978,12 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
   leg->AddEntry(massframe->findObject("poly"), "combinatorial", "l");
   leg->AddEntry(massframe->findObject("NP Fit"),"Fit","l");
   leg->Draw();
-  can_np.SaveAs("./results/Bu/" + TString::Format("%i_%i/np_fit_pt%i-%i_y%.0f-%.0f.pdf",
-                                                  pti, ptf, pti, ptf, 10 * yi, 10 * yf));
+  TString ystr = "";
+  if (fit_ybins) {
+    ystr = "_" + ystring(iy);
+  }
+  can_np.SaveAs("./results/Bu/" + TString::Format("%i_%i/np_fit_pt%i-%i%s.pdf",
+                                                  pti, ptf, pti, ptf, ystr.Data()));
 }
 
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy=1){
@@ -1993,7 +1997,7 @@ cout <<"ploting complete fit"<< endl;
   double yf = ylist[iy + 1];
   TString ystr = "";
   if (fit_ybins) {
-    ystr = ystring(iy);
+    ystr = "_" + ystring(iy);
   }
 
   RooRealVar Bmass = *(w.var("Bmass"));
@@ -2222,12 +2226,12 @@ cout <<"ploting complete fit"<< endl;
   pull_plot->Draw();
   
   if(particle == 0){
-    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu_" + ystr + ".pdf");
-    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu_" + ystr + ".gif");
+    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu" + ystr + ".pdf");
+    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu" + ystr + ".gif");
   }
   else if(particle == 1){
-    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs_" + ystr + ".pdf");
-    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs_" + ystr + ".gif");
+    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs" + ystr + ".pdf");
+    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs" + ystr + ".gif");
   }
   else if(particle == 2){
     if(MC == 0){
@@ -4084,12 +4088,16 @@ TString ystring(int iy) {
    TString ptdir = "./results/" + particleList.at(particle) +
      Form("/%i_%i", ptlist[ipt], ptlist[ipt+1]);
    gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/" + comp + "/pdfs/");
-   pdfstr.Form("%s/mc_validation_plots/%s/pdfs/%s_mc_validation_%s_%s.%s",
+   TString ystr = "";
+   if (fit_ybins) {
+     ystr = "_" + ystring(iy);
+   }
+   pdfstr.Form("%s/mc_validation_plots/%s/pdfs/%s_mc_validation_%s%s.%s",
                ptdir.Data(), comp.Data(), name.Data(),
-               particleList.at(particle).Data(), ystring(iy).Data(), "pdf");
-   gifstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s_%s.%s",
+               particleList.at(particle).Data(), ystr.Data(), "pdf");
+   gifstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
                ptdir.Data(), comp.Data(), name.Data(),
-               particleList.at(particle).Data(), ystring(iy).Data(), "gif");
+               particleList.at(particle).Data(), ystr.Data(), "gif");
    can.SaveAs(pdfstr);
    can.SaveAs(gifstr);
  }
