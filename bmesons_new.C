@@ -99,11 +99,20 @@ const std::unordered_map<std::string, unsigned> iBDT_bp = {
   {"BDT_pt_15_20", 3},
   {"BDT_pt_20_50", 4}};
 
+// only include events with BDT output higher than this lower bound
+const std::vector<double> bdt_lower_bound =
+  {-0.1,
+   -0.2,
+   -0.2,
+   -0.2,
+   -0.2};
+
+
 // min and max for BDT histograms
 const std::vector<double> BDTmin_bs = {-0.2, -0.2, -0.05};
 const std::vector<double> BDTmax_bs = {0.88, 0.8, 0.9};
 
-const std::vector<double> BDTmin_bp = {-0.3, -0.16, -0.18, -0.12, -0.1};
+const std::vector<double> BDTmin_bp = {-0.05, -0.00, -0.18, -0.12, -0.1};
 const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.8};
 
 // number of bins
@@ -337,6 +346,19 @@ void bmesons_new(int ipt = 3, int iy = 1){
   if (include_np) {
     fit_jpsinp(*ws, "nominal", c_vars, ipt, iy);
   }
+
+  // apply BDT cut
+  std::vector<TString> labels = {"data", "mc"};
+  for (auto l : labels) {
+  auto data = ws->data(l);
+  data->SetName(l + "_allbdt");
+  data = (RooDataSet*) data->
+    reduce(TString::Format("%s > %f", BDTvars[ipt].Data(), bdt_lower_bound[ipt]));
+  cout << data->sumEntries() << "\n";
+  ws->import(*data, Rename(l));
+
+  }
+
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
   plot_complete_fit(*ws, c_vars, subname, iy);
   auto data = ws->data("data");
