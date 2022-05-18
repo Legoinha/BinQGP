@@ -2138,9 +2138,9 @@ cout <<"ploting complete fit"<< endl;
 
   // fix signal and NP Jpsi parameters
   auto fixedVars = w.defineSet("fixedVars", "np_mean1,np_sigma1,np_p1,m_nonprompt_shift,m_nonprompt_scale,jpsinp_g1_fraction");
-  // w.set("fixedVars")->Print();
-  for (auto& v : *w.set("fixedVars")) {
-    RooRealVar* var = (RooRealVar*) v;
+  auto itr = w.set("fixedVars")->createIterator();
+  for (auto i = 0; i < w.set("fixedVars")->getSize(); ++i) {
+    RooRealVar* var = (RooRealVar*) itr->Next();
     var->setConstant(kTRUE);
   }
 
