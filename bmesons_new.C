@@ -1652,6 +1652,7 @@ cout << "Definig B0 model" << endl;
       // RooAddPdf model("model","model",RooArgList(*signal_triple, *fit_side),
                       // RooArgList(*n_signal, *n_combinatorial));
       signal_triple->SetName("signal");
+      sigma1->setMax(0.01);
     w.import(model);
     w.import(*lambda);
     w.import(*f_erf);
@@ -1987,7 +1988,16 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
   }
 
 
-  RooRealVar g1f = *(w.var("jpsinp_g1_fraction"));
+  RooRealVar* g1f = w.var("jpsinp_g1_fraction");
+  RooRealVar* np_mean1 = w.var("np_mean1");
+  RooRealVar* np_sigma1 = w.var("np_sigma1");
+  if (ipt == 0) {
+    np_sigma1->setVal(0.45);
+    np_sigma1->setMin(0.1);
+    g1f->setMin(0.3);
+    RooRealVar* errShift = w.var("m_nonprompt_shift");
+    errShift->setMax(5.2);
+  }
   model->fitTo(*ds, Save());
 
   RooRealVar Bmass = *(w.var("Bmass"));
