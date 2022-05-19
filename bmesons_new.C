@@ -104,9 +104,9 @@ const std::unordered_map<std::string, unsigned> iBDT_bp = {
 const std::vector<double> bdt_lower_bound =
   {-0.1,
    -0.2,
-   -0.2,
-   -0.2,
-   -0.2};
+   -1.0,
+   -1.0,
+   -1.0};
 
 
 // min and max for BDT histograms
@@ -351,13 +351,12 @@ void bmesons_new(int ipt = 3, int iy = 1){
   // apply BDT cut
   std::vector<TString> labels = {"data", "mc"};
   for (auto l : labels) {
-  auto data = ws->data(l);
-  data->SetName(l + "_allbdt");
-  data = (RooDataSet*) data->
-    reduce(TString::Format("%s > %f", BDTvars[ipt].Data(), bdt_lower_bound[ipt]));
-  cout << data->sumEntries() << "\n";
-  ws->import(*data, Rename(l));
-
+    auto data = ws->data(l);
+    data->SetName(l + "_allbdt");
+    data = (RooDataSet*) data->
+      reduce(TString::Format("%s > %f", BDTvars[ipt].Data(), bdt_lower_bound[ipt]));
+    cout << data->sumEntries() << "\n";
+    ws->import(*data, Rename(l));
   }
 
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
