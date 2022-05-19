@@ -345,7 +345,10 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
   RooArgSet c_vars;
 
-  reduce_ybins(*ws, iy);
+  if (fit_ybins) {
+    reduce_ybins(*ws, iy);
+  }
+
   TString signal_shape = (ipt == 0)? "sig3gauss" : "nominal";
   cout << "choice:" << signal_shape << "\n";
 
@@ -1217,21 +1220,15 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
   w.import(*ds, Rename(sample + "_raw"));
 }
 
+/** Select events from a rapidity bin */
 void reduce_ybins(RooWorkspace& w, int iy) {
-  RooDataSet* data_raw = (RooDataSet*) w.data("data_raw");
-  RooDataSet* mc_raw = (RooDataSet*) w.data("mc_raw");
-  RooDataSet* data = data_raw;
-  RooDataSet* mc = mc_raw;
-  if (fit_ybins) {
-    data = (RooDataSet*) data->
+  std::vector<TString> dataset = {"data", "mc", "jpsinp"};
+  for (auto name : dataset) {
+    RooDataSet* sample = (RooDataSet*) w.data(name + "_raw");
+    sample = (RooDataSet*) sample->
       reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
-    mc = (RooDataSet*) mc->
-      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
+    w.import(*sample, Rename(name));
   }
-  w.import(*data, Rename("data"));
-  w.import(*mc, Rename("mc"));
-  RooDataSet* jpsi = (RooDataSet*) w.data("jpsinp_raw");
-  w.import(*jpsi, Rename("jpsinp"));
 }
 
 //build_pdf
