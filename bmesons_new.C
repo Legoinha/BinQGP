@@ -128,18 +128,23 @@ const std::vector<double> ini_f_erf = {1, 1, 0.2, 0.2, 0.2};
 using d_matrix = std::vector<std::vector<double> >;
    // initial values for NP Jpsi fit
 const d_matrix ini_jpsi_g1_f = {{0.2, 0.2},
-                                {0.6, 0.4},
+                                {0.6, 0.2},
                                 {0.2, 0.2},
                                 {0.4, 0.4},
                                 {0.4, 0.4}};
 const d_matrix ini_jpsi_poly_f = {{0.9, 0.9},
-                                  {0.8, 0.9},
+                                  {0.8, 0.7},
                                   {0.8, 0.8},
                                   {0.6, 0.6},
                                   {0.6, 0.6}};
+const d_matrix ini_jpsi_g2_f = {{0.2, 0.2},
+                                {0.6, 0.7},
+                                {0.2, 0.2},
+                                {0.4, 0.4},
+                                {0.4, 0.4}};
 // slope of the continuum bg
 const d_matrix ini_jpsi_p1 = {{0, -0.15},
-                              {0, -0.05},
+                              {0, 0.005},
                               {0, -0.1},
                               {0, -0.15},
                               {0, -0.1}};
@@ -161,7 +166,7 @@ void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
 void reduce_ybins(RooWorkspace& w, int iy);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
-void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy);
+void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool includeSignal=false);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
@@ -175,6 +180,7 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
 double MC_fit_result(TString input_file, TString inVarName);
 TString ystring(int iy);
 void save_validation_plot(TCanvas& can, TString name, TString comp, int ipt, int iy);
+void fix_signal_shape(RooWorkspace& w, bool release=false);
 
 const char* VAR_dif_A = "By";
 // change according to what we want to compute: "Bpt"  or  "By"  or  "nMul"
@@ -276,7 +282,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
   else if(particle == 2){input_file_reweighted_mc = "./results/B0/mc_validation_plots/weights/tree_with_weight.root";}
 */
   
-  TString input_file_jpsi = "../files/jpsinp.root";
+  TString input_file_jpsi = "../files/jpsinp_inclusive.root";
   std::vector<TH1D*> histos_sideband_sub;
   std::vector<TH1D*> histos_mc;
   std::vector<TH1D*> histos_splot;
@@ -1182,7 +1188,9 @@ void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input){
 }
 
 void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input){
-  std::vector<TString> jpsi_vars = {"By", "Bpt"};
+  cout << "reading J/psi inclusive file" << "\n";
+
+  std::vector<TString> jpsi_vars = {"By", "Bpt", "Bgen"};
   read_samples(w, jpsi_vars, f_input, "ntnp", "jpsinp");
 }
 
@@ -1319,6 +1327,8 @@ void build_pdf(RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt=3, in
   RooRealVar np_p1("np_p1", "np_p1", ini_jpsi_p1[ipt][iy], -10., 10.);
   RooRealVar np_mean1("np_mean1", "np_mean1", 5.2, 5, 6);
   RooRealVar np_sigma1("np_sigma1", "np_sigma1", 0.02, 0.005, 0.5);
+  RooRealVar np_mean2("np_mean2", "np_mean2", 5.55, 5, 6);
+  RooRealVar np_sigma2("np_sigma2", "np_sigma2", 0.2, 0.05, 0.5);
 
   if( (particle == 2) && (MC == 0)){
 
@@ -1481,10 +1491,21 @@ cout << "Defining PDF" << endl;
                                   ini_jpsi_poly_f[ipt][iy], 0.01, 1);
   RooRealVar jpsinp_g1_fraction("jpsinp_g1_fraction", "fraction",
                                   ini_jpsi_g1_f[ipt][iy], 0., 1);
-  // RooAddPdf model_jpsinp("m_jpsinp", "model for jpsi nonprompt bg",
-  RooAddPdf* erf = new RooAddPdf("erf", "model for jpsi nonprompt bg",
-                         RooArgList(jpsinp_g1, erfn),
-                         RooArgList(jpsinp_g1_fraction));
+
+  RooGaussian jpsinp_g2("jpsinp_g2","jpsinp_g2",
+                        Bmass, np_mean2, np_sigma2);
+  RooRealVar jpsinp_g2_fraction("jpsinp_g2_fraction", "fraction",
+                                ini_jpsi_g2_f[ipt][iy], 0., 1);
+  RooAddPdf* erf = 0;
+  if (ipt == 1) {
+    erf = new RooAddPdf("erf", "model for jpsi nonprompt bg",
+                        RooArgList(jpsinp_g1, jpsinp_g2, erfn),
+                        RooArgList(jpsinp_g1_fraction, jpsinp_g2_fraction));
+  } else {
+    erf = new RooAddPdf("erf", "model for jpsi nonprompt bg",
+                        RooArgList(jpsinp_g1, erfn),
+                        RooArgList(jpsinp_g1_fraction));
+  }
   RooAddPdf model_jpsinp_all("m_jpsinp_all", "model for jpsi nonprompt bg",
                              RooArgList(poly_jpsi, *erf),
                              RooArgList(jpsinp_poly_fraction));
@@ -1993,20 +2014,24 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 }
 //get_yield_syst ends
 
-void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy) {
+void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
+                int ipt, int iy, bool includeSignal=false) {
   int pti = ptlist[ipt];
   int ptf = ptlist[ipt + 1];
   double yi = ylist[iy];
   double yf = ylist[iy + 1];
   RooAbsPdf*  model = w.pdf("m_jpsinp_all");
   RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
+  // Apply pT and y selections
   RooDataSet* ds = (RooDataSet*) fullds->
     reduce(TString::Format("Bpt > %f && Bpt < %f", (double) pti, (double) ptf));
   if (fit_ybins) {
     ds = (RooDataSet*) ds->
       reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
   }
-
+  // Get rid of B+ at gen level
+  RooDataSet* ds_nosig = (RooDataSet*) ds->reduce("Bgen != 23333");
+  RooDataSet* ds_sig = (RooDataSet*) ds->reduce("Bgen == 23333");
 
   RooRealVar* g1f = w.var("jpsinp_g1_fraction");
   RooRealVar* np_mean1 = w.var("np_mean1");
@@ -2018,12 +2043,12 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
     RooRealVar* errShift = w.var("m_nonprompt_shift");
     errShift->setMax(5.2);
   }
-  model->fitTo(*ds, Save());
-
+  // usual np background fit
+  model->fitTo(*ds_nosig, Save());
   RooRealVar Bmass = *(w.var("Bmass"));
   Bmass.setRange("bmass", 5.0, 6.0);
   RooPlot* massframe = Bmass.frame(Title(""));
-  ds->plotOn(massframe, RooFit::Name("NP"), MarkerSize(0.9));
+  ds_nosig->plotOn(massframe, RooFit::Name("NP"), MarkerSize(0.9));
   model->plotOn(massframe, RooFit::Name("NP Fit"), NormRange("bmass"),
                 LineColor(kRed), LineStyle(1), LineWidth(2));
   model->plotOn(massframe, RooFit::Name("peaking"),
@@ -2052,6 +2077,60 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
   }
   can_np.SaveAs("./results/Bu/" + TString::Format("%i_%i/np_fit_pt%i-%i%s.pdf",
                                                   pti, ptf, pti, ptf, ystr.Data()));
+  can_np.Clear();
+  // include signal pdf
+  std::vector<double> n_signal_initial = {3e3, 3e3, 4000, 5000, 200};
+  std::vector<double> n_cont_initial = {5e4, 3e4, 1e4, 1e3, 1e3};
+  RooAbsPdf*  signal = w.pdf("signal");
+  RooRealVar* np_sig_fraction =
+    new RooRealVar("np_sig_fraction", "np_sig_fraction", 0.1, 0, 1);
+  RooRealVar* n_signal = new RooRealVar("n_signal_np", "n_signal_np",
+                                        n_signal_initial[ipt], 0., (ds->sumEntries())*2);
+  RooRealVar* n_cont = new RooRealVar("n_cont_np", "n_cont_np",
+                                      n_cont_initial[ipt], 0., (ds->sumEntries())*2);
+  RooAddPdf* model_inclusive = new RooAddPdf("np_signal", "NP with B+",
+                                             RooArgList(*signal, *model),
+                                             RooArgList(*n_signal, *n_cont));
+  // determine gaussian width with MC
+  Bmass.setRange("bmc", 5.15, 5.4);
+  signal->fitTo(*ds_sig, Range("bmc"));
+  cout << "MC fit for NP J/psi complete" << "\n";
+
+  // fit the J/psi using fixed signal shape
+  fix_signal_shape(w);
+  model_inclusive->fitTo(*ds, Save());
+  fix_signal_shape(w, true);
+
+  RooPlot* massframe_sig = Bmass.frame(Title("Non-prompt J/psi with signal"));
+  ds->plotOn(massframe_sig, RooFit::Name("NP"), MarkerSize(0.9));
+  model_inclusive->plotOn(massframe_sig, RooFit::Name("NP Fit"), NormRange("bmass"),
+                          LineColor(kRed), LineStyle(1), LineWidth(2));
+  model_inclusive->plotOn(massframe_sig, RooFit::Name("signal"),
+                          Components("signal"), NormRange("bmass"),
+                          LineColor(kOrange-3), LineStyle(1), LineWidth(3), FillStyle(3002),
+                          FillColor(kOrange-3), VLines(), DrawOption("LF"));
+  model_inclusive->plotOn(massframe_sig, RooFit::Name("peaking"),
+                          Components("erf"), NormRange("bmass"),
+                          LineColor(kGreen+3), LineStyle(1), LineWidth(3), FillStyle(3005),
+                          FillColor(kGreen+3), VLines(), DrawOption("LF"));
+  model_inclusive->plotOn(massframe_sig, RooFit::Name("poly"),
+                          Components("poly_jpsi"), NormRange("bmass"),
+                          LineColor(kBlue), LineStyle(kDashed));
+  massframe_sig->Draw();
+  leg->AddEntry(massframe_sig->findObject("signal"), "signal", "f");
+  leg->Draw();
+
+  // compare yields with gen particles
+
+
+  TLatex txt;
+  txt.DrawLatexNDC(0.36, 0.8, TString::Format("gen: %.0f", ds_sig->sumEntries()));
+  txt.DrawLatexNDC(0.36, 0.7, TString::Format("fit: %.0f #pm %.0f",
+                                               n_signal->getVal(),
+                                               n_signal->getError()));
+  can_np.SaveAs("./results/Bu/" + TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",
+                                                  pti, ptf, pti, ptf, ystr.Data()));
+
 }
 
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy=1){
@@ -3521,6 +3600,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
     RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
 
+    RooRealVar Bgen("Bgen", "Bgen", 0, 30000);
+
     w.import(Bmass);
     w.import(By);
     w.import(Bpt);
@@ -3561,6 +3642,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
     w.import(nMult);
+    w.import(Bgen);
 }
       
  else if(particle == 1){
@@ -4169,3 +4251,23 @@ TString ystring(int iy) {
    can.SaveAs(pdfstr);
    can.SaveAs(gifstr);
  }
+
+/** Fix or release the parameters for signal shape */
+void fix_signal_shape(RooWorkspace& w, bool release=false) {
+  RooRealVar* sigma1 = w.var("sigma1");
+  RooRealVar* sigma2 = w.var("sigma2");
+  RooRealVar* ratio_sigma12 = w.var("ratio_sigma12");
+  RooRealVar* ratio_sigma13 = w.var("ratio_sigma13");
+  RooRealVar* cofs = w.var("cofs");
+  RooRealVar* cofs1 = w.var("cofs1");
+  RooRealVar* mean = w.var("mean");
+
+  bool toFix = ! release;
+  ratio_sigma12->setConstant(toFix);
+  cofs->setConstant(toFix);
+  mean->setConstant(toFix);
+  if (ratio_sigma13 != nullptr) {
+    ratio_sigma13->setConstant(toFix);
+    cofs1->setConstant(toFix);
+  }
+}
