@@ -84,7 +84,8 @@ constexpr bool include_np = true;
 
 // should be constexpr, but let's simplify runtime arguments and omit that for now
 const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20"};
-const std::vector<TString> BDTvar_bp = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20"};
+const std::vector<TString> BDTvar_bp = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15",
+                                        "BDT_pt_15_20", "BDT_pt_20_50"};
 
 const std::vector<TString> BDTdir = {"Bu", "Bs"};
 const std::unordered_map<std::string, unsigned> iBDT_bs = {
