@@ -1713,7 +1713,7 @@ cout << "Definig B0 model" << endl;
                       // RooArgList(*n_signal, *n_combinatorial));
       signal_triple->SetName("signal");
       sigma1->setMax(0.01);
-    w.import(model);
+      w.import(model, RecycleConflictNodes());
     w.import(*lambda);
     w.import(*f_erf);
     } else if(choice == "bkg_poly"){
