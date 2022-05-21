@@ -1922,7 +1922,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
     p1->cd();
     
     RooPlot* massframe = b_ma.frame(Title(""));
-    *data_bin->plotOn(massframe,RooFit::Name("Data"),NormRange("all"));
+    data_bin->plotOn(massframe,RooFit::Name("Data"),NormRange("all"));
     model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
     model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
     model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF")); 
@@ -2425,7 +2425,7 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> la
 
   double factor;
   if(particle == 0){factor = (int_fit_peak->getVal())/(int_fit_side_right->getVal());}    
-  else if( (particle == 1) || (particle == 2) ){(factor = int_fit_peak->getVal())/(int_fit_side_right->getVal() + int_fit_side_left->getVal());}
+  else if( (particle == 1) || (particle == 2) ){factor = (int_fit_peak->getVal())/(int_fit_side_right->getVal() + int_fit_side_left->getVal());}
   std::cout << std::endl << "Factor: " << factor << std::endl;
 
   /*for(int i=0; i<n_var; i++){
