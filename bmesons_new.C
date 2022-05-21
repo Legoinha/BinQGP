@@ -105,8 +105,8 @@ const std::unordered_map<std::string, unsigned> iBDT_bp = {
 
 // only include events with BDT output higher than this lower bound
 const std::vector<double> bdt_lower_bound =
-  {-0.1,
-   -0.2,
+  {-0.15,
+   -0.12,
    -1.0,
    -1.0,
    -1.0};
@@ -331,7 +331,9 @@ void bmesons_new(int ipt = 3, int iy = 1){
   else if(MC == 0) {
     read_data(*ws, variables, input_file_data);
     read_mc(*ws, variables, input_file_mc);
-    read_jpsinp(*ws, variables, input_file_jpsi);
+    if (particle == 0) {
+      read_jpsinp(*ws, variables, input_file_jpsi);
+    }
   }
 
 
@@ -360,17 +362,8 @@ void bmesons_new(int ipt = 3, int iy = 1){
   if (fit_ybins) {
     reduce_ybins(*ws, iy);
   }
-
-  TString signal_shape = (ipt == 0)? "sig3gauss" : "nominal";
-  cout << "choice:" << signal_shape << "\n";
-
-  build_pdf(*ws, signal_shape, c_vars, ipt, iy);
-  if (include_np) {
-    fit_jpsinp(*ws, "nominal", c_vars, ipt, iy);
-  }
-
   // apply BDT cut
-  std::vector<TString> labels = {"data", "mc"};
+  std::vector<TString> labels = {"data", "mc", "jpsinp"};
   for (auto l : labels) {
     auto data = ws->data(l);
     data->SetName(l + "_allbdt");
@@ -378,6 +371,15 @@ void bmesons_new(int ipt = 3, int iy = 1){
       reduce(TString::Format("%s > %f", BDTvars[ipt].Data(), bdt_lower_bound[ipt]));
     cout << data->sumEntries() << "\n";
     ws->import(*data, Rename(l));
+  }
+
+  // TString signal_shape = (ipt == 0)? "sig3gauss" : "nominal";
+  TString signal_shape = "nominal";
+  cout << "choice:" << signal_shape << "\n";
+
+  build_pdf(*ws, signal_shape, c_vars, ipt, iy);
+  if (include_np && (particle == 0)) {
+    fit_jpsinp(*ws, "nominal", c_vars, ipt, iy);
   }
 
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
@@ -1204,8 +1206,10 @@ void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input){
 
 void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input){
   cout << "reading J/psi inclusive file" << "\n";
-
   std::vector<TString> jpsi_vars = {"By", "Bpt", "Bgen"};
+  for (auto bdt : BDTvars) {
+    jpsi_vars.push_back(bdt);
+  }
   read_samples(w, jpsi_vars, f_input, "ntnp", "jpsinp");
 }
 
@@ -1224,19 +1228,25 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
   arg_list.add(*(w.var("Bmass")));
   // read additional variables
   for(auto lab : label){
+    cout << lab << "\n";
     arg_list.add(*(w.var(lab)));
+    cout << "added " << lab << "\n";
   }
 
   RooDataSet* ds = new RooDataSet(sample, sample, t1, arg_list);
   cout << "input filename = " << fName << "; entries: " << ds->sumEntries() << endl;
-  w.import(*ds, Rename(sample + "_raw"));
+  w.import(*ds, Rename(sample));
 }
 
 /** Select events from a rapidity bin */
 void reduce_ybins(RooWorkspace& w, int iy) {
-  std::vector<TString> dataset = {"data", "mc", "jpsinp"};
+  std::vector<TString> dataset = {"data", "mc"};
+  if (particle == 0) {
+    dataset.push_back("jpsinp");
+  }
   for (auto name : dataset) {
-    RooDataSet* sample = (RooDataSet*) w.data(name + "_raw");
+    RooDataSet* sample = (RooDataSet*) w.data(name);
+    sample->SetName(name + "_ally");
     sample = (RooDataSet*) sample->
       reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
     w.import(*sample, Rename(name));
@@ -2024,7 +2034,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 //get_yield_syst ends
 
 void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
-                int ipt, int iy, bool includeSignal=false) {
+                int ipt, int iy, bool includeSignal) {
   int pti = ptlist[ipt];
   int ptf = ptlist[ipt + 1];
   double yi = ylist[iy];
@@ -2039,26 +2049,59 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
       reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
   }
   // Get rid of B+ at gen level
-  RooDataSet* ds_nosig = (RooDataSet*) ds->reduce("Bgen != 23333");
+  RooDataSet* ds_cont = (RooDataSet*) ds->reduce("Bgen != 23333 && Bgen != 23335");
   RooDataSet* ds_sig = (RooDataSet*) ds->reduce("Bgen == 23333");
+  RooDataSet* ds_jpsipi = (RooDataSet*) ds->reduce("Bgen == 23335");
+
+  std::vector<double> n_signal_initial = {4e3, 1e4, 1e4, 5000, 200};
+  std::vector<double> n_cont_initial = {2e4, 8e4, 8e4, 1e3, 1e3};
+  std::vector<double> n_erf_initial = {800, 6e3, 6e3, 1e3, 1e3};
+  RooAbsPdf* signal = w.pdf("signal");
+  RooAbsPdf* jpsipi = w.pdf("jpsipi");
+  RooAbsPdf* erf = w.pdf("erf");
+  RooAbsPdf* poly = w.pdf("poly_jpsi");
+  RooRealVar np_sig_fraction("np_sig_fraction", "np_sig_fraction", 0.1, 0, 1);
+  RooRealVar n_signal("n_signal_np", "n_signal_np",
+                      n_signal_initial[ipt], 0., (ds->sumEntries())*2);
+  RooRealVar n_cont("n_cont_np", "n_cont_np",
+                    n_cont_initial[ipt], 0., (ds->sumEntries())*2);
+  RooRealVar np_jpsipi_fraction("np_jpsipi_fraction", "np_jpsipi_fraction", 0.1, 0, 1);
+  RooRealVar n_jpsipi("n_jpsipi_np", "n_jpsipi_np", 500, 0., (ds->sumEntries())*2);
+  RooRealVar n_erf("n_erf_np", "n_erf_np",
+                    n_erf_initial[ipt], 0., (ds->sumEntries())*2);
 
   TString ystr = "";
   if (fit_ybins) {
     ystr = "_" + ystring(iy);
   }
+  RooRealVar Bmass = *(w.var("Bmass"));
+  // Fit jpsipi to MC truth samples
+  Bmass.setRange("bjpsipi", 5.2, 5.8);
+  auto jpsipi_result = jpsipi->fitTo(*ds_jpsipi, Range("bjpsipi"), Save());
+  auto jpsipi_par_list = jpsipi_result->floatParsFinal();
+  TString jpsipiPlot = "./results/Bu/" +
+    TString::Format("%i_%i/np_gen_jpsipi_pt%i-%i%s.pdf",
+                    pti, ptf, pti, ptf, ystr.Data());
+  plot_mcfit(w, jpsipi, ds_jpsipi, jpsipiPlot, "NP gen J/#psi #pi^{+}",
+             RooFit::Name("MCFit"), NormRange("bjpsipi"), LineColor(kRed),
+             LineStyle(1), LineWidth(2));
+  // fix the shape
+  fix_parameters(w, jpsipi_par_list);
+
+  // usual np background fit
+  model->fitTo(*ds_cont, Save());
+  TString jpsi_fit_plot = "./results/Bu/" +
+    TString::Format("%i_%i/np_fit_pt%i-%i%s.pdf", pti, ptf, pti, ptf, ystr.Data());
+  plot_jpsifit(w, model, ds_cont, jpsi_fit_plot, "Non-prompt J/#psi", 0, n_signal);
+
+  if (!includeSignal) {
+    return;
+  }
   // include signal pdf
-  std::vector<double> n_signal_initial = {3e3, 3e3, 4000, 5000, 200};
-  std::vector<double> n_cont_initial = {5e4, 3e4, 1e4, 1e3, 1e3};
-  RooAbsPdf*  signal = w.pdf("signal");
-  RooRealVar* np_sig_fraction =
-    new RooRealVar("np_sig_fraction", "np_sig_fraction", 0.1, 0, 1);
-  RooRealVar* n_signal = new RooRealVar("n_signal_np", "n_signal_np",
-                                        n_signal_initial[ipt], 0., (ds->sumEntries())*2);
-  RooRealVar* n_cont = new RooRealVar("n_cont_np", "n_cont_np",
-                                      n_cont_initial[ipt], 0., (ds->sumEntries())*2);
-  RooAddPdf* model_inclusive = new RooAddPdf("np_signal", "NP with B+",
-                                             RooArgList(*signal, *model),
-                                             RooArgList(*n_signal, *n_cont));
+  RooAddPdf* model_inclusive = new
+    RooAddPdf("np_signal", "NP with B+",
+              RooArgList(*signal, *jpsipi, *erf, *poly),
+              RooArgList(n_signal, n_jpsipi, n_erf, n_cont));
   // determine gaussian width with MC
   Bmass.setRange("bmc", 5.18, 5.38);
   auto signal_result = signal->fitTo(*ds_sig, Range("bmc"), Save());
