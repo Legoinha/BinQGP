@@ -67,6 +67,7 @@
 #include "TMultiGraph.h"
 #include <TEfficiency.h>
 #include <RooArgSet.h>
+#include <RooArgList.h>
 #include <RooFormulaVar.h>
 #include <string>
 #include <stdio.h>
@@ -74,6 +75,8 @@
 #include "TROOT.h"
 #include "TGraphErrors.h"
 #include "RooCBShape.h"
+#include "RooCmdArg.h"
+
 constexpr bool early = false;
 // constexpr bool early = true;
 
@@ -180,7 +183,10 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
 double MC_fit_result(TString input_file, TString inVarName);
 TString ystring(int iy);
 void save_validation_plot(TCanvas& can, TString name, TString comp, int ipt, int iy);
-void fix_signal_shape(RooWorkspace& w, bool release=false);
+void fix_signal_shape(RooWorkspace& w, RooArgList& parlist, bool release=false);
+
+void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release=false);
+
 template<typename... Targs>
 void plot_mcfit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
                 TString plotName, TString title, Targs... options);
@@ -2054,14 +2060,9 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
                                              RooArgList(*signal, *model),
                                              RooArgList(*n_signal, *n_cont));
   // determine gaussian width with MC
-  Bmass.setRange("bmc", 5.15, 5.4);
-  signal->fitTo(*ds_sig, Range("bmc"));
-  cout << "MC fit for NP J/psi complete" << "\n";
-
-  // fit the J/psi using fixed signal shape
-  fix_signal_shape(w);
-  model_inclusive->fitTo(*ds, Save());
-  fix_signal_shape(w, true);
+  Bmass.setRange("bmc", 5.18, 5.38);
+  auto signal_result = signal->fitTo(*ds_sig, Range("bmc"), Save());
+  auto signal_par_list = signal_result->floatParsFinal();
 
   TString signalPlot = "./results/Bu/" +
     TString::Format("%i_%i/np_gen_signal_pt%i-%i%s.pdf",
@@ -2070,17 +2071,27 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
              RooFit::Name("MCFit"), NormRange("bmc"), LineColor(kRed),
              LineStyle(1), LineWidth(2));
 
-  // compare yields with gen particles
+  cout << "MC fit for NP J/psi complete" << "\n";
+  // fit the J/psi using fixed signal and jpsipi shape
+  fix_signal_shape(w, signal_par_list);
+  model_inclusive->fitTo(*ds, Save());
+  // fix the erf shape
+  RooArgSet* erf_part_set = erf->getParameters(*ds);
+  auto itr = erf_part_set->createIterator();
+  for (auto i = 0; i < erf_part_set->getSize(); ++i) {
+    RooRealVar* var = (RooRealVar*) itr->Next();
+    var->setConstant(true);
+  }
+
+  // float the signal parameters after the fit
+  fix_signal_shape(w, signal_par_list, true);
 
 
-  TLatex txt;
-  txt.DrawLatexNDC(0.36, 0.8, TString::Format("gen: %.0f", ds_sig->sumEntries()));
-  txt.DrawLatexNDC(0.36, 0.7, TString::Format("fit: %.0f #pm %.0f",
-                                               n_signal->getVal(),
-                                               n_signal->getError()));
-  can_np.SaveAs("./results/Bu/" + TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",
-                                                  pti, ptf, pti, ptf, ystr.Data()));
-
+  TString jpsi_plot_with_sig = "./results/Bu/" +
+    TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",
+                    pti, ptf, pti, ptf, ystr.Data());
+  plot_jpsifit(w, model_inclusive, ds, jpsi_plot_with_sig, "Non-prompt J/#psi with signal",
+               ds_sig->sumEntries(), n_signal);
 }
 
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy=1){
@@ -2107,24 +2118,18 @@ cout <<"ploting complete fit"<< endl;
   } else{
     // determine gaussian width with MC
 
-    Bmass.setRange("bmc", 5.15, 5.4);
+    Bmass.setRange("bmc", 5.18, 5.38);
     // modelmc.fitTo(*mc, Range("bmc"), Extended(kTRUE));
-    signal->fitTo(*mc, Range("bmc"));
+    auto signal_result = signal->fitTo(*mc, Range("bmc"), Save());
+    auto signal_par_list = signal_result->floatParsFinal();
+    fix_signal_shape(w, signal_par_list);
     cout << "MC fit complete" << "\n";
 
-    RooRealVar* sigma1 = w.var("sigma1");
-    RooRealVar* sigma2 = w.var("sigma2");
-    RooRealVar* ratio_sigma12 = w.var("ratio_sigma12");
-    RooRealVar* ratio_sigma13 = w.var("ratio_sigma13");
-    RooRealVar* cofs = w.var("cofs");
-    RooRealVar* cofs1 = w.var("cofs1");
-    RooRealVar* mean = w.var("mean");
-    ratio_sigma12->setConstant();
-    cofs->setConstant();
-    mean->setConstant();
-    if (ratio_sigma13 != nullptr) {
-      ratio_sigma13->setConstant();
-      cofs1->setConstant();
+    TString signalPlot;
+    if (particle == 0) {
+      signalPlot = "./results/Bu/" + subname + "/mc_fit_Bu.pdf";
+    } else if (particle == 1) {
+      signalPlot = "./results/Bs/" + subname + "/mc_fit_Bs.pdf";
     }
     plot_mcfit(w, signal, mc, signalPlot, "MC signal",
                RooFit::Name("MCFit"), NormRange("bmc"), LineColor(kRed),
@@ -4163,22 +4168,21 @@ TString ystring(int iy) {
  }
 
 /** Fix or release the parameters for signal shape */
-void fix_signal_shape(RooWorkspace& w, bool release=false) {
+void fix_signal_shape(RooWorkspace& w, RooArgList& parlist, bool release) {
+  fix_parameters(w, parlist, release);
+  // never fix the overall width
   RooRealVar* sigma1 = w.var("sigma1");
-  RooRealVar* sigma2 = w.var("sigma2");
-  RooRealVar* ratio_sigma12 = w.var("ratio_sigma12");
-  RooRealVar* ratio_sigma13 = w.var("ratio_sigma13");
-  RooRealVar* cofs = w.var("cofs");
-  RooRealVar* cofs1 = w.var("cofs1");
-  RooRealVar* mean = w.var("mean");
+  sigma1->setConstant(false);
+}
 
-  bool toFix = ! release;
-  ratio_sigma12->setConstant(toFix);
-  cofs->setConstant(toFix);
-  mean->setConstant(toFix);
-  if (ratio_sigma13 != nullptr) {
-    ratio_sigma13->setConstant(toFix);
-    cofs1->setConstant(toFix);
+/** Fix or release the parameters for a given arg list */
+void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release=false) {
+  for (auto par : parlist) {
+    RooRealVar* var = w.var(par->GetName());
+    bool toFix = ! release;
+    std::string fix_or_float = (toFix)? "fix " : "float ";
+    cout << fix_or_float << par->GetName() << "\n";
+    var->setConstant(toFix);
   }
 }
 
