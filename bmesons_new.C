@@ -169,7 +169,7 @@ void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
 void reduce_ybins(RooWorkspace& w, int iy);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
-void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool includeSignal=false);
+void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool includeSignal=true);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
