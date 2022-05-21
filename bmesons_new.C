@@ -181,6 +181,12 @@ double MC_fit_result(TString input_file, TString inVarName);
 TString ystring(int iy);
 void save_validation_plot(TCanvas& can, TString name, TString comp, int ipt, int iy);
 void fix_signal_shape(RooWorkspace& w, bool release=false);
+template<typename... Targs>
+void plot_mcfit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
+                TString plotName, TString title, Targs... options);
+
+void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
+                  TString plotName, TString title, double nGen, RooRealVar& n_signal);
 
 const char* VAR_dif_A = "By";
 // change according to what we want to compute: "Bpt"  or  "By"  or  "nMul"
@@ -2030,51 +2036,10 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   RooDataSet* ds_nosig = (RooDataSet*) ds->reduce("Bgen != 23333");
   RooDataSet* ds_sig = (RooDataSet*) ds->reduce("Bgen == 23333");
 
-  RooRealVar* g1f = w.var("jpsinp_g1_fraction");
-  RooRealVar* np_mean1 = w.var("np_mean1");
-  RooRealVar* np_sigma1 = w.var("np_sigma1");
-  if (ipt == 0) {
-    np_sigma1->setVal(0.45);
-    np_sigma1->setMin(0.1);
-    g1f->setMin(0.3);
-    RooRealVar* errShift = w.var("m_nonprompt_shift");
-    errShift->setMax(5.2);
-  }
-  // usual np background fit
-  model->fitTo(*ds_nosig, Save());
-  RooRealVar Bmass = *(w.var("Bmass"));
-  Bmass.setRange("bmass", 5.0, 6.0);
-  RooPlot* massframe = Bmass.frame(Title(""));
-  ds_nosig->plotOn(massframe, RooFit::Name("NP"), MarkerSize(0.9));
-  model->plotOn(massframe, RooFit::Name("NP Fit"), NormRange("bmass"),
-                LineColor(kRed), LineStyle(1), LineWidth(2));
-  model->plotOn(massframe, RooFit::Name("peaking"),
-                Components("erf"), NormRange("bmass"),
-                LineColor(kGreen+3), LineStyle(1), LineWidth(3), FillStyle(3005),
-                FillColor(kGreen+3), VLines(), DrawOption("LF"));
-  model->plotOn(massframe, RooFit::Name("poly"),
-                Components("poly_jpsi"), NormRange("bmass"),
-                LineColor(kBlue), LineStyle(kDashed));
-  TCanvas can_np;
-  can_np.SetTitle("");
-  massframe->Draw();
-
-  TLegend *leg = new TLegend (0.65, 0.55, 0.85, 0.85);
-  leg->SetTextSize(0.04);
-  leg->SetFillStyle(0);
-  leg->SetBorderSize(0);
-  leg->AddEntry(massframe->findObject("NP"), "NP MC", "p)");
-  leg->AddEntry(massframe->findObject("peaking"), "peaking bg", "f");
-  leg->AddEntry(massframe->findObject("poly"), "combinatorial", "l");
-  leg->AddEntry(massframe->findObject("NP Fit"),"Fit","l");
-  leg->Draw();
   TString ystr = "";
   if (fit_ybins) {
     ystr = "_" + ystring(iy);
   }
-  can_np.SaveAs("./results/Bu/" + TString::Format("%i_%i/np_fit_pt%i-%i%s.pdf",
-                                                  pti, ptf, pti, ptf, ystr.Data()));
-  can_np.Clear();
   // include signal pdf
   std::vector<double> n_signal_initial = {3e3, 3e3, 4000, 5000, 200};
   std::vector<double> n_cont_initial = {5e4, 3e4, 1e4, 1e3, 1e3};
@@ -2098,24 +2063,12 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   model_inclusive->fitTo(*ds, Save());
   fix_signal_shape(w, true);
 
-  RooPlot* massframe_sig = Bmass.frame(Title("Non-prompt J/psi with signal"));
-  ds->plotOn(massframe_sig, RooFit::Name("NP"), MarkerSize(0.9));
-  model_inclusive->plotOn(massframe_sig, RooFit::Name("NP Fit"), NormRange("bmass"),
-                          LineColor(kRed), LineStyle(1), LineWidth(2));
-  model_inclusive->plotOn(massframe_sig, RooFit::Name("signal"),
-                          Components("signal"), NormRange("bmass"),
-                          LineColor(kOrange-3), LineStyle(1), LineWidth(3), FillStyle(3002),
-                          FillColor(kOrange-3), VLines(), DrawOption("LF"));
-  model_inclusive->plotOn(massframe_sig, RooFit::Name("peaking"),
-                          Components("erf"), NormRange("bmass"),
-                          LineColor(kGreen+3), LineStyle(1), LineWidth(3), FillStyle(3005),
-                          FillColor(kGreen+3), VLines(), DrawOption("LF"));
-  model_inclusive->plotOn(massframe_sig, RooFit::Name("poly"),
-                          Components("poly_jpsi"), NormRange("bmass"),
-                          LineColor(kBlue), LineStyle(kDashed));
-  massframe_sig->Draw();
-  leg->AddEntry(massframe_sig->findObject("signal"), "signal", "f");
-  leg->Draw();
+  TString signalPlot = "./results/Bu/" +
+    TString::Format("%i_%i/np_gen_signal_pt%i-%i%s.pdf",
+                    pti, ptf, pti, ptf, ystr.Data());
+  plot_mcfit(w, signal, ds_sig, signalPlot, "NP gen signal",
+             RooFit::Name("MCFit"), NormRange("bmc"), LineColor(kRed),
+             LineStyle(1), LineWidth(2));
 
   // compare yields with gen particles
 
@@ -2173,6 +2126,9 @@ cout <<"ploting complete fit"<< endl;
       ratio_sigma13->setConstant();
       cofs1->setConstant();
     }
+    plot_mcfit(w, signal, mc, signalPlot, "MC signal",
+               RooFit::Name("MCFit"), NormRange("bmc"), LineColor(kRed),
+               LineStyle(1), LineWidth(2));
   }
 
   TFile* f;
@@ -2181,49 +2137,6 @@ cout <<"ploting complete fit"<< endl;
     else if(component == 1){f = new TFile("./results/B0/MC/WT_fit.root", "RECREATE");}
   }
   else if(MC == 0){f = new TFile("./results/" + BDTdir[particle] + "/" + subname + "/DATA_fit.root", "RECREATE");}
-
-  RooPlot* massframeMC = Bmass.frame();
-
-
-  mc->plotOn(massframeMC, RooFit::Name("MC"), MarkerSize(0.9));
-  // modelmc.plotOn(massframeMC, RooFit::Name("MCFit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
-  signal->plotOn(massframeMC, RooFit::Name("MCFit"),NormRange("bmc"),LineColor(kRed),LineStyle(1),LineWidth(2));
-
-  TCanvas can_mc;
-  can_mc.SetTitle("");
-
-  TPad *mcp1 = new TPad("p1","p1",0.0,0.27,0.82,0.99);
-  mcp1->SetTitle("");
-  mcp1->SetBorderMode(1); 
-  mcp1->SetFrameBorderMode(0); 
-  mcp1->SetBorderSize(2);
-  mcp1->SetBottomMargin(0.10);
-  mcp1->Draw();
-
-  mcp1->cd();
-  massframeMC->SetTitle(" ");
-  massframeMC->Draw();
-  if (particle == 0) {
-    can_mc.SaveAs("./results/Bu/" + subname + "/mc_fit_Bu.pdf");
-  } else if (particle == 1) {
-    can_mc.SaveAs("./results/Bs/" + subname + "/mc_fit_Bs.pdf");
-  }
-  massframeMC->Clear();
-  mcp1->Clear();
-  can_mc.Clear();
-
-  // fix signal and NP Jpsi parameters
-  auto fixedVars = w.defineSet("fixedVars", "np_mean1,np_sigma1,np_p1,m_nonprompt_shift,m_nonprompt_scale,jpsinp_g1_fraction");
-  auto itr = w.set("fixedVars")->createIterator();
-  for (auto i = 0; i < w.set("fixedVars")->getSize(); ++i) {
-    RooRealVar* var = (RooRealVar*) itr->Next();
-    var->setConstant(kTRUE);
-  }
-
-  // if (ipt == 0) {
-  // RooRealVar* sigma1 = w.var("sigma1");
-  //   sigma1->setConstant(kTRUE);
-  // }
 
   RooFitResult* r = model->fitTo(*data,Range("all"),Save());
   r->Print();
@@ -4267,4 +4180,72 @@ void fix_signal_shape(RooWorkspace& w, bool release=false) {
     ratio_sigma13->setConstant(toFix);
     cofs1->setConstant(toFix);
   }
+}
+
+/** plot the mc fit */
+template<typename... Targs>
+void plot_mcfit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
+                TString plotName, TString title, Targs... options) {
+  RooRealVar Bmass = *(w.var("Bmass"));
+  Bmass.setRange("bmass", 5.0, 6.0);
+  RooPlot* massframe = Bmass.frame(Title(title));
+  ds->plotOn(massframe, MarkerSize(0.9));
+  model->plotOn(massframe, options...);
+
+  TCanvas can_mc;
+  can_mc.SetTitle("");
+  massframe->Draw();
+  can_mc.SaveAs(plotName);
+}
+
+void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
+                  TString plotName, TString title, double nGen, RooRealVar& n_signal) {
+  bool with_sig = (nGen > 1);
+  RooRealVar Bmass = *(w.var("Bmass"));
+  Bmass.setRange("bmass", 5.0, 6.0);
+  RooPlot* massframe = Bmass.frame(Title(title));
+  ds->plotOn(massframe, RooFit::Name("NP"), MarkerSize(0.9));
+  model->plotOn(massframe, RooFit::Name("NP Fit"), NormRange("bmass"),
+                LineColor(kRed), LineStyle(1), LineWidth(2));
+  if (with_sig) {
+    model->plotOn(massframe, RooFit::Name("signal"),
+                  Components("signal"), NormRange("bmass"),
+                  LineColor(kOrange-3), LineStyle(1), LineWidth(3), FillStyle(3002),
+                  FillColor(kOrange-3), VLines(), DrawOption("LF"));
+  }
+  model->plotOn(massframe, RooFit::Name("peaking"),
+                Components("erf"), NormRange("bmass"),
+                LineColor(kGreen+3), LineStyle(1), LineWidth(3), FillStyle(3005),
+                FillColor(kGreen+3), VLines(), DrawOption("LF"));
+  model->plotOn(massframe, RooFit::Name("B->J/#psi #pi"),
+                Components("jpsipi"), NormRange("bmass"),
+                LineColor(kPink+10), LineStyle(kDashed));
+  model->plotOn(massframe, RooFit::Name("poly"),
+                Components("poly_jpsi"), NormRange("bmass"),
+                LineColor(kBlue), LineStyle(kDashed));
+
+  TCanvas can_np;
+  can_np.SetTitle("");
+  massframe->Draw();
+
+  TLatex txt;
+  TLegend *leg = new TLegend (0.65, 0.55, 0.85, 0.85);
+  leg->SetTextSize(0.04);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  leg->AddEntry(massframe->findObject("NP"), "NP MC", "p)");
+  leg->AddEntry(massframe->findObject("peaking"), "peaking bg", "f");
+  leg->AddEntry(massframe->findObject("B->J/#psi #pi"), "B->J/#psi #pi", "f");
+  leg->AddEntry(massframe->findObject("poly"), "combinatorial", "l");
+  leg->AddEntry(massframe->findObject("NP Fit"),"Fit","l");
+  // compare yields with gen particles
+  if (with_sig) {
+    leg->AddEntry(massframe->findObject("signal"), "signal", "f");
+    txt.DrawLatexNDC(0.36, 0.8, TString::Format("gen: %.0f", nGen));
+    txt.DrawLatexNDC(0.36, 0.7, TString::Format("fit: %.0f #pm %.0f",
+                                                n_signal.getVal(),
+                                                n_signal.getError()));
+  }
+  leg->Draw();
+  can_np.SaveAs(plotName);
 }
