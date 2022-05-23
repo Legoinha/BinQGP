@@ -4201,11 +4201,12 @@ void fix_signal_shape(RooWorkspace& w, RooArgList& parlist, bool release) {
 
 /** Fix or release the parameters for a given arg list */
 void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release=false) {
-  for (auto par : parlist) {
-    RooRealVar* var = w.var(par->GetName());
+  for (auto i = 0; i < parlist.getSize(); ++i) {
+    TString name = parlist[i].GetName();
+    RooRealVar* var = w.var(name);
     bool toFix = ! release;
     std::string fix_or_float = (toFix)? "fix " : "float ";
-    cout << fix_or_float << par->GetName() << "\n";
+    cout << fix_or_float << name << "\n";
     var->setConstant(toFix);
   }
 }
