@@ -4200,7 +4200,7 @@ void fix_signal_shape(RooWorkspace& w, RooArgList& parlist, bool release) {
 }
 
 /** Fix or release the parameters for a given arg list */
-void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release=false) {
+void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release) {
   for (auto i = 0; i < parlist.getSize(); ++i) {
     TString name = parlist[i].GetName();
     RooRealVar* var = w.var(name);
