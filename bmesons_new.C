@@ -104,10 +104,14 @@ const std::unordered_map<std::string, unsigned> iBDT_bp = {
   {"BDT_pt_20_50", 4}};
 
 // only include events with BDT output higher than this lower bound
-const std::vector<double> bdt_lower_bound =
+const std::vector<double> bdt_lower_bound_bp =
   {-0.15,
    -0.12,
    -1.0,
+   -1.0,
+   -1.0};
+const std::vector<double> bdt_lower_bound_bs =
+  {-1.0,
    -1.0,
    -1.0};
 
@@ -275,12 +279,14 @@ auto BDTmin = BDTmin_bp;
 auto BDTmax = BDTmax_bp;
 auto BDTnbins = BDTnbins_bp;
 auto indexBDT = iBDT_bp;
+auto BDT_lower_bound = bdt_lower_bound_bp;
 #elif particle == 1
 auto BDTvars = BDTvar_bs;
 auto BDTmin = BDTmin_bs;
 auto BDTmax = BDTmax_bs;
 auto BDTnbins = BDTnbins_bs;
 auto indexBDT = iBDT_bs;
+auto BDT_lower_bound = bdt_lower_bound_bs;
 #endif
 
 
@@ -376,12 +382,17 @@ void bmesons_new(int ipt = 3, int iy = 1){
     reduce_ybins(*ws, iy);
   }
   // apply BDT cut
-  std::vector<TString> labels = {"data", "mc", "jpsinp"};
+  std::vector<TString> labels = {"data", "mc"};
+  if (particle == 0) {
+    labels.push_back("jpsinp");
+  }
   for (auto l : labels) {
+    auto BDTvar = TString::Format("BDT_pt_%d_%d", ptlist[ipt], ptlist[ipt+1]);
+    auto iBDT = indexBDT.at(BDTvar.Data());
     auto data = ws->data(l);
     data->SetName(l + "_allbdt");
     data = (RooDataSet*) data->
-      reduce(TString::Format("%s > %f", BDTvars[ipt].Data(), bdt_lower_bound[ipt]));
+      reduce(TString::Format("%s > %f", BDTvar.Data(), BDT_lower_bound[iBDT]));
     cout << data->sumEntries() << "\n";
     ws->import(*data, Rename(l));
   }
