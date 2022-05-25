@@ -113,7 +113,7 @@ const std::unordered_map<std::string, unsigned> iBDT_bp = {
 
 // only include events with BDT output higher than this lower bound
 const std::vector<double> bdt_lower_bound_bp =
-  {-0.15,
+  {-0.01,
    -0.12,
    -1.0,
    -1.0,
@@ -404,8 +404,8 @@ void bmesons_new(int ipt = 3, int iy = 1){
     ws->import(*data, Rename(l));
   }
 
-  // TString signal_shape = (ipt == 0)? "sig3gauss" : "nominal";
-  TString signal_shape = "nominal";
+  TString signal_shape = (particle == 0 && ipt == 0)? "sig3gauss" : "nominal";
+  // TString signal_shape = "nominal";
   cout << "choice:" << signal_shape << "\n";
 
   build_pdf(*ws, signal_shape, c_vars, ipt, iy);
