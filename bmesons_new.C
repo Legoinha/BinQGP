@@ -1535,15 +1535,17 @@ cout << "Defining PDF" << endl;
 
   RooRealVar jpsinp_poly_fraction("jpsinp_poly_fraction", "fraction",
                                   ini_jpsi_poly_f[ipt][iy], 0.01, 1);
+  // fraction of B+ -> J/psi pi+ in the NP
   RooRealVar jpsinp_jpsipi_fraction("jpsinp_jpsipi_fraction", "fraction",
                                     ini_jpisnp_jpsipi_f[ipt][iy], 0.001, 1);
   RooAbsPdf* erf = 0;
   erf = new RooGenericPdf(erfn, "erf");
-  RooAddPdf model_jpsinp_all("m_jpsinp_all", "model for jpsi nonprompt bg",
-                             RooArgList(*poly_jpsi, *jpsipi, *erf),
-                             RooArgList(jpsinp_poly_fraction, jpsinp_jpsipi_fraction));
+  RooAddPdf model_jpsinp_cont("m_jpsinp_cont", "model for jpsi nonprompt bg",
+                             RooArgList(*poly_jpsi, *erf),
+                             RooArgList(jpsinp_poly_fraction));
   // erf = new RooAddPdf(model_jpsinp, "erf");
-  w.import(model_jpsinp_all);
+  w.import(model_jpsinp_cont);
+  w.import(*jpsipi);
 
   // polynomials for continuum background
   RooRealVar p2nd2("p2nd2", "", -0.01, -20., 20.);
@@ -1654,6 +1656,7 @@ cout << "Definig B0 model" << endl;
   // RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.038, 0.040);
   RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.01, 1);
   RooProduct* n_jpsipi = new RooProduct("n_jpsipi","n_jpsipi",RooArgList(*n_signal,*f_jpsipi)); 
+  double n_nonprompt_initial = 0.1 * n_combinatorial_initial;
 
   // don't fit the peaking backgrounds for lower pT
   // if (ipt < 2) {
@@ -1686,11 +1689,19 @@ cout << "Definig B0 model" << endl;
   }
 
 
+  RooAddPdf model_np("model_nonprompt", "erf and jpsipi",
+                     RooArgList(*jpsipi, *erf),
+                     RooArgList(jpsinp_jpsipi_fraction));
+  RooRealVar n_nonprompt("n_nonprompt", "n_nonprompt",
+                         n_nonprompt_initial, 0., data->sumEntries());
   if(particle == 0){//B+
     if(choice == "nominal"){
       RooAddPdf model("model", "model",
-                      RooArgList(*signal, *fit_side, *erf, *jpsipi), RooArgList(*n_signal, *n_combinatorial, *n_erf, *n_jpsipi));
-      RooAddPdf model_nonp("model_nonp","model",RooArgList(*signal,*fit_side,*jpsipi), RooArgList(*n_signal,*n_combinatorial, *n_jpsipi));
+                      RooArgList(*signal, *fit_side, model_np),
+                      RooArgList(*n_signal, *n_combinatorial, n_nonprompt));
+      RooAddPdf model_nonp("model_nonp","model",
+                           RooArgList(*signal,*fit_side),
+                           RooArgList(*n_signal,*n_combinatorial));
       if (include_np) {
         w.import(model, RecycleConflictNodes());
       } else {
@@ -1700,11 +1711,11 @@ cout << "Definig B0 model" << endl;
       w.import(*lambda);
       w.import(*f_erf);
     } else if (choice == "sig3gauss") {
-      RooAddPdf model("model","model",RooArgList(*signal_triple, *fit_side, *jpsipi), RooArgList(*n_signal, *n_combinatorial, *n_jpsipi));
+      RooAddPdf model("model","model",RooArgList(*signal_triple, *fit_side, model_np), RooArgList(*n_signal, *n_combinatorial, n_nonprompt));
       // RooAddPdf model("model","model",RooArgList(*signal_triple, *fit_side),
                       // RooArgList(*n_signal, *n_combinatorial));
       signal_triple->SetName("signal");
-      sigma1->setMax(0.01);
+      sigma1->setMax(0.015);
       w.import(model, RecycleConflictNodes());
     w.import(*lambda);
     w.import(*f_erf);
@@ -2031,7 +2042,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   int ptf = ptlist[ipt + 1];
   double yi = ylist[iy];
   double yf = ylist[iy + 1];
-  RooAbsPdf*  model = w.pdf("m_jpsinp_all");
+  RooAbsPdf*  model_cont = w.pdf("m_jpsinp_cont");
   RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
   // Apply pT and y selections
   RooDataSet* ds = (RooDataSet*) fullds->
@@ -2051,25 +2062,30 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   RooAbsPdf* signal = w.pdf("signal");
   RooAbsPdf* jpsipi = w.pdf("jpsipi");
   RooAbsPdf* erf = w.pdf("erf");
+  RooAbsPdf* erf_jpsipi = w.pdf("model_nonprompt");
   RooAbsPdf* poly = w.pdf("poly_jpsi");
   RooRealVar np_sig_fraction("np_sig_fraction", "np_sig_fraction", 0.1, 0, 1);
   RooRealVar n_signal("n_signal_np", "n_signal_np",
                       n_signal_initial[ipt], 0., (ds->sumEntries())*2);
   RooRealVar n_cont("n_cont_np", "n_cont_np",
                     n_cont_initial[ipt], 0., (ds->sumEntries())*2);
-  RooRealVar np_jpsipi_fraction("np_jpsipi_fraction", "np_jpsipi_fraction", 0.1, 0, 1);
-  RooRealVar n_jpsipi("n_jpsipi_np", "n_jpsipi_np", 500, 0., (ds->sumEntries())*2);
-  RooRealVar n_erf("n_erf_np", "n_erf_np",
+  // RooRealVar np_jpsipi_fraction("np_jpsipi_fraction", "np_jpsipi_fraction", 0.1, 0, 1);
+  RooRealVar n_erf("n_nonprompt", "n_nonprompt",
                     n_erf_initial[ipt], 0., (ds->sumEntries())*2);
 
   TString ystr = "";
   if (fit_ybins) {
     ystr = "_" + ystring(iy);
   }
+  // get relative yields of Jpsi pi and error function
+  RooRealVar n_jpsipi_ext("n_jpsipi_ext", "n_jpsipi_ext",
+                          0.1 * n_erf.getVal() , 0., (ds->sumEntries())*2);
+  RooExtendPdf jpsipi_ext("jpsipi_ext", "extended jpsipi", *jpsipi, n_jpsipi_ext);
+  w.import(n_jpsipi_ext);
   RooRealVar Bmass = *(w.var("Bmass"));
   // Fit jpsipi to MC truth samples
   Bmass.setRange("bjpsipi", 5.2, 5.8);
-  auto jpsipi_result = jpsipi->fitTo(*ds_jpsipi, Range("bjpsipi"), Save());
+  auto jpsipi_result = jpsipi_ext.fitTo(*ds_jpsipi, Range("bjpsipi"), Save(), Extended());
   auto jpsipi_par_list = jpsipi_result->floatParsFinal();
   TString jpsipiPlot = "./results/Bu/" +
     TString::Format("%i_%i/np_gen_jpsipi_pt%i-%i%s.pdf",
@@ -2080,20 +2096,30 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   // fix the shape
   fix_parameters(w, jpsipi_par_list);
 
-  // usual np background fit
-  model->fitTo(*ds_cont, Save());
+  // NP background fit with no B+ or J/psi pi component
+  // Note that n_cont is the number of erf + continuum
+  auto cont_result = model_cont->fitTo(*ds_cont, Save());
+  auto cont_par_list = cont_result->floatParsFinal();
   TString jpsi_fit_plot = "./results/Bu/" +
     TString::Format("%i_%i/np_fit_pt%i-%i%s.pdf", pti, ptf, pti, ptf, ystr.Data());
-  plot_jpsifit(w, model, ds_cont, jpsi_fit_plot, "Non-prompt J/#psi", 0, n_signal);
+  plot_jpsifit(w, model_cont, ds_cont, jpsi_fit_plot, "Non-prompt J/#psi", 0, n_signal);
+  fix_parameters(w, cont_par_list);
 
   if (!includeSignal) {
     return;
   }
+
+  // Fix the ratio of jpsipi to error function
+  RooRealVar* jpsinp_poly_fraction = w.var("jpsinp_poly_fraction");
+  RooRealVar* jpsipi_fraction = w.var("jpsinp_jpsipi_fraction");
+  double erfYield = ds_cont->sumEntries() * jpsinp_poly_fraction->getVal();
+  jpsipi_fraction->setVal(n_jpsipi_ext.getVal() / (n_jpsipi_ext.getVal() + erfYield));
+  jpsipi_fraction->setConstant();
   // include signal pdf
   RooAddPdf* model_inclusive = new
     RooAddPdf("np_signal", "NP with B+",
-              RooArgList(*signal, *jpsipi, *erf, *poly),
-              RooArgList(n_signal, n_jpsipi, n_erf, n_cont));
+              RooArgList(*signal, *erf_jpsipi, *poly),
+              RooArgList(n_signal, n_erf, n_cont));
   // determine gaussian width with MC
   Bmass.setRange("bmc", 5.18, 5.38);
   auto signal_result = signal->fitTo(*ds_sig, Range("bmc"), Save());
@@ -2111,7 +2137,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   fix_signal_shape(w, signal_par_list);
   model_inclusive->fitTo(*ds, Save());
   // fix the erf shape
-  RooArgSet* erf_part_set = erf->getParameters(*ds);
+  RooArgSet* erf_part_set = erf_jpsipi->getParameters(*ds);
   auto itr = erf_part_set->createIterator();
   for (auto i = 0; i < erf_part_set->getSize(); ++i) {
     RooRealVar* var = (RooRealVar*) itr->Next();
@@ -2673,7 +2699,8 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   RooRealVar* BpYield = 0;
   if( (particle == 2) && (MC == 0) ){BpYield = w.var("RT_yield");}
   else{BpYield = w.var("n_signal");}
-  RooRealVar* BgYield = w.var("n_combinatorial");
+  RooRealVar* combYield = w.var("n_combinatorial");
+  RooRealVar* npYield = w.var("n_nonprompt");
   //we need the n values previously saved in the woorkspace
 
   //fit the model to the data
@@ -2744,7 +2771,13 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
   //add sWeights to dataset based on model and yield variables
   //sPlot class adds a new variable that has the name of the corresponding yield + "_sw".
-  SPlot* sData = new SPlot("sData","An sPlot",*data, model, RooArgList(*BpYield,*BgYield));
+  // RooArgList pdfComp(*BpYield, *combYield);
+  RooArgList pdfComp(*BpYield, *combYield);
+  // For B+, include non-prompt J/psi component
+  if (particle == 0) {
+    pdfComp.add(*npYield);
+  }
+  SPlot* sData = new SPlot("sData","An sPlot",*data, model, pdfComp);
 
   cout << endl <<  "Yield of B+ is "
        << BpYield->getVal() << ".  From sWeights it is "
@@ -2752,7 +2785,7 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
        << sData->GetYieldFromSWeight("n_signal") << endl;
 
   cout << "Yield of background is "
-       << BgYield->getVal() << ".  From sWeights it is "
+       << combYield->getVal() << ".  From sWeights it is "
        << sData->GetYieldFromSWeight("n_combinatorial") << endl
        << endl;
   
@@ -4252,14 +4285,14 @@ void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
                   Components("signal"), NormRange("bmass"),
                   LineColor(kOrange-3), LineStyle(1), LineWidth(3), FillStyle(3002),
                   FillColor(kOrange-3), VLines(), DrawOption("LF"));
+    model->plotOn(massframe, RooFit::Name("B->J/#psi #pi"),
+                  Components("jpsipi"), NormRange("bmass"),
+                  LineColor(kPink+10), LineStyle(kDashed));
   }
   model->plotOn(massframe, RooFit::Name("peaking"),
                 Components("erf"), NormRange("bmass"),
                 LineColor(kGreen+3), LineStyle(1), LineWidth(3), FillStyle(3005),
                 FillColor(kGreen+3), VLines(), DrawOption("LF"));
-  model->plotOn(massframe, RooFit::Name("B->J/#psi #pi"),
-                Components("jpsipi"), NormRange("bmass"),
-                LineColor(kPink+10), LineStyle(kDashed));
   model->plotOn(massframe, RooFit::Name("poly"),
                 Components("poly_jpsi"), NormRange("bmass"),
                 LineColor(kBlue), LineStyle(kDashed));
@@ -4275,12 +4308,12 @@ void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
   leg->SetBorderSize(0);
   leg->AddEntry(massframe->findObject("NP"), "NP MC", "p)");
   leg->AddEntry(massframe->findObject("peaking"), "peaking bg", "f");
-  leg->AddEntry(massframe->findObject("B->J/#psi #pi"), "B->J/#psi #pi", "f");
   leg->AddEntry(massframe->findObject("poly"), "combinatorial", "l");
   leg->AddEntry(massframe->findObject("NP Fit"),"Fit","l");
   // compare yields with gen particles
   if (with_sig) {
     leg->AddEntry(massframe->findObject("signal"), "signal", "f");
+    leg->AddEntry(massframe->findObject("B->J/#psi #pi"), "B->J/#psi #pi", "f");
     txt.DrawLatexNDC(0.36, 0.8, TString::Format("gen: %.0f", nGen));
     txt.DrawLatexNDC(0.36, 0.7, TString::Format("fit: %.0f #pm %.0f",
                                                 n_signal.getVal(),
