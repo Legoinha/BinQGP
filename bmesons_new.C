@@ -77,11 +77,19 @@
 #include "RooCBShape.h"
 #include "RooCmdArg.h"
 
+//particle
+// 0 = Bu
+// 1 = Bs
+// 2 = B0
+#define particle 0
+
 constexpr bool early = false;
 // constexpr bool early = true;
 
 // Whether to fit B mass in different y bins
-constexpr bool fit_ybins = true;
+// this is assigned based on input to bmesons_new()
+bool fit_ybins = false;
+
 // Use NP Jpsi shape for mass fitting (Err fn + Gaussians)
 constexpr bool include_np = true;
 
@@ -236,11 +244,6 @@ const char* VAR_dif_A = "By";
 // 0 = computes MC and data comparissons
 #define DIF_A 0 
 
-//particle
-// 0 = Bu
-// 1 = Bs
-// 2 = B0
-#define particle 0
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -300,6 +303,10 @@ const std::vector<TString> particleList = {"Bu", "Bs"};
 void bmesons_new(int ipt = 3, int iy = 1){
 
   gROOT->SetBatch();
+
+  if (particle == 0 && ipt <= 1) {
+    fit_ybins = true;
+  }
 
 
   int n_var;
