@@ -2743,9 +2743,7 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
   if(particle != 2){  //both Bu and Bs nominal model are a double gaussian
   sigma1 = w.var("sigma1");
-  sigma2 = w.var("sigma2");
     sigma1->setConstant();
-    // sigma2->setConstant();
   }
   else{
   sigma1_swp = w.var("sigma1_swp");
