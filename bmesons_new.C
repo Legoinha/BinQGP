@@ -225,8 +225,8 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
 double MC_fit_result(TString input_file, TString inVarName);
 TString ystring(int iy);
 void save_validation_plot(TCanvas& can, TString name, TString comp, int ipt, int iy);
-void fix_signal_shape(RooWorkspace& w, RooArgList& parlist, bool release=false);
-
+void fix_signal_shape(RooWorkspace& w, bool release=false);
+void fix_parameters(RooWorkspace& w, TString pdfName, bool release=false);
 void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release=false);
 
 template<typename... Targs>
@@ -2141,20 +2141,10 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
 
   cout << "MC fit for NP J/psi complete" << "\n";
   // fit the J/psi using fixed signal and jpsipi shape
-  fix_signal_shape(w, signal_par_list);
-  model_inclusive->fitTo(*ds, Save());
+  fix_signal_shape(w);
   // fix the erf shape
-  RooArgSet* erf_part_set = erf_jpsipi->getParameters(*ds);
-  auto itr = erf_part_set->createIterator();
-  for (auto i = 0; i < erf_part_set->getSize(); ++i) {
-    RooRealVar* var = (RooRealVar*) itr->Next();
-    var->setConstant(true);
-  }
-
-  // float the signal parameters after the fit
-  fix_signal_shape(w, signal_par_list, true);
-
-
+  fix_parameters(w, "erf");
+  model_inclusive->fitTo(*ds, Save(), Extended());
   TString jpsi_plot_with_sig = "./results/Bu/" +
     TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",
                     pti, ptf, pti, ptf, ystr.Data());
@@ -2190,7 +2180,7 @@ cout <<"ploting complete fit"<< endl;
     // modelmc.fitTo(*mc, Range("bmc"), Extended(kTRUE));
     auto signal_result = signal->fitTo(*mc, Range("bmc"), Save());
     auto signal_par_list = signal_result->floatParsFinal();
-    fix_signal_shape(w, signal_par_list);
+    fix_signal_shape(w);
     cout << "MC fit complete" << "\n";
 
     TString signalPlot;
@@ -4241,11 +4231,30 @@ TString ystring(int iy) {
  }
 
 /** Fix or release the parameters for signal shape */
-void fix_signal_shape(RooWorkspace& w, RooArgList& parlist, bool release) {
-  fix_parameters(w, parlist, release);
+void fix_signal_shape(RooWorkspace& w, bool release) {
+  fix_parameters(w, "signal", release);
   // never fix the overall width
   RooRealVar* sigma1 = w.var("sigma1");
   sigma1->setConstant(false);
+}
+
+/** Fix or release the parameters for a given PDF */
+void fix_parameters(RooWorkspace& w, TString pdfName, bool release) {
+  RooAbsPdf* pdf = w.pdf(pdfName);
+  RooAbsData* ds = w.data("data");
+  RooArgSet* par_set = pdf->getParameters(*ds);
+  auto itr = par_set->createIterator();
+  bool toFix = ! release;
+  std::string fix_or_float = (toFix)? "fix " : "float ";
+  std::cout << fix_or_float << "parameters:";
+  for (auto i = 0; i < par_set->getSize(); ++i) {
+    RooRealVar* var = (RooRealVar*) itr->Next();
+    var->setConstant(true);
+    TString name = var->GetName();
+    std::cout << name << ", ";
+    var->setConstant(toFix);
+  }
+  std::cout << "\n";
 }
 
 /** Fix or release the parameters for a given arg list */
@@ -4255,7 +4264,7 @@ void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release) {
     RooRealVar* var = w.var(name);
     bool toFix = ! release;
     std::string fix_or_float = (toFix)? "fix " : "float ";
-    cout << fix_or_float << name << "\n";
+    std::cout << fix_or_float << "parameters:";
     var->setConstant(toFix);
   }
 }
