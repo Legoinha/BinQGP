@@ -128,8 +128,8 @@ const std::vector<double> bdt_lower_bound_bs =
 const std::vector<double> BDTmin_bs = {-0.2, -0.2, -0.05};
 const std::vector<double> BDTmax_bs = {0.88, 0.8, 0.9};
 
-const std::vector<double> BDTmin_bp = {-0.05, -0.00, -0.18, -0.12, -0.1};
-const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.8};
+const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1};
+const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.74};
 
 // number of bins
 const std::vector<int> BDTnbins_bs = {20, 30, 20};
