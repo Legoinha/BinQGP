@@ -1686,8 +1686,8 @@ cout << "Definig B0 model" << endl;
   RooRealVar* f_erf = new RooRealVar("f_erf","f_erf", ini_f_erf[ipt], 0.02, 5);
   RooProduct* n_erf = new RooProduct("n_erf","n_erf",RooArgList(*n_signal,*f_erf));
   // RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.038, 0.040);
-  RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.01, 1);
-  RooProduct* n_jpsipi = new RooProduct("n_jpsipi","n_jpsipi",RooArgList(*n_signal,*f_jpsipi)); 
+  // RooRealVar* f_jpsipi = new RooRealVar("f_jpsipi","f_jpsipi",0.03996, 0.01, 1);
+  // RooProduct* n_jpsipi = new RooProduct("n_jpsipi","n_jpsipi",RooArgList(*n_signal,*f_jpsipi)); 
   double n_nonprompt_initial = 0.1 * n_combinatorial_initial;
 
   // don't fit the peaking backgrounds for lower pT
@@ -2256,9 +2256,9 @@ cout <<"ploting complete fit"<< endl;
 
     Bmass.setRange("bmc", 5.18, 5.38);
     // modelmc.fitTo(*mc, Range("bmc"), Extended(kTRUE));
+    fix_signal_shape(w, true);
     auto signal_result = signal->fitTo(*mc, Range("bmc"), Save());
     auto signal_par_list = signal_result->floatParsFinal();
-    fix_signal_shape(w);
     cout << "MC fit complete" << "\n";
 
     TString signalPlot;
@@ -2270,6 +2270,11 @@ cout <<"ploting complete fit"<< endl;
     plot_mcfit(w, signal, mc, signalPlot, "MC signal",
                RooFit::Name("MCFit"), NormRange("bmc"), LineColor(kRed),
                LineStyle(1), LineWidth(2));
+    fix_signal_shape(w);
+    // float the mean of signal for data
+    RooRealVar* signal_mean = w.var("mean");
+    signal_mean->setConstant(false);
+
   }
 
   TFile* f;
