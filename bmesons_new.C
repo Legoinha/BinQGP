@@ -2218,6 +2218,8 @@ cout <<"ploting complete fit"<< endl;
     model->plotOn(massframe, RooFit::Name("B->J/psi pi"),Components("jpsipi"),NormRange("all"),LineColor(kPink+10),LineStyle(kDashed));
     massframe->GetYaxis()->SetTitleOffset(1.3);
     massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}) [GeV]");
+    model->paramOn(massframe,  Layout(0.35, 0.6, 0.9),
+                   Format("NEU", AutoPrecision(1)));
   }
   else if(particle == 1){
     data->plotOn(massframe, RooFit::Name("Data"), MarkerSize(0.9));
@@ -4273,11 +4275,16 @@ void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release) {
 template<typename... Targs>
 void plot_mcfit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
                 TString plotName, TString title, Targs... options) {
+  TString label = "";
   RooRealVar Bmass = *(w.var("Bmass"));
   Bmass.setRange("bmass", 5.0, 6.0);
   RooPlot* massframe = Bmass.frame(Title(title));
   ds->plotOn(massframe, MarkerSize(0.9));
   model->plotOn(massframe, options...);
+
+  model->paramOn(massframe, Layout(0.5, 0.8, 0.9),
+                 Label(label),
+                 Format("NEU", AutoPrecision(1)) ) ;
 
   TCanvas can_mc;
   can_mc.SetTitle("");
@@ -4310,26 +4317,28 @@ void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
   model->plotOn(massframe, RooFit::Name("poly"),
                 Components("poly_jpsi"), NormRange("bmass"),
                 LineColor(kBlue), LineStyle(kDashed));
+  model->paramOn(massframe,  Layout(0.35, 0.6, 0.9),
+                 Format("NEU", AutoPrecision(1)));
 
   TCanvas can_np;
   can_np.SetTitle("");
   massframe->Draw();
 
   TLatex txt;
-  TLegend *leg = new TLegend (0.65, 0.55, 0.85, 0.85);
+  TLegend *leg = new TLegend (0.7, 0.35, 0.85, 0.60);
   leg->SetTextSize(0.04);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   leg->AddEntry(massframe->findObject("NP"), "NP MC", "p)");
-  leg->AddEntry(massframe->findObject("peaking"), "peaking bg", "f");
+  leg->AddEntry(massframe->findObject("peaking"), "bg as erf", "f");
   leg->AddEntry(massframe->findObject("poly"), "combinatorial", "l");
   leg->AddEntry(massframe->findObject("NP Fit"),"Fit","l");
   // compare yields with gen particles
   if (with_sig) {
     leg->AddEntry(massframe->findObject("signal"), "signal", "f");
     leg->AddEntry(massframe->findObject("B->J/#psi #pi"), "B->J/#psi #pi", "f");
-    txt.DrawLatexNDC(0.36, 0.8, TString::Format("gen: %.0f", nGen));
-    txt.DrawLatexNDC(0.36, 0.7, TString::Format("fit: %.0f #pm %.0f",
+    txt.DrawLatexNDC(0.42, 0.4, TString::Format("gen: %.0f", nGen));
+    txt.DrawLatexNDC(0.42, 0.32, TString::Format("fit: %.0f #pm %.0f",
                                                 n_signal.getVal(),
                                                 n_signal.getError()));
   }
