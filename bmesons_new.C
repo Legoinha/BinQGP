@@ -2194,7 +2194,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   fix_parameters(w, "erf");
   // fix the jpsi pi mean
   m_jpsipi_mean1->setConstant();
-  model_inclusive->fitTo(*ds, Save(), Extended());
+  model_inclusive->fitTo(*ds, Save(), Extended(), NumCPU(4));
   TString jpsi_plot_with_sig = "./results/Bu/" +
     TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",
                     pti, ptf, pti, ptf, ystr.Data());
@@ -2265,7 +2265,7 @@ cout <<"ploting complete fit"<< endl;
   }
   else if(MC == 0){f = new TFile("./results/" + BDTdir[particle] + "/" + subname + "/DATA_fit.root", "RECREATE");}
 
-  RooFitResult* r = model->fitTo(*data,Range("all"),Save());
+  RooFitResult* r = model->fitTo(*data,Range("all"),Save(), NumCPU(4));
   r->Print();
   f->cd();
   r->Write();
