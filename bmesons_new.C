@@ -11,12 +11,14 @@
 //
 /////////////////////////////////////////////////////////////////////////
 
+#include <cmath>
 #include <math.h>
 #include "RooRealProxy.h"
 #include "RooAbsReal.h"
 // #include "RooDoubleCBFast.h"
 // #include "RooDoubleCBFast.cc"
 #include "CMS_lumi.C"
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <vector>
@@ -644,22 +646,56 @@ cout << "AQUI_"<<i<<endl;
     sp_comp[i]->Scale(1/sp_comp[i]->Integral());
     ss_comp[i]->Scale(1/ss_comp[i]->Integral());	
 	
-    //y axis: maximum and minimum 
-    if((mc_comp[i]->GetMaximum() > sp_comp[i]->GetMaximum()) && (mc_comp[i]->GetMaximum() > ss_comp[i]->GetMaximum())){
-      mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*mc_comp[i]->GetMaximum());}
-    else if((sp_comp[i]->GetMaximum() > ss_comp[i]->GetMaximum()) && (sp_comp[i]->GetMaximum() > mc_comp[i]->GetMaximum())){
-      mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*sp_comp[i]->GetMaximum());}
-    else{mc_comp[i]->GetYaxis()->SetRangeUser(0.1*mc_comp[i]->GetMinimum(), 1.1*ss_comp[i]->GetMaximum());}
-	
-    mc_comp[i]->Draw();
-    sp_comp[i]->Draw("same");
-    ss_comp[i]->Draw("same");
-		
+    // y axis: maximum and minimum
+    double ymax = std::max(mc_comp[i]->GetMaximum(),
+                           std::max(sp_comp[i]->GetMaximum(),
+                                    ss_comp[i]->GetMaximum()));
+    double ymin = std::min(mc_comp[i]->GetMinimum(),
+                           std::min(sp_comp[i]->GetMinimum(),
+                                    ss_comp[i]->GetMinimum()));
+    mc_comp[i]->GetYaxis()->SetRangeUser(0.1 * ymin, 1.1 * ymax);
+    ss_comp[i]->GetYaxis()->SetRangeUser(0.1 * ymin, 1.1 * ymax);
+
+    auto rp_sp = new TRatioPlot(sp_comp[i], mc_comp[i], "divsym");
+    rp_sp->Draw();
+    TGraph* ratio_sp = rp_sp->GetLowerRefGraph();
+    d.Clear();
+
+    auto rp_ss = new TRatioPlot(ss_comp[i], mc_comp[i], "divsym");
+    d.SetTicks(0, 1);
+    rp_ss->SetH1DrawOpt("E");
+    rp_ss->Draw();
+    rp_ss->GetLowerRefYaxis()->SetTitle("Data/MC");
+    rp_ss->GetUpperRefYaxis()->SetTitle("normalized entries");
+    rp_ss->GetLowerPad()->cd();
+    ratio_sp->Draw("e same");
+    TGraph* ratio_ss = rp_ss->GetLowerRefGraph();
+    // Limit the range of y axis for ratio plots
+    double ratio_range = 2;
+    auto ratio_ss_max = TMath::MaxElement(ratio_ss->GetN(), ratio_ss->GetY());
+    auto ratio_sp_max = TMath::MaxElement(ratio_sp->GetN(), ratio_sp->GetY());
+    auto ratio_ss_min = TMath::MinElement(ratio_ss->GetN(), ratio_ss->GetY());
+    auto ratio_sp_min = TMath::MinElement(ratio_sp->GetN(), ratio_sp->GetY());
+    auto minmax = std::vector<double> {ratio_ss_min, ratio_ss_max,
+                                       ratio_sp_min, ratio_sp_max};
+    std::transform(minmax.cbegin(), minmax.cend(), minmax.begin(), [](double m) {
+      return std::abs(m - 1);});
+    // make the ratio range symmetric
+    if (*std::max_element(minmax.begin(), minmax.end()) < ratio_range) {
+      ratio_range = *std::max_element(minmax.begin(), minmax.end());
+    }
+    ratio_ss->SetMinimum(1 - ratio_range);
+    ratio_ss->SetMaximum(1 + ratio_range);
+
+    rp_ss->GetUpperPad()->cd();
+    sp_comp[i]->Draw("e same");
+    d.Update();
+
     TLegend* leg;
-    leg = new TLegend(0.7, 0.9, 0.9, 1.0);	
+    leg = new TLegend(0.7, 0.9, 0.9, 1.0);
+    leg->AddEntry(sp_comp[i]->GetName(), "SPlot", "LE");
     leg->AddEntry(ss_comp[i]->GetName(), "S. Subtraction", "LE");
     leg->AddEntry(mc_comp[i]->GetName(), "Monte Carlo", "LE");
-    leg->AddEntry(sp_comp[i]->GetName(), "SPlot", "LE");
     leg->SetTextSize(0.03);
     leg->Draw("same");
 
