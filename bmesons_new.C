@@ -2797,6 +2797,8 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   RooRealVar* f_erf = w.var("f_erf") ;
   f_erf->setConstant();
 
+  fix_signal_shape(w);
+  fix_parameters(w, "fit_side");
   if(particle != 2){  //both Bu and Bs nominal model are a double gaussian
   sigma1 = w.var("sigma1");
     sigma1->setConstant();
@@ -2827,6 +2829,9 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
     n2_swp->setConstant();
     mean_difference->setConstant();}
 
+  // cout << "do check fit" << "\n";
+  // model->fitTo(*data, Extended());
+  // cout << "finished check fit" << "\n";
   cout << "before splot" << "\n";
   RooMsgService::instance().setSilentMode(true);
 
