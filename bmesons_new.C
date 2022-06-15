@@ -2231,7 +2231,11 @@ cout <<"ploting complete fit"<< endl;
   } else{
     // determine gaussian width with MC
 
-    Bmass.setRange("bmc", 5.18, 5.38);
+    if (particle == 0) {
+      Bmass.setRange("bmc", 5.18, 5.38);
+    } else if (particle == 1) {
+      Bmass.setRange("bmc", 5.26, 5.46);
+    }
     // modelmc.fitTo(*mc, Range("bmc"), Extended(kTRUE));
     fix_signal_shape(w, true);
     auto signal_result = signal->fitTo(*mc, Range("bmc"), Save());
