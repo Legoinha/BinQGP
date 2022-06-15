@@ -48,6 +48,7 @@
 #include <RooBifurGauss.h>
 #include "TMath.h"
 #include <RooGenericPdf.h>
+#include <RooExtendPdf.h>
 #include "TRatioPlot.h"
 #include <RooBifurGauss.h>
 #include <RooProduct.h>
