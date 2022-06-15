@@ -217,7 +217,7 @@ void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int 
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
-void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString, int, int);
+void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString, TString);
 void DIF_analysis(RooWorkspace& w, const char* variable, TString, RooArgSet &c_vars);
 double get_yield_syst(RooDataSet *dt, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma, const char* name_var);
 void fit_syst_error(TString, int n_var, std::vector<TString> label, RooArgSet &c_vars);
@@ -225,7 +225,7 @@ void fit_syst_error_bin(TString, int n_var, std::vector<TString> label, double a
 void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooArgSet &c_pdfs);
 double MC_fit_result(TString input_file, TString inVarName);
 TString ystring(int iy);
-void save_validation_plot(TCanvas& can, TString name, TString comp, int ipt, int iy);
+void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdir, int iy);
 void fix_signal_shape(RooWorkspace& w, bool release=false);
 void fix_parameters(RooWorkspace& w, TString pdfName, bool release=false);
 void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release=false);
@@ -457,9 +457,16 @@ cout << "AQUI_"<<i<<endl;
     histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, 40, weight));
     names.push_back(TString(variables[i]));}
   
+  TString ptdir = "./results/" + particleList.at(particle);
+  if (inclusive) {
+    ptdir += "/inclusive";
+  } else {
+    ptdir += Form("/%i_%i", ptlist[ipt], ptlist[ipt + 1]);
+  }
+
   // RATIO BETWEEN DATA (SPLOT) AND MC
   if (weights == 1){
-    get_ratio(histos_splot, histos_mc, names,"weights.root", ptlist[ipt], ptlist[ipt+1]);
+    get_ratio(histos_splot, histos_mc, names,"weights.root", ptdir);
   }
   
   // ADDS WEIGHTS TO MC TREE (use to reweight MC)
@@ -514,7 +521,7 @@ cout << "AQUI_"<<i<<endl;
     leg->SetTextSize(0.03);
     leg->Draw("same");
    
-    save_validation_plot(c, names[i], "ss_mc", ipt, iy);
+    save_validation_plot(c, names[i], "ss_mc", ptdir, iy);
   }
   
   //SPlot vs. Sideband subtraction
@@ -561,20 +568,7 @@ cout << "AQUI_"<<i<<endl;
     leg->SetTextSize(0.03);
     leg->Draw("same");
  
-    if(particle == 0){
-      gSystem->Exec("mkdir -p ./results/Bu/mc_validation_plots/ss_sp/pdfs/" );
-      a.SaveAs("./results/Bu/mc_validation_plots/ss_sp/pdfs/" + names[i]+"_mc_validation_Bu.pdf");
-      a.SaveAs("./results/Bu/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bu.gif");
-    }
-    else if(particle == 1){
-      gSystem->Exec("mkdir -p ./results/Bs/mc_validation_plots/ss_sp/pdfs/" );
-      a.SaveAs("./results/Bs/mc_validation_plots/ss_sp/pdfs/" + names[i]+"_mc_validation_Bs.pdf");
-      a.SaveAs("./results/Bs/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_Bs.gif");
-    }
-    else if(particle == 2){
-      a.SaveAs("./results/B0/mc_validation_plots/ss_sp/pdfs/" + names[i]+"_mc_validation_B0.pdf");
-      a.SaveAs("./results/B0/mc_validation_plots/ss_sp/" + names[i]+"_mc_validation_B0.gif");
-    }
+    save_validation_plot(a, names[i], "ss_sp", ptdir, iy);
    }
 
   //SPlot vs. Monte Carlo
@@ -625,7 +619,7 @@ cout << "AQUI_"<<i<<endl;
     leg->SetTextSize(0.03);
     leg->Draw("same");
 	
-    save_validation_plot(b, names[i], "mc_sp", ipt, iy);
+    save_validation_plot(b, names[i], "mc_sp", ptdir, iy);
   }
  
   //Sideband subtraction vs. Monte Carlo vs SPlot
@@ -668,21 +662,8 @@ cout << "AQUI_"<<i<<endl;
     leg->AddEntry(sp_comp[i]->GetName(), "SPlot", "LE");
     leg->SetTextSize(0.03);
     leg->Draw("same");
-	
-    if(particle == 0){
-      gSystem->Exec("mkdir -p ./results/Bu/mc_validation_plots/ss_mc_sp/pdfs/" );
-      d.SaveAs("./results/Bu/mc_validation_plots/ss_mc_sp/pdfs/"+names[i]+"_mc_validation_Bu.pdf");
-      d.SaveAs("./results/Bu/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bu.gif");
-    }
-    else if(particle == 1){
-      gSystem->Exec("mkdir -p ./results/Bs/mc_validation_plots/ss_mc_sp/pdfs/" );
-      d.SaveAs("./results/Bs/mc_validation_plots/ss_mc_sp/pdfs/"+names[i]+"_mc_validation_Bs.pdf");
-      d.SaveAs("./results/Bs/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_Bs.gif");
-    }
-    else if(particle == 2){
-      d.SaveAs("./results/B0/mc_validation_plots/ss_mc_sp/pdfs/"+names[i]+"_mc_validation_B0.pdf");
-      d.SaveAs("./results/B0/mc_validation_plots/ss_mc_sp/"+names[i]+"_mc_validation_B0.gif");
-    }
+
+    save_validation_plot(d, names[i], "ss_mc_sp", ptdir, iy);
   }
 #endif
 //comparisons end
@@ -1161,16 +1142,11 @@ if(std::string(variable)=="By"){
 //DIF_analysis end
 
 //get the ratio between the data (splot method) and the MC and save it in a root file
-void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,  std::vector<TString> v_name, TString filename,
-                int pti, int ptf){
+void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
+                std::vector<TString> v_name, TString filename,
+                TString ptdir){
 
   TString dir_name;
-  TString ptdir;
-  if (particle == 0) {
-    ptdir = Form("./results/Bu/%i_%i", pti, ptf);
-  } else if (particle == 1) {
-    ptdir = Form("./results/Bs/%i_%i", pti, ptf);
-  }
   dir_name = ptdir + "/mc_validation_plots/weights/";
   if(particle == 2){dir_name = "./results/B0/mc_validation_plots/weights/";}
 
@@ -4297,10 +4273,8 @@ TString ystring(int iy) {
 }
 
 // save the plots MC/SS, MC/
- void save_validation_plot(TCanvas& can, TString name, TString comp, int ipt, int iy) {
+void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdir, int iy) {
    TString pdfstr, gifstr;
-   TString ptdir = "./results/" + particleList.at(particle) +
-     Form("/%i_%i", ptlist[ipt], ptlist[ipt+1]);
    gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/" + comp + "/pdfs/");
    TString ystr = "";
    if (fit_ybins) {
