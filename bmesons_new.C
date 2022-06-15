@@ -1466,9 +1466,9 @@ if( choice != "scale_factor"){
    n3 = new RooRealVar("n3", "n3", 100., 0., 400.);
    // sigma3 = new RooRealVar("sigma3","sigma3",0.012,0.010,0.030);
    sigma3 = new RooProduct("sigma3", "sigma3", RooArgList(*sigma1, *ratio_sigma13));
-   p1 = new RooRealVar("p1", "p1", ini_p1[ipt][iy], -100., 100.);
-   p2 = new RooRealVar("p2", "p2", ini_p2[ipt][iy], -10., 10.);
-   p3 = new RooRealVar("p3", "p3", ini_p3[ipt][iy], -10., 10.);
+   p1 = new RooRealVar("p1", "p1", ini_p1[ipt][iy], -150., 150.);
+   p2 = new RooRealVar("p2", "p2", ini_p2[ipt][iy], -15., 15.);
+   p3 = new RooRealVar("p3", "p3", ini_p3[ipt][iy], -2., 2.);
 
   m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale",
                                      ini_erf_scale[ipt][iy], 0, 0.1);
