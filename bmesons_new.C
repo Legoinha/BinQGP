@@ -214,7 +214,7 @@ void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
 void reduce_ybins(RooWorkspace& w, int iy);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
-void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool includeSignal=true);
+void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
@@ -306,30 +306,49 @@ const std::vector<TString> particleList = {"Bu", "Bs"};
 void bmesons_new(int ipt = 3, int iy = 1){
 
   gROOT->SetBatch();
+  bool inclusive = false;
+  if (ipt < 0) {
+    inclusive = true;
+  }
 
-  if (particle == 0 && ipt <= 1) {
+  // if (particle == 0 && ipt <= 1 && ipt >= 0) {
+  if (ipt <= 1 && ipt >= 0) {
     fit_ybins = true;
   }
 
 
   int n_var;
   TString input_file_data;
-  // if(particle == 0){input_file_data ="braa/BPData.root";}        
-  if(particle == 0){input_file_data = Form("../files/BPData_noBDT_trk5_%i_%i.root",
-                                           ptlist.at(ipt), ptlist.at(ipt+1));}
-  //"~/work/B_DATA_MC/BPData.root"
-  else if(particle == 1){input_file_data = Form("../files/BsData_noBDT_trk5_%i_%i.root",
-                                           ptlist.at(ipt), ptlist.at(ipt+1));}
-
-  // else if(particle == 2){input_file_data = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZData.root";}
   TString input_file_mc;
   TString input_file_mc_swap;
-  // if(particle == 0){input_file_mc = "braa/BPMC.root";}
-  if(particle == 0){input_file_mc = Form("../files/BPMC_noBDT_trk5_%i_%i.root",
-                                           ptlist.at(ipt), ptlist.at(ipt+1));}
-  //"~/work/PreAppFiles/BPMC.root"
-  else if(particle == 1){input_file_mc = Form("../files/BsMC_noBDT_trk5_%i_%i.root",
-                                                ptlist.at(ipt), ptlist.at(ipt+1));}
+  // Inclusive pT comparison
+  if (ipt < 0) {
+    // input_file_data = (particle == 0)?
+    //   "../files/BPData_noBDT.root" : "../files/BsData_noBDT.root";
+    // input_file_mc = (particle == 0)?
+    //   "../files/BPMC_noBDT.root" : "../files/BsMC_noBDT.root";
+    input_file_data = (particle == 0)?
+      "../files/BPData.root" : "../files/BsData.root";
+    input_file_mc = (particle == 0)?
+      "../files/BPMC.root" : "../files/BsMC.root";
+  } else {
+    // Binned pT comparison
+    if (particle == 0) {
+      input_file_data = Form("../files/BPData_noBDT_trk5_%i_%i.root",
+                             ptlist.at(ipt), ptlist.at(ipt+1));
+    } else if(particle == 1) {
+      input_file_data = Form("../files/BsData_noBDT_trk5_%i_%i.root",
+                             ptlist.at(ipt), ptlist.at(ipt+1));
+    }
+    if (particle == 0) {
+      input_file_mc = Form("../files/BPMC_noBDT_trk5_%i_%i.root",
+                           ptlist.at(ipt), ptlist.at(ipt+1));
+    } else if(particle == 1) {
+      input_file_mc = Form("../files/BsMC_noBDT_trk5_%i_%i.root",
+                           ptlist.at(ipt), ptlist.at(ipt+1));
+    }
+  }
+
   // else if(particle == 2){
   //   input_file_mc = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMC.root";
   //   input_file_mc_swap = "/lstore/cms/mcarolina/MoreUpdatedSamples/BZ/BZMCSwap2.root";}
@@ -347,15 +366,16 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
 #if particle == 0
 
-  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5", "BDT_pt_50_100" */};
+  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5", "BDT_pt_50_100" */};
+  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"};
   // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By"};
 
   // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt"};
 
 #elif particle == 1
 
-  // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr" /*,"BDT_pt_1_2", "BDT_pt_2_3", "BDT_pt_3_5",*/ };
-  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By"};
+  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"};
+  // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By"};
 
 #elif particle == 2
 
@@ -391,32 +411,44 @@ void bmesons_new(int ipt = 3, int iy = 1){
   if (fit_ybins) {
     reduce_ybins(*ws, iy);
   }
-  // apply BDT cut
-  std::vector<TString> labels = {"data", "mc"};
-  if (particle == 0) {
-    labels.push_back("jpsinp");
-  }
-  for (auto l : labels) {
-    auto BDTvar = TString::Format("BDT_pt_%d_%d", ptlist[ipt], ptlist[ipt+1]);
-    auto iBDT = indexBDT.at(BDTvar.Data());
-    auto data = ws->data(l);
-    data->SetName(l + "_allbdt");
-    data = (RooDataSet*) data->
-      reduce(TString::Format("%s > %f", BDTvar.Data(), BDT_lower_bound[iBDT]));
-    cout << data->sumEntries() << "\n";
-    ws->import(*data, Rename(l));
+  if (ipt >= 0) {
+    // apply BDT cut
+    std::vector<TString> labels = {"data", "mc"};
+    if (particle == 0) {
+      labels.push_back("jpsinp");
+    }
+    for (auto l : labels) {
+      auto BDTvar = TString::Format("BDT_pt_%d_%d", ptlist[ipt], ptlist[ipt+1]);
+      auto iBDT = indexBDT.at(BDTvar.Data());
+      auto data = ws->data(l);
+      data->SetName(l + "_allbdt");
+      data = (RooDataSet*) data->
+        reduce(TString::Format("%s > %f", BDTvar.Data(), BDT_lower_bound[iBDT]));
+      cout << data->sumEntries() << "\n";
+      ws->import(*data, Rename(l));
+    }
   }
 
+  // use the setting of pT 10-15 for inclusive pT comparison
+  if (inclusive) {
+    ipt = 2;
+    cout << "Using initial values for pT 10-15" << "\n";
+  }
   TString signal_shape = (particle == 0 && ipt == 0)? "sig3gauss" : "nominal";
   // TString signal_shape = "nominal";
   cout << "choice:" << signal_shape << "\n";
 
   build_pdf(*ws, signal_shape, c_vars, ipt, iy);
+
+
   if (include_np && (particle == 0)) {
-    fit_jpsinp(*ws, "nominal", c_vars, ipt, iy);
+    fit_jpsinp(*ws, "nominal", c_vars, ipt, iy, inclusive);
   }
 
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
+  if (inclusive) {
+    subname = "inclusive";
+  }
   plot_complete_fit(*ws, c_vars, subname, iy);
   if (early) {return;}
   if(MC == 1){return;}
@@ -2095,7 +2127,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
    during successive fits
  */
 void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
-                int ipt, int iy, bool includeSignal) {
+                int ipt, int iy, bool inclusive, bool includeSignal) {
   int pti = ptlist[ipt];
   int ptf = ptlist[ipt + 1];
   double yi = ylist[iy];
@@ -2111,8 +2143,10 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   // get B -> jpsi pi dataset before applying pT cut
   RooDataSet* ds_jpsipi = (RooDataSet*) ds->reduce("Bgen == 23335");
   // Apply pT cuts for all the other datasets
-  ds = (RooDataSet*) fullds->
-    reduce(TString::Format("Bpt > %f && Bpt < %f", (double) pti, (double) ptf));
+  if (!inclusive) {
+    ds = (RooDataSet*) fullds->
+      reduce(TString::Format("Bpt > %f && Bpt < %f", (double) pti, (double) ptf));
+  }
   // Get rid of B+ at gen level
   RooDataSet* ds_cont = (RooDataSet*) ds->reduce("Bgen != 23333 && Bgen != 23335");
   RooDataSet* ds_sig = (RooDataSet*) ds->reduce("Bgen == 23333");
@@ -2154,6 +2188,12 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   TString jpsipiPlot = "./results/Bu/" +
     TString::Format("%i_%i/np_gen_jpsipi_pt_all%s.pdf",
                     pti, ptf, ystr.Data());
+  if (inclusive) {
+    cout << "make inclusive plot" << "\n";
+
+    gSystem->MakeDirectory("./results/Bu/inclusive" );
+    jpsipiPlot = "./results/Bu/inclusive/np_gen_jpsipi_all.pdf";
+  }
   plot_mcfit(w, &jpsipi_ext, ds_jpsipi, jpsipiPlot,
              "NP gen-matched B^{+} #rightarrow J/#psi #pi^{+}",
              RooFit::Name("MCFit"), NormRange("bjpsipi"), LineColor(kRed),
@@ -2172,6 +2212,9 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   jpsipiPlot = "./results/Bu/" +
     TString::Format("%i_%i/np_gen_jpsipi_pt%i-%i%s.pdf",
                     pti, ptf, pti, ptf, ystr.Data());
+  if (inclusive) {
+    jpsipiPlot = "./results/Bu/inclusive/np_gen_jpsipi.pdf";
+  }
   plot_mcfit(w, &jpsipi_ext, ds_jpsipi, jpsipiPlot,
              "NP gen-matched B^{+} #rightarrow J/#psi #pi^{+}",
              RooFit::Name("MCFit"), NormRange("bjpsipi"), LineColor(kRed),
@@ -2183,6 +2226,9 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   auto cont_par_list = cont_result->floatParsFinal();
   TString jpsi_fit_plot = "./results/Bu/" +
     TString::Format("%i_%i/np_fit_pt%i-%i%s.pdf", pti, ptf, pti, ptf, ystr.Data());
+  if (inclusive) {
+    jpsi_fit_plot = "./results/Bu/inclusive/np_fit.pdf";
+  }
   plot_jpsifit(w, model_cont, ds_cont, jpsi_fit_plot, "Non-prompt J/#psi", 0, n_signal);
   fix_parameters(w, cont_par_list);
 
@@ -2198,6 +2244,9 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   TString signalPlot = "./results/Bu/" +
     TString::Format("%i_%i/np_gen_signal_pt%i-%i%s.pdf",
                     pti, ptf, pti, ptf, ystr.Data());
+  if (inclusive) {
+    signalPlot = "./results/Bu/inclusive/np_gen_signal.pdf";
+  }
   plot_mcfit(w, &signal_ext, ds_sig, signalPlot, "NP gen-matched signal",
              RooFit::Name("MCFit"), Range("bmc"), LineColor(kRed),
              LineStyle(1), LineWidth(2));
@@ -2234,6 +2283,9 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   TString jpsi_plot_with_sig = "./results/Bu/" +
     TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",
                     pti, ptf, pti, ptf, ystr.Data());
+  if (inclusive) {
+    jpsi_plot_with_sig = "./results/Bu/inclusive/np_fit_signal.pdf";
+  }
   plot_jpsifit(w, model_inclusive, ds, jpsi_plot_with_sig, "Non-prompt J/#psi with signal",
                ds_sig->sumEntries(), n_signal);
 
@@ -3117,6 +3169,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
                                                             BDTmax[iBDT]));
   }
   else{
+    cout << "Create histogram " << label << " using variable range" << "\n";
    	histo_Bp_sig = (TH1D*)dataWBp->createHistogram(label,n,variable->getMin(),variable->getMax());
    	histo_Bp_bkg = (TH1D*)dataWBg->createHistogram(label,n,variable->getMin(),variable->getMax());}
   
