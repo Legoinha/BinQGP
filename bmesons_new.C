@@ -132,7 +132,7 @@ const std::vector<double> BDTmin_bs = {-0.2, -0.2, -0.05};
 const std::vector<double> BDTmax_bs = {0.82, 0.8, 0.9};
 
 const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1};
-const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.74};
+const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.73};
 
 // number of bins
 const std::vector<int> BDTnbins_bs = {12, 30, 20};
