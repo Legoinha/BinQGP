@@ -128,14 +128,14 @@ const std::vector<double> bdt_lower_bound_bs =
 
 
 // min and max for BDT histograms
-const std::vector<double> BDTmin_bs = {-0.2, -0.2, -0.05};
+const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05};
 const std::vector<double> BDTmax_bs = {0.82, 0.8, 0.9};
 
 const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1};
 const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.73};
 
 // number of bins
-const std::vector<int> BDTnbins_bs = {12, 30, 20};
+const std::vector<int> BDTnbins_bs = {11, 30, 20};
 const std::vector<int> BDTnbins_bp(5, 40);
 
 // initial values for error function / signal ratio
