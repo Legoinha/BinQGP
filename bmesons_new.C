@@ -97,7 +97,8 @@ bool fit_ybins = false;
 constexpr bool include_np = true;
 
 // should be constexpr, but let's simplify runtime arguments and omit that for now
-const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20"};
+const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15",
+                                        "BDT_pt_15_20", "BDT_pt_20_50"};
 const std::vector<TString> BDTvar_bp = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15",
                                         "BDT_pt_15_20", "BDT_pt_20_50"};
 
@@ -123,6 +124,7 @@ const std::vector<double> bdt_lower_bound_bp =
    -1.0};
 const std::vector<double> bdt_lower_bound_bs =
   {-0.01,
+   -1.0,
    -1.0,
    -1.0};
 
@@ -374,7 +376,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
 #elif particle == 1
 
-  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"};
+  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"};
   // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By"};
 
 #elif particle == 2
@@ -3830,7 +3832,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     double BDT_7_10_min, BDT_7_10_max;
     double BDT_10_15_min, BDT_10_15_max;
     double BDT_15_20_min, BDT_15_20_max;
-    // double BDT_20_30_min, BDT_20_30_max;
+    double BDT_20_50_min, BDT_20_50_max;
     // double BDT_30_50_min, BDT_30_50_max;
 
     mass_min = 5.0;
@@ -3971,8 +3973,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_15_20_min = -1;
     BDT_15_20_max = 1;
 
-    // BDT_20_30_min = -0.6;
-    // BDT_20_30_max = 0.85;
+    BDT_20_50_min = -1;
+    BDT_20_50_max = 1;
 
     // BDT_30_50_min = -0.7;
     // BDT_30_50_max = 0.85;
@@ -4023,7 +4025,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_7_10("BDT_pt_7_10", "BDT_pt_7_10", BDT_7_10_min, BDT_7_10_max);
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
-    // RooRealVar BDT_pt_20_30("BDT_pt_20_30", "BDT_pt_20_30", BDT_20_30_min, BDT_20_30_max);
+    RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
     // RooRealVar BDT_pt_30_50("BDT_pt_30_50", "BDT_pt_30_50", BDT_30_50_min, BDT_30_50_max);
 
     w.import(Bmass);
@@ -4071,7 +4073,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_7_10);
     w.import(BDT_pt_10_15);
     w.import(BDT_pt_15_20);
-    // w.import(BDT_pt_20_30);
+    w.import(BDT_pt_20_50);
     // w.import(BDT_pt_30_50);
     w.import(nMult);
   }
