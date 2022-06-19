@@ -2546,31 +2546,30 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> la
   double left;
   double right;
   double max, min;
-  double bpmass = 5.27929;
-  double b0mass = 5.36682;
+  double mean = w.var("mean")->getValV();
+  double sigma = 0.015;
 
   if(particle == 0){
-    left = 5.2;
-    right = bpmass + 0.25;
-    max = bpmass + 0.30;
+    left = mean - 3 * sigma;
+    right = mean + 3 * sigma;
+    min = mean - 9 * sigma;
+    max = mean + 9 * sigma;
   }
   else if(particle == 1){
-    left = b0mass - 0.20;
-    min = b0mass - 0.30;
-    right = b0mass + 0.20;
-    max = b0mass + 0.30;
+    left = mean - 3 * sigma;
+    right = mean + 3 * sigma;
+    min = mean - 9 * sigma;
+    max = mean + 9 * sigma;
   }
   else if(particle == 2){
     left = 5.22;
     right = 5.32;
   }
 
-  Bmass.setRange("right",right,Bmass.getMax());
-  Bmass.setRange("left",Bmass.getMin(),left);
-  Bmass.setRange("peak",left,right);
-  Bmass.setRange("peakright",left,Bmass.getMax());
-  Bmass.setRange("total", Bmass.getMin(), Bmass.getMax());
-  
+  Bmass.setRange("right", right, max);
+  Bmass.setRange("left", min, left);
+  Bmass.setRange("peak", left, right);
+
   if(particle == 0){reduceddata_side = (RooDataSet*)data->reduce(Form("Bmass>%lf", right))->reduce(Form("Bmass < %lf", max));}   //only events w bigger mass than the peak ?partlialy recosntructed  background ? 
   else if( (particle == 1) || (particle == 2) ){
     reduceddata_side =  (RooDataSet*)data->reduce(Form("Bmass>%lf || Bmass<%lf", right, left))->reduce(Form("Bmass > %lf && Bmass < %lf", min, max));
