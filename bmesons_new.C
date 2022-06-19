@@ -2532,10 +2532,6 @@ cout <<"ploting complete fit"<< endl;
 std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> label, int n_var) {
   
   RooDataSet* data = (RooDataSet*) w.data("data");
-  RooAbsPdf* BpModel;
-  if(particle ==0 ){BpModel =  w.pdf("signal");}
-  else if(particle == 1){BpModel =  w.pdf("signal");}
-  else if(particle == 2){BpModel = w.pdf("rt_pdf");}
   RooAbsPdf* BgModel = w.pdf("fit_side");
   RooRealVar Bmass = *(w.var("Bmass"));
   
@@ -2592,11 +2588,14 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> la
   cout << "Integral left band = " << int_fit_side_left->getVal() << endl; 
   cout << "Integral right band = " << int_fit_side_right->getVal() << endl;
   cout << "Integral peak = " << int_fit_peak->getVal() << endl; 
-  cout << "normalisation = " << (BgModel->createIntegral(Bmass, Bmass, "total"))->getVal() << endl;
 
   double factor;
-  if(particle == 0){factor = (int_fit_peak->getVal())/(int_fit_side_right->getVal());}    
-  else if( (particle == 1) || (particle == 2) ){factor = (int_fit_peak->getVal())/(int_fit_side_right->getVal() + int_fit_side_left->getVal());}
+  if (particle == 0) {
+    factor = (int_fit_peak->getVal()) / (int_fit_side_right->getVal());
+  } else if ( (particle == 1) || (particle == 2) ) {
+    factor = (int_fit_peak->getVal()) /
+      (int_fit_side_right->getVal() + int_fit_side_left->getVal());
+  }
   std::cout << std::endl << "Factor: " << factor << std::endl;
 
   /*for(int i=0; i<n_var; i++){
