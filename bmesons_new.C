@@ -131,10 +131,10 @@ const std::vector<double> bdt_lower_bound_bs =
 
 // min and max for BDT histograms
 const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05};
-const std::vector<double> BDTmax_bs = {0.82, 0.8, 0.9};
+const std::vector<double> BDTmax_bs = {0.85, 0.821, 0.92};
 
 const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1};
-const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.73};
+const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.77};
 
 // number of bins
 const std::vector<int> BDTnbins_bs = {11, 30, 20};
