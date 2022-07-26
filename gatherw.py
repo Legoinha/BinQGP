@@ -1,7 +1,7 @@
 #! /bin/python
 import ROOT as r
 import shutil
-ptlist = [5, 7, 10, 15, 20, 50]
+ptlist = [5, 7, 10, 15, 20, 50, 60]
 
 outFiles = ['BPw.root', 'Bsw.root']
 
@@ -13,7 +13,7 @@ for pti, ptf in zip(ptlist[:-1], ptlist[1:]):
     h.Write()
 fout.Close()
 
-ptlist = [7, 10, 15, 20]
+ptlist = [7, 10, 15, 20, 50]
 fout = r.TFile(outFiles[1], 'recreate')
 for pti, ptf in zip(ptlist[:-1], ptlist[1:]):
     fin = r.TFile(f'./results/Bs/{pti}_{ptf}/mc_validation_plots/weights/weights.root')
@@ -23,5 +23,6 @@ for pti, ptf in zip(ptlist[:-1], ptlist[1:]):
 fout.Close()
 
 shutil.copy2(outFiles[0], '../gd/braa_nohbhe_trk/BP/EffAna/BDTWeights/BPw.root')
+shutil.copy2(outFiles[0], '../gd/braa_mergebin/BP/EffAna/BDTWeights/BPw.root')
 shutil.copy2(outFiles[1], '../gd/braa_nohbhe_trk/Bs/EffAna/BDTWeights/Bsw.root')
 shutil.copy2(outFiles[1], '../gd/braa_mergebin/Bs/EffAna/BDTWeights/Bsw.root')

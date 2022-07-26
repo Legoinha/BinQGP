@@ -99,8 +99,14 @@ constexpr bool include_np = true;
 // should be constexpr, but let's simplify runtime arguments and omit that for now
 const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15",
                                         "BDT_pt_15_20", "BDT_pt_20_50"};
-const std::vector<TString> BDTvar_bp = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15",
-                                        "BDT_pt_15_20", "BDT_pt_20_50"};
+const std::vector<TString> BDTvar_bp = {
+    "BDT_pt_5_7",
+    "BDT_pt_7_10",
+    "BDT_pt_10_15",
+    "BDT_pt_15_20",
+    "BDT_pt_20_50",
+    "BDT_pt_50_60",
+    };
 
 const std::vector<TString> BDTdir = {"Bu", "Bs"};
 const std::unordered_map<std::string, unsigned> iBDT_bs = {
@@ -113,12 +119,14 @@ const std::unordered_map<std::string, unsigned> iBDT_bp = {
   {"BDT_pt_7_10", 1},
   {"BDT_pt_10_15", 2},
   {"BDT_pt_15_20", 3},
-  {"BDT_pt_20_50", 4}};
+  {"BDT_pt_20_50", 4},
+  {"BDT_pt_50_60", 5}};
 
 // only include events with BDT output higher than this lower bound
 const std::vector<double> bdt_lower_bound_bp =
   {-0.01,
    -0.12,
+   -1.0,
    -1.0,
    -1.0,
    -1.0};
@@ -130,74 +138,98 @@ const std::vector<double> bdt_lower_bound_bs =
 
 
 // min and max for BDT histograms
-const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05};
-const std::vector<double> BDTmax_bs = {0.85, 0.821, 0.92};
+const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05, -1};
+const std::vector<double> BDTmax_bs = {0.85, 0.821, 0.92, 0.85};
 
-const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1};
-const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.77};
+const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1, -1};
+const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.77, 0.77};
 
 // number of bins
-const std::vector<int> BDTnbins_bs = {11, 30, 20};
-const std::vector<int> BDTnbins_bp(5, 40);
+const std::vector<int> BDTnbins_bs = {11, 30, 20, 30};
+const std::vector<int> BDTnbins_bp = {40, 40, 40, 40, 40, 18};
 
 // initial values for error function / signal ratio
-const std::vector<double> ini_f_erf = {0.2, 0.2, 0.2, 0.2, 0.2};
+const std::vector<double> ini_f_erf = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
 
 using d_matrix = std::vector<std::vector<double> >;
    // initial values for NP Jpsi fit
-const d_matrix ini_jpsi_poly_f = {{0.9, 0.9},
-                                  {0.8, 0.7},
-                                  {0.8, 0.8},
-                                  {0.6, 0.8},
-                                  {0.6, 0.6}};
-const d_matrix ini_jpsi_p3 = {{0, -7},
-                              // {0, -8.4},
-                              {0, -1.2},
-                              {0, 0.002},
-                              {0, -0.15},
-                              {0, -0.1}};
+const d_matrix ini_jpsi_poly_f = {
+  {0.9, 0.9},
+  {0.8, 0.7},
+  {0.8, 0.8},
+  {0.6, 0.8},
+  {0.6, 0.6},
+  {0.6, 0.6},
+};
+const d_matrix ini_jpsi_p3 = {
+  {0, -7},
+  {0, -1.2},
+  {0, 0.002},
+  {0, -0.15},
+  {0, -0.1},
+  {0, -0.1},
+};
 
-const d_matrix ini_jpsi_p2 = {{0, 70},
-                              // {0, 42},
-                              {0, 14},
-                              {0, 0.007},
-                              {0, -0.15},
-                              {0, -0.1}};
+const d_matrix ini_jpsi_p2 = {
+    {0, 70},
+    {0, 14},
+    {0, 0.007},
+    {0, -0.15},
+    {0, -0.1},
+    {0, -0.1},
+    };
 // slope of the continuum bg
-const d_matrix ini_jpsi_p1 = {{0, -156},
-                              // {0, -248},
-                              {0, -37},
-                              {0, -0.26},
-                              {0, -0.15},
-                              {0, -0.12}};
+const d_matrix ini_jpsi_p1 = {
+    {0, -156},
+    {0, -37},
+    {0, -0.26},
+    {0, -0.15},
+    {0, -0.12},
+    {0, -0.12},
+    };
 
-const d_matrix ini_jpisnp_jpsipi_f = {{0, 0.01},
-                                      {0, 0.05},
-                                      {0, 0.05},
-                                      {0, 0.05},
-                                      {0, 0.05}};
+const d_matrix ini_jpisnp_jpsipi_f = {
+    {0, 0.01},
+    {0, 0.05},
+    {0, 0.05},
+    {0, 0.05},
+    {0, 0.05},
+    {0, 0.05},
+    };
 
-const d_matrix ini_erf_scale = {{0, 0.05},
-                                {0, 0.05},
-                                {0, 0.05},
-                                {0, 0.05},
-                                {0, 0.05}};
+const d_matrix ini_erf_scale = {
+    {0, 0.05},
+    {0, 0.05},
+    {0, 0.05},
+    {0, 0.05},
+    {0, 0.05},
+    {0, 0.08},
+    };
 
-const d_matrix ini_p1 = {{0, -23},
-                         {0, -23},
-                         {0, 0.002},
-                         {0, 0},
-                         {0, 0}};
-const d_matrix ini_p2 = {{0, 9.5},
-                         {0, 9.5},
-                         {0, 0.003},
-                         {0, 0},
-                         {0, 0}};
-const d_matrix ini_p3 = {{0, -0.9},
-                         {0, -0.9},
-                         {0, 0},
-                         {0, 0},
-                         {0, 0}};
+const d_matrix ini_p1 = {
+    {0, -23},
+    {0, -23},
+    {0, 0.002},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    };
+const d_matrix ini_p2 = {
+    {0, 9.5},
+    {0, 9.5},
+    {0, 0.003},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    };
+const d_matrix ini_p3 = {
+    {0, -0.9},
+    {0, -0.9},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    };
 
 using namespace RooStats;
 using namespace RooFit;
@@ -298,7 +330,7 @@ auto BDT_lower_bound = bdt_lower_bound_bs;
 #endif
 
 
-const std::vector<int> ptlist = {5, 7, 10, 15, 20, 50};
+const std::vector<int> ptlist = {5, 7, 10, 15, 20, 50, 60};
 const std::vector<double> ylist = {0, 1.5, 2.4};
 const std::vector<TString> particleList = {"Bu", "Bs"};
 
@@ -369,10 +401,9 @@ void bmesons_new(int ipt = 3, int iy = 1){
 #if particle == 0
 
   // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5", "BDT_pt_50_100" */};
-  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"};
-  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By"};
-
-  // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt"};
+  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"};
+  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By"};
+  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By", "BsvpvDistance", "BsvpvDisErr"};
 
 #elif particle == 1
 
@@ -431,6 +462,18 @@ void bmesons_new(int ipt = 3, int iy = 1){
     }
   }
 
+  // RooFormulaVar BsvpvSig("BsvpvSig", "BsvpvDistance/BsvpvDisErr",
+  //                        RooArgList(*ws->var("BsvpvDistance"),*ws->var("BsvpvDisErr")));
+  // RooDataSet* data = (RooDataSet*) ws->data("data");
+  // RooRealVar* BsvpvSigVar = (RooRealVar*) data->addColumn(BsvpvSig);
+  // BsvpvSigVar->setMax(400);
+  // BsvpvSigVar->setMin(0);
+  // RooDataSet* mc = (RooDataSet*) ws->data("mc");
+  // mc->addColumn(BsvpvSig);
+  // variables.push_back("BsvpvSig");
+  // n_var = variables.size();
+  // ws->import(*BsvpvSigVar);
+
   // use the setting of pT 10-15 for inclusive pT comparison
   if (inclusive) {
     ipt = 2;
@@ -460,14 +503,12 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
 
   #if DIF_A == 1
-  DIF_analysis(*ws, VAR_dif_A, "pT.root", c_vars);     
-return;
+  DIF_analysis(*ws, VAR_dif_A, "pT.root", c_vars);
+  return;
   #elif DIF_A == 0
-
 
   //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
   histos_sideband_sub = sideband_subtraction(*ws, variables , n_var);
- 
 
   //SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
   do_splot(*ws,c_vars); 
@@ -1518,7 +1559,7 @@ if( choice != "scale_factor"){
    p3 = new RooRealVar("p3", "p3", ini_p3[ipt][iy], -2., 2.);
 
   m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale",
-                                     ini_erf_scale[ipt][iy], 0, 0.1);
+                                     ini_erf_scale[ipt][iy], 6e-4, 0.1);
   m_nonprompt_shift = new RooRealVar("m_nonprompt_shift", "m_nonprompt_shift", 5.14425, 4.5, 6.);
   RooRealVar jpsipi_to_signal_width_ratio("jpsipi_to_signal_width_ratio",
                                           "jpsipi_to_signal_width_ratio",
@@ -2153,9 +2194,10 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   RooDataSet* ds_cont = (RooDataSet*) ds->reduce("Bgen != 23333 && Bgen != 23335");
   RooDataSet* ds_sig = (RooDataSet*) ds->reduce("Bgen == 23333");
 
-  std::vector<double> n_signal_initial = {3e3, 5e3, 5e3, 5000, 200};
-  std::vector<double> n_cont_initial = {3e3, 1e4, 1.5e4, 1e3, 1e3};
-  std::vector<double> n_erf_initial = {800, 1e3, 6e3, 1e3, 1e3};
+
+  std::vector<double> n_signal_initial = {3e3, 5e3, 5e3, 5000, 200, 50};
+  std::vector<double> n_cont_initial = {3e3, 1e4, 1.5e4, 1e3, 1e3, 3};
+  std::vector<double> n_erf_initial = {800, 1e3, 6e3, 1e3, 1e3, 10};
   RooAbsPdf* signal = w.pdf("signal");
   RooAbsPdf* jpsipi = w.pdf("jpsipi");
   RooAbsPdf* erf = w.pdf("erf");
@@ -3737,6 +3779,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
     RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
+    RooRealVar BDT_pt_50_60("BDT_pt_50_60", "BDT_pt_50_60", BDT_20_50_min, BDT_20_50_max);
 
     RooRealVar Bgen("Bgen", "Bgen", 0, 30000);
 
@@ -3779,6 +3822,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_10_15);
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
+    w.import(BDT_pt_50_60);
     w.import(nMult);
     w.import(Bgen);
 }
@@ -4445,6 +4489,8 @@ void plot_mcfit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
   TCanvas can_mc;
   can_mc.SetTitle("");
   massframe->Draw();
+  TString dir(plotName(0, plotName.Last(*"/")));
+  gSystem->mkdir(dir, 1);
   can_mc.SaveAs(plotName);
 }
 
