@@ -652,15 +652,15 @@ return;
     // rp->GetLowerRefXaxis()->SetRange(0., 0.825);
     b.Update();
      
-    TLegend* leg;	
-    leg = new TLegend(0.8,0.8,0.9,0.9,NULL,"brNDC");
+    TLegend* leg;	  //THIS LEG ONLY WORKS WELL FOR sPlot comp
+    leg = new TLegend(0.11,0.8,0.25,0.9,NULL,"brNDC");
 	  leg->SetBorderSize(0);
 	  leg->SetTextSize(0.025);
 	  leg->SetTextFont(42);
 	  leg->SetFillStyle(0);
 	TLatex* texB = new TLatex(0.5,0.5,"");
-  if(particle==1){ texB = new TLatex(0.21,0.85, "B^{0}_{s}");}
-	if(particle==0){ texB = new TLatex(0.21,0.85, "B^{+}");}
+  if(particle==1){ texB = new TLatex(0.11,0.85, "B^{0}_{s}");}
+	if(particle==0){ texB = new TLatex(0.11,0.85, "B^{+}");}
 	texB->SetNDC();
 	texB->SetTextFont(62);
 	texB->SetTextSize(0.04);
