@@ -635,9 +635,12 @@ return;
 
     //y axis: maximum and minimum 
     if((mc_comp_sp[i]->GetMaximum() > sp_comp_mc[i]->GetMaximum())){
-      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.1*mc_comp_sp[i]->GetMaximum());}
+      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.1*mc_comp_sp[i]->GetMaximum());
+      if(names[i]=="Bpt"){sp_comp_mc[i]->GetXaxis()->SetRangeUser(0,60);} }
     else if((sp_comp_mc[i]->GetMaximum() > mc_comp_sp[i]->GetMaximum())){
-      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*sp_comp_mc[i]->GetMinimum(), 1.1*sp_comp_mc[i]->GetMaximum());}
+      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*sp_comp_mc[i]->GetMinimum(), 1.1*sp_comp_mc[i]->GetMaximum());
+      if(names[i]=="Bpt"){sp_comp_mc[i]->GetXaxis()->SetRangeUser(0,60);} }
+
 	
     //--TRATIO--//	
     auto rp = new TRatioPlot(sp_comp_mc[i], mc_comp_sp[i], "divsym");
