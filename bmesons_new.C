@@ -4361,7 +4361,7 @@ void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdi
    pdfstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
                ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data(), "pdf");
-   gSystem->Exec("mkdir -p " + Form("%s/mc_validation_plots/%s",ptdir.Data(), comp.Data()) );
+   gSystem->Exec(Form("mkdir -p %s/mc_validation_plots/%s",ptdir.Data(), comp.Data()) );
 
    can.SaveAs(pdfstr);
  }
