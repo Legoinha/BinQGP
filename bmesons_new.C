@@ -635,11 +635,10 @@ return;
 
     //y axis: maximum and minimum 
     if((mc_comp_sp[i]->GetMaximum() > sp_comp_mc[i]->GetMaximum())){
-      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.3*mc_comp_sp[i]->GetMaximum());
-      if(names[i]=="Bpt"){sp_comp_mc[i]->GetXaxis()->SetRangeUser(0,60);} }
-    else if((sp_comp_mc[i]->GetMaximum() > mc_comp_sp[i]->GetMaximum())){
-      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*sp_comp_mc[i]->GetMinimum(), 1.3*sp_comp_mc[i]->GetMaximum());
-      if(names[i]=="Bpt"){sp_comp_mc[i]->GetXaxis()->SetRangeUser(0,60);} }
+      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.3*mc_comp_sp[i]->GetMaximum());}
+      if(names[i]=="Bpt"){sp_comp_mc[i]->GetXaxis()->SetRangeUser(0,60);} 
+     else if((sp_comp_mc[i]->GetMaximum() > mc_comp_sp[i]->GetMaximum())){
+      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*sp_comp_mc[i]->GetMinimum(), 1.3*sp_comp_mc[i]->GetMaximum());}
 
 	
     //--TRATIO--//	
@@ -3186,6 +3185,9 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
 
   histo_Bp_sig->GetXaxis()->SetTitle(label);
   histo_Bp_sig->SetStats(0);
+
+  if(label=="Bpt") histo_Bp_sig->GetXaxis()->SetRangeUser(0, 60);
+  if(label=="Bpt") histo_Bp_bkg->GetXaxis()->SetRangeUser(0, 60);
   histo_Bp_sig->Draw("E");
 
   if(particle == 0){
@@ -3222,9 +3224,6 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   TCanvas* sig_bkg = new TCanvas ("sig_bkg","c3",200,10,700,500); 
   sig_bkg->cd();
 
-  histo_Bp_sig->Draw();
-  histo_Bp_bkg->Draw("same");
-
   //y axis: maximum and minimum 
   if (histo_Bp_bkg->GetMaximum() > histo_Bp_sig->GetMaximum()){
     histo_Bp_sig->GetYaxis()->SetRangeUser(0.1*histo_Bp_sig->GetMinimum(), 1.1*histo_Bp_bkg->GetMaximum());
@@ -3233,7 +3232,19 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
     histo_Bp_sig->GetYaxis()->SetRangeUser(0.1*histo_Bp_sig->GetMinimum(), 1.1*histo_Bp_sig->GetMaximum());
   }
 
-  TLegend* legend = new TLegend(0.7,0.9,0.9,1.0);
+  histo_Bp_sig->Draw();
+  histo_Bp_bkg->Draw("same");
+
+	TLatex* texB = new TLatex(0.5,0.5,"");
+  if(particle==1){ texB = new TLatex(0.15,0.85, "B^{0}_{s}");}
+	if(particle==0){ texB = new TLatex(0.15,0.85, "B^{+}");}
+	texB->SetNDC();
+	texB->SetTextFont(62);
+	texB->SetTextSize(0.04);
+	texB->SetLineWidth(2);
+	texB->Draw();
+
+  TLegend* legend = new TLegend(0.15, 0.75, 0.25, .8);
   legend->AddEntry(histo_Bp_sig,"Signal","lep");
   legend->AddEntry(histo_Bp_bkg,"Background","lep");
   legend->Draw();
