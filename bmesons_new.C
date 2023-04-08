@@ -502,8 +502,7 @@ return;
   }
 
   cout << "CREATE THE FOLDER" << endl;
-  gSystem->Exec(Form("mkdir -p %s", ptdir.Data()) );  //create i_i+1 folders
-
+  gSystem->mkdir( ptdir.Data() );  //create i_i+1 folders
 
   // RATIO BETWEEN DATA (SPLOT) AND MC
   if (weights == 1){
