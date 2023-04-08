@@ -501,7 +501,7 @@ return;
     ptdir += Form("/%i_%i", ptlist[ipt], ptlist[ipt + 1]);
   }
 
-TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir);
+TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
 
   cout << "CREATE THE FOLDER" << endl;
   gSystem->mkdir( ptdir.Data() );  //create i_i+1 folders
