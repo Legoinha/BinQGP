@@ -3074,7 +3074,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 1));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 1));}
   else if(label == "Bpt"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 5, 100));
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 5, 60));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 5, 100));}
   else if(label == "Bmumumass"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 3, 3.2));
@@ -3151,6 +3151,9 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   else if(label == "Btrk2Pt"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 8));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 8));}
+    else if(label == "BDT_pt_20_50"){
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, .9));
+ 	  histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.9));}
   else if (indexBDT.count(label.Data())) {
     auto iBDT = indexBDT.at(label.Data());
     histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,
@@ -3221,9 +3224,6 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
 
   TCanvas* sig_bkg = new TCanvas ("sig_bkg","c3",200,10,700,500); 
   sig_bkg->cd();
-
-  if(label=="Bpt") histo_Bp_sig->GetXaxis()->SetRangeUser(0, 60);
-  if(label=="Bpt") histo_Bp_bkg->GetXaxis()->SetRangeUser(0, 60);
 
   //y axis: maximum and minimum 
   if (histo_Bp_bkg->GetMaximum() > histo_Bp_sig->GetMaximum()){
