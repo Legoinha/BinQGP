@@ -1228,6 +1228,7 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
 
   TString dir_name;
   dir_name = ptdir + "/mc_validation_plots/weights/";
+  gSystem->mkdir( dir_name.data() );
   if(particle == 2){dir_name = "./results/B0/mc_validation_plots/weights/";}
 
   gSystem->Exec("mkdir -p " + dir_name);
