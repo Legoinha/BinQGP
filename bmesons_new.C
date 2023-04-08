@@ -3239,7 +3239,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   legend->Draw();
 
   if(particle == 0){
-    gSystem->Exec("mkdir -p ./results/Bu/splot/sig_bkg", true);
+    gSystem->Exec("mkdir -p ./results/Bu/splot/sig_bkg");
     sig_bkg->SaveAs("./results/Bu/splot/sig_bkg/"+label+"sPlot_Bu.pdf");
   }else if(particle == 1){
     gSystem->Exec("mkdir -p ./results/Bs/splot/sig_bkg");
