@@ -307,6 +307,11 @@ const std::vector<TString> particleList = {"Bu", "Bs"};
 
 void bmesons_new(int ipt = 3, int iy = 1){
 
+  gSystem->mkdir("/results/Bu" ,true );
+  gSystem->mkdir("/results/Bs" ,true );
+
+
+
   gROOT->SetBatch();
   bool inclusive = false;
   if (ipt < 0) {
@@ -649,14 +654,22 @@ cout << "AQUI_"<<i<<endl;
     b.Update();
      
     TLegend* leg;	
-    leg = new TLegend(0.12, 0.7, 0.4, .9);
-    if(particle==0) {leg->SetHeader("B^{+}","C");}
-    else{leg->SetHeader("B^{0}_{s}","C");}  // option "C" allows to center the header
-  	leg->SetBorderSize(0);
-  	leg->SetFillStyle(0);
-    leg->AddEntry(mc_comp_sp[i]->GetName(), "Monte Carlo", "LE");
-    leg->AddEntry(sp_comp_mc[i]->GetName(), "SPlot", "LE");
-    leg->SetTextSize(0.03);
+    leg = new TLegend(0.8,0.8,0.9,0.9,NULL,"brNDC");
+	  leg->SetBorderSize(0);
+	  leg->SetTextSize(0.025);
+	  leg->SetTextFont(42);
+	  leg->SetFillStyle(0);
+	TLatex* texB = new TLatex(0.5,0.5,"");
+  if(particle==1){ texB = new TLatex(0.21,0.85, "B^{0}_{s}");}
+	if(particle==0){ texB = new TLatex(0.21,0.85, "B^{+}");}
+	texB->SetNDC();
+	texB->SetTextFont(62);
+	texB->SetTextSize(0.04);
+	texB->SetLineWidth(2);
+	texB->Draw();
+
+    leg->AddEntry(mc_comp_sp[i]->GetName(), "MC", "LE");
+    leg->AddEntry(sp_comp_mc[i]->GetName(), "sPlot", "LE");
     leg->Draw("same");
 	
     save_validation_plot(b, names[i], "mc_sp", ptdir, iy);
@@ -1110,10 +1123,8 @@ if(std::string(variable)=="By"){
   mg_m->GetXaxis()->SetLimits(0,3.5);
   mg_m->GetXaxis()->SetTitle(leg_x.Data());
   mg_m->GetYaxis()->SetTitle(leg_y.Data());
-  const char* pathc_m =Form("./results/%s/%s/pdfs/raw_yield_MOD_%s.pdf",meson,variable,meson); 
-  const char* pathc1_m =Form("./results/%s/%s/raw_yield_MOD_%s.gif",meson,variable,meson); 
-  c_m.SaveAs(pathc_m);
-  c_m.SaveAs(pathc1_m);}
+  const char* pathc_m =Form("./results/%s/%s/raw_yield_MOD_%s.pdf",meson,variable,meson); 
+  c_m.SaveAs(pathc_m);}
 // MOD By MOD By MOD By MOD By MOD By MOD By MOD By
 
   //PLOT SYSTEMATICS_RELATIVE 
@@ -1148,10 +1159,8 @@ if(std::string(variable)=="By"){
   mg_syst->Draw("AP");
   leg->Draw();
   
-  const char* ppddff = Form("./results/%s/%s/pdfs/rel_systematics_%s.pdf",meson,variable,meson);  
-  const char* ggiiff = Form("./results/%s/%s/rel_systematics_%s.gif",meson,variable,meson);  
+  const char* ppddff = Form("./results/%s/%s/rel_systematics_%s.pdf",meson,variable,meson);  
   rel_sys_er.SaveAs(ppddff);
-  rel_sys_er.SaveAs(ggiiff);
 
 
   for(int k=0; k<n_bins; k++){cout << "Uncertanty STAT " << yield_err_low[k] << "  " << yield_err_high[k]<< "   " << endl;}
@@ -1194,10 +1203,8 @@ if(std::string(variable)=="By"){
   mg->GetYaxis()->SetTitle(leg_y.Data());
  //mg->SetTitle("Differential Signal Yield");  
 
-  const char* pathc =Form("./results/%s/%s/pdfs/raw_yield_%s.pdf",meson,variable,meson); 
-  const char* pathc1 =Form("./results/%s/%s/raw_yield_%s.gif",meson,variable,meson); 
+  const char* pathc =Form("./results/%s/%s/raw_yield_%s.pdf",meson,variable,meson); 
   c.SaveAs(pathc);
-  c.SaveAs(pathc1);
 
   TCanvas l;  //log scale
 
@@ -1249,11 +1256,8 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
     h_aux->Write();
     
     TCanvas c;
-    h_aux->Draw();    
-    gSystem->Exec("mkdir -p " + dir_name + "pdfs");
-    c.SaveAs(dir_name+"pdfs/"+v_name.at(i) + "_weights.pdf");   
-    c.SaveAs(dir_name+v_name.at(i) + "_weights.gif");
-    //output: a root file and plots 
+    h_aux->Draw();     
+    c.SaveAs(dir_name+v_name.at(i) + "_weights.pdf");
   }
   f_wei->Close();
   return;
@@ -2109,16 +2113,13 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
     pull_plot->Draw();
     
     if(particle == 0){
-      b.SaveAs(Form("./results/Bu/%s/%lf_%lf_%s_fit_plot_Bu.gif", name_var, lower_b, higher_b, syst_src.Data()));
-      b.SaveAs(Form("./results/Bu/%s/pdfs/%lf_%lf_%s_fit_plot_Bu.pdf",name_var, lower_b, higher_b, syst_src.Data()));
+      b.SaveAs(Form("./results/Bu/%s/%lf_%lf_%s_fit_plot_Bu.pdf", name_var, lower_b, higher_b, syst_src.Data()));
     }
     else if(particle == 1){
-      b.SaveAs(Form("./results/Bs/%s/%lf_%lf_%s_fit_plot_Bs.gif",name_var, lower_b, higher_b, syst_src.Data()));
-      b.SaveAs(Form("./results/Bs/%s/pdfs/%lf_%lf_%s_fit_plot_Bs.pdf",name_var, lower_b, higher_b, syst_src.Data()));
+      b.SaveAs(Form("./results/Bs/%s/%lf_%lf_%s_fit_plot_Bs.pdf",name_var, lower_b, higher_b, syst_src.Data()));
     }
     else if(particle == 2){
-      b.SaveAs(Form("./results/B0/%s/%lf_%lf_%s_fit_plot_B0.gif",name_var, lower_b, higher_b, syst_src.Data()));
-      b.SaveAs(Form("./results/B0/%s/pdfs/%lf_%lf_%s_fit_plot_B0.pdf",name_var, lower_b, higher_b, syst_src.Data()));
+      b.SaveAs(Form("./results/B0/%s/%lf_%lf_%s_fit_plot_B0.pdf",name_var, lower_b, higher_b, syst_src.Data()));
     }
  
   return n1; 
@@ -2507,24 +2508,19 @@ cout <<"ploting complete fit"<< endl;
   
   if(particle == 0){
     d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu" + ystr + ".pdf");
-    d.SaveAs("./results/Bu/" + subname + "/complete_fit_Bu" + ystr + ".gif");
   }
   else if(particle == 1){
     d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs" + ystr + ".pdf");
-    d.SaveAs("./results/Bs/" + subname + "/complete_fit_Bs" + ystr + ".gif");
   }
   else if(particle == 2){
     if(MC == 0){
-      d.SaveAs("./results/B0/DATA_fit_B0.gif");
       d.SaveAs("./results/B0/DATA_fit_B0.pdf");
     }
     else if(MC == 1){
       if(component == 0){
-        d.SaveAs("./results/B0/MC_RT_fit_B0.gif");
         d.SaveAs("./results/B0/MC_RT_fit_B0.pdf");
       }
       else if(component == 1){
-        d.SaveAs("./results/B0/MC_WT_fit_B0.gif");
         d.SaveAs("./results/B0/MC_WT_fit_B0.pdf");
       }
     }
@@ -2827,16 +2823,13 @@ TLegend *leg = new TLegend (0.7, 0.9, 0.9, 1.0);
   leg->Draw("same");
 
   if(particle == 0){
-    gSystem->Exec("mkdir -p ./results/Bu/sideband_sub/pdfs");
-    c.SaveAs("./results/Bu/sideband_sub/pdfs/"+name + "sideband_sub_Bu.pdf");
-    c.SaveAs("./results/Bu/sideband_sub/"+name + "sideband_sub_Bu.gif");
+    gSystem->Exec("mkdir -p ./results/Bu/sideband_sub");
+    c.SaveAs("./results/Bu/sideband_sub/"+name + "sideband_sub_Bu.pdf");
     }else if(particle == 1){
-    gSystem->Exec("mkdir -p ./results/Bs/sideband_sub/pdfs");
-    c.SaveAs("./results/Bs/sideband_sub/pdfs/"+name + "sideband_sub_Bs.pdf");
-    c.SaveAs("./results/Bs/sideband_sub/"+name + "sideband_sub_Bs.gif");
+    gSystem->Exec("mkdir -p ./results/Bs/sideband_sub");
+    c.SaveAs("./results/Bs/sideband_sub/"+name + "sideband_sub_Bs.pdf");
     }else if(particle == 2){
-    c.SaveAs("./results/B0/sideband_sub/pdfs/"+name + "sideband_sub_B0.pdf");
-    c.SaveAs("./results/B0/sideband_sub/"+name + "sideband_sub_B0.gif");
+    c.SaveAs("./results/B0/sideband_sub/"+name + "sideband_sub_B0.pdf");
     }
    
     if(background == 0){return dist_peak;}
@@ -3062,15 +3055,12 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
 
   if(particle == 0){
     gSystem->Exec("mkdir -p ./results/Bu/splot/Bmass/");
-    cdata->SaveAs("./results/Bu/splot/Bmass/"+label+"sPlot_Bu.gif");
-    //cdata->SaveAs("./results/Bu/splot/Bmass/pdfs/"+label+"sPlot_Bu.pdf");
+    cdata->SaveAs("./results/Bu/splot/Bmass/"+label+"sPlot_Bu.pdf");
   }else if(particle == 1){
     gSystem->Exec("mkdir -p ./results/Bs/splot/Bmass/");
-    cdata->SaveAs("./results/Bs/splot/Bmass/"+label+"sPlot_Bs.gif");
-    //cdata->SaveAs("./results/Bs/splot/Bmass/pdfs/"+label+"sPlot_Bs.pdf");
+    cdata->SaveAs("./results/Bs/splot/Bmass/"+label+"sPlot_Bs.pdf");
   }else if(particle == 2){
-    cdata->SaveAs("./results/B0/splot/Bmass/"+label+"sPlot_B0.gif");
-    //cdata->SaveAs("./results/B0/splot/Bmass/pdfs/"+label+"sPlot_B0.pdf");
+    cdata->SaveAs("./results/B0/splot/Bmass/"+label+"sPlot_B0.pdf");
   }
 
 
@@ -3199,14 +3189,13 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   histo_Bp_sig->Draw("E");
 
   if(particle == 0){
-    prov->SaveAs("./results/Bu/splot/sig/"+label+"sPlot_Bu.gif");
-    //prov->SaveAs("./results/Bu/splot/sig/pdfs/"+label+"sPlot_Bu.pdf");
+        gSystem->Exec("mkdir -p ./results/Bu/splot/sig");
+    prov->SaveAs("./results/Bu/splot/sig/"+label+"sPlot_Bu.pdf");
   }else if(particle == 1){
-    prov->SaveAs("./results/Bs/splot/sig/"+label+"sPlot_Bs.gif");
-    //prov->SaveAs("./results/Bs/splot/sig/pdfs/"+label+"sPlot_Bs.pdf");
+        gSystem->Exec("mkdir -p ./results/Bs/splot/sig");
+    prov->SaveAs("./results/Bs/splot/sig/"+label+"sPlot_Bs.pdf");
   }else if(particle == 2){
-    prov->SaveAs("./results/B0/splot/sig/"+label+"sPlot_B0.gif");
-    //prov->SaveAs("./results/B0/splot/sig/pdfs/"+label+"sPlot_B0.pdf");
+    prov->SaveAs("./results/B0/splot/sig/"+label+"sPlot_B0.pdf");
   }
 
   TCanvas* prov_bkg = new TCanvas ("prov_bkg","c2",200,10,700,500);
@@ -3223,14 +3212,11 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   histo_Bp_bkg->Draw("E");
 
   if(particle == 0){
-    prov_bkg->SaveAs("./results/Bu/splot/bkg/"+label+"sPlot_Bu.gif");
-    //prov_bkg->SaveAs("./results/Bu/splot/bkg/pdfs/"+label+"sPlot_Bu.pdf");
+    prov_bkg->SaveAs("./results/Bu/splot/bkg/"+label+"sPlot_Bu.pdf");
   }else if(particle == 1){
-    prov_bkg->SaveAs("./results/Bs/splot/bkg/"+label+"sPlot_Bs.gif");
-    //prov_bkg->SaveAs("./results/Bs/splot/bkg/pdfs/"+label+"sPlot_Bs.pdf");
+    prov_bkg->SaveAs("./results/Bs/splot/bkg/"+label+"sPlot_Bs.pdf");
   }else if(particle == 2){
-    prov_bkg->SaveAs("./results/B0/splot/bkg/"+label+"sPlot_B0.gif");
-    //prov_bkg->SaveAs("./results/B0/splot/bkg/pdfs/"+label+"sPlot_B0.pdf");
+    prov_bkg->SaveAs("./results/B0/splot/bkg/"+label+"sPlot_B0.pdf");
   }
 
   TCanvas* sig_bkg = new TCanvas ("sig_bkg","c3",200,10,700,500); 
@@ -3253,16 +3239,13 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   legend->Draw();
 
   if(particle == 0){
-    gSystem->Exec("mkdir -p ./results/Bu/splot/sig_bkg/pdfs");
-    sig_bkg->SaveAs("./results/Bu/splot/sig_bkg/"+label+"sPlot_Bu.gif");
-    sig_bkg->SaveAs("./results/Bu/splot/sig_bkg/pdfs/"+label+"sPlot_Bu.pdf");
+    gSystem->Exec("mkdir -p ./results/Bu/splot/sig_bkg", true);
+    sig_bkg->SaveAs("./results/Bu/splot/sig_bkg/"+label+"sPlot_Bu.pdf");
   }else if(particle == 1){
-    gSystem->Exec("mkdir -p ./results/Bs/splot/sig_bkg/pdfs");
-    sig_bkg->SaveAs("./results/Bs/splot/sig_bkg/"+label+"sPlot_Bs.gif");
-    sig_bkg->SaveAs("./results/Bs/splot/sig_bkg/pdfs/"+label+"sPlot_Bs.pdf");
+    gSystem->Exec("mkdir -p ./results/Bs/splot/sig_bkg");
+    sig_bkg->SaveAs("./results/Bs/splot/sig_bkg/"+label+"sPlot_Bs.pdf");
   }else if(particle == 2){
-    sig_bkg->SaveAs("./results/B0/splot/sig_bkg/"+label+"sPlot_B0.gif");
-    sig_bkg->SaveAs("./results/B0/splot/sig_bkg/pdfs/"+label+"sPlot_B0.pdf");
+    sig_bkg->SaveAs("./results/B0/splot/sig_bkg/"+label+"sPlot_B0.pdf");
   }
 
   //cleanup
@@ -3349,19 +3332,13 @@ void validate_fit(RooWorkspace* w, RooArgSet &c_vars){
 
   if(particle == 0){
     c_pull->SaveAs("./results/Bu/pulls/pulls_poisson_Bu.pdf");
-    c_pull->SaveAs("./results/Bu/pulls/pulls_poisson_Bu.gif");
     c_params->SaveAs("./results/Bu/pulls/pulls_params_poisson_Bu.pdf");
-    c_params->SaveAs("./results/Bu/pulls/pulls_params_poisson_Bu.gif");
   }else if(particle == 1){
     c_pull->SaveAs("./results/Bs/pulls/pulls_poisson_Bs.pdf");
-    c_pull->SaveAs("./results/Bs/pulls/pulls_poisson_Bs.gif");
     c_params->SaveAs("./results/Bs/pulls/pulls_params_poisson_Bs.pdf");
-    c_params->SaveAs("./results/Bs/pulls/pulls_params_poisson_Bs.gif");
   }else if(particle == 2){
     c_pull->SaveAs("./results/B0/pulls/pulls_poisson_B0.pdf");
-    c_pull->SaveAs("./results/B0/pulls/pulls_poisson_B0.gif");
     c_params->SaveAs("./results/B0/pulls/pulls_params_poisson_B0.pdf");
-    c_params->SaveAs("./results/B0/pulls/pulls_params_poisson_B0.gif");
   }  
 }
 
