@@ -501,6 +501,10 @@ return;
     ptdir += Form("/%i_%i", ptlist[ipt], ptlist[ipt + 1]);
   }
 
+  cout << "CREATE THE FOLDER" << endl;
+  gSystem->Exec(Form("mkdir -p %s", ptdir.Data()) );  //create i_i+1 folders
+
+
   // RATIO BETWEEN DATA (SPLOT) AND MC
   if (weights == 1){
     get_ratio(histos_splot, histos_mc, names,"weights.root", ptdir);
@@ -4358,7 +4362,6 @@ void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdi
               ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data(), "pdf");
 
-  gSystem->Exec(Form("mkdir -p %s", ptdir.Data()) );  //create i_i+1 folders
    gSystem->Exec(Form("mkdir -p %s/mc_validation_plots/", ptdir.Data()) ); //create next folder
     gSystem->Exec(Form("mkdir -p %s/mc_validation_plots/%s", ptdir.Data(), comp.Data()) ); //create next folder
    
