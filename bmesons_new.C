@@ -493,8 +493,6 @@ return;
   for(int i=0; i<n_var; i++){
     TString weight = "weight";
     
-cout << "AQUI_"<<i<<endl;
-
     histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, 40, weight));
     names.push_back(TString(variables[i]));}
   
@@ -4358,10 +4356,11 @@ void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdi
    if (fit_ybins) {
      ystr = "_" + ystring(iy);
    }
-   pdfstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
-               ptdir.Data(), comp.Data(), name.Data(),
+   pdfstr.Form("/results/%s/%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
+               particleList.at(particle).Data(), ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data(), "pdf");
-   gSystem->Exec(Form("mkdir -p %s/mc_validation_plots/%s",ptdir.Data(), comp.Data()) );
+   gSystem->Exec(Form("mkdir -p /results/%s/%s/mc_validation_plots/%s",
+               particleList.at(particle).Data(), ptdir.Data(), comp.Data()) );
 
    can.SaveAs(pdfstr);
  }
