@@ -378,8 +378,8 @@ void bmesons_new(int ipt = 3, int iy = 1){
   // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt"};
 
 #elif particle == 1
-
   std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"};
+
   // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By"};
 
 #elif particle == 2
@@ -500,9 +500,11 @@ return;
   } else {
     ptdir += Form("/%i_%i", ptlist[ipt], ptlist[ipt + 1]);
   }
+TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir);
 
   cout << "CREATE THE FOLDER" << endl;
   gSystem->mkdir( ptdir.Data() );  //create i_i+1 folders
+  gSystem->mkdir( weights_folder.Data() );  //create i_i+1 folders
 
   // RATIO BETWEEN DATA (SPLOT) AND MC
   if (weights == 1){
@@ -635,8 +637,7 @@ return;
 
     //y axis: maximum and minimum 
     if((mc_comp_sp[i]->GetMaximum() > sp_comp_mc[i]->GetMaximum())){
-      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.1*mc_comp_sp[i]->GetMaximum());}
-      if(names[i]=="Bpt"){sp_comp_mc[i]->GetXaxis()->SetRangeUser(0,60);} 
+      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.1*mc_comp_sp[i]->GetMaximum());} 
      else if((sp_comp_mc[i]->GetMaximum() > mc_comp_sp[i]->GetMaximum())){
       sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*sp_comp_mc[i]->GetMinimum(), 1.1*sp_comp_mc[i]->GetMaximum());}
 
@@ -1226,11 +1227,9 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
                 TString ptdir){
 
   TString dir_name;
-  dir_name = ptdir + "/mc_validation_plots/weights/";
-  gSystem->mkdir( dir_name.Data() );
+  dir_name = ptdir + "/mc_validation_plots/weights/";  
   if(particle == 2){dir_name = "./results/B0/mc_validation_plots/weights/";}
 
-  gSystem->Exec("mkdir -p " + dir_name);
   TFile* f_wei = new TFile(dir_name + filename, "recreate");
 
   TH1D* h_aux;
