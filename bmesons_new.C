@@ -519,8 +519,8 @@ cout << "AQUI_"<<i<<endl;
     mc_comp_ss[i]->SetStats(0);
     ss_comp_mc[i]->SetStats(0);
 
-    if(particle == 0){mc_comp_ss[i]->SetTitle("B^{+}");}
-    else if (particle == 1){mc_comp_ss[i]->SetTitle("B^{0}_{s}");}
+    if(particle == 0){mc_comp_ss[i]->SetTitle("");}
+    else if (particle == 1){mc_comp_ss[i]->SetTitle("");}
     else if(particle == 2){mc_comp_ss[i]->SetTitle("B^{0}");}
 
     //normalization
@@ -571,8 +571,8 @@ cout << "AQUI_"<<i<<endl;
     ss_comp_sp[i]->SetStats(0);
     sp_comp_ss[i]->SetStats(0);
 
-    if(particle == 0){mc_comp_ss[i]->SetTitle("B^{+}");}
-    else if (particle == 1){mc_comp_ss[i]->SetTitle("B^{0}_{s}");}
+    if(particle == 0){mc_comp_ss[i]->SetTitle("");}
+    else if (particle == 1){mc_comp_ss[i]->SetTitle("");}
     else if(particle == 2){mc_comp_ss[i]->SetTitle("B^{0}");}
 
     //normalization
@@ -618,9 +618,9 @@ cout << "AQUI_"<<i<<endl;
     mc_comp_sp[i]->SetStats(0);
     sp_comp_mc[i]->SetStats(0);
 
-    if(particle == 0){mc_comp_ss[i]->SetTitle("B^{+}");}
-    else if (particle == 1){mc_comp_ss[i]->SetTitle("B^{0}_{s}");}
-    else if(particle == 2){mc_comp_ss[i]->SetTitle("B^{0}");}
+    if(particle == 0){mc_comp_ss[i]->SetTitle("");}
+    else if (particle == 1){mc_comp_ss[i]->SetTitle("");}
+    else if(particle == 2){mc_comp_ss[i]->SetTitle("");}
  
     //normalization
     mc_comp_sp[i]->Scale(1/mc_comp_sp[i]->Integral());
@@ -649,7 +649,11 @@ cout << "AQUI_"<<i<<endl;
     b.Update();
      
     TLegend* leg;	
-    leg = new TLegend(0.7, 0.9, 0.9, 1.0);
+    leg = new TLegend(0.12, 0.7, 0.4, .9);
+    if(particle==0) {leg->SetHeader("B^{+}","C");}
+    else{leg->SetHeader("B^{0}_{s}","C");}  // option "C" allows to center the header
+  	leg->SetBorderSize(0);
+  	leg->SetFillStyle(0);
     leg->AddEntry(mc_comp_sp[i]->GetName(), "Monte Carlo", "LE");
     leg->AddEntry(sp_comp_mc[i]->GetName(), "SPlot", "LE");
     leg->SetTextSize(0.03);
@@ -2646,7 +2650,7 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   else if(std::string(var.GetName()) == "Btrk2Pt"){name_string = TString(var.GetName()) + ">>htemp(40,0,8)";}
   else if (indexBDT.count(varName)) {
     auto iBDT = indexBDT.at(varName);
-    name_string = varName + TString::Format(">>htemp(%i, %f, %f)",
+    name_string = varName + Form(">>htemp(%i, %f, %f)",
                                             BDTnbins[iBDT],
                                             BDTmin[iBDT],
                                             BDTmax[iBDT]);
