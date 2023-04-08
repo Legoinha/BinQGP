@@ -307,9 +307,8 @@ const std::vector<TString> particleList = {"Bu", "Bs"};
 
 void bmesons_new(int ipt = 3, int iy = 1){
 
-  gSystem->mkdir("/results/Bu" ,true );
-  gSystem->mkdir("/results/Bs" ,true );
-
+  gSystem->mkdir("./results/Bu" ,true );
+  gSystem->mkdir("./results/Bs" ,true );
 
 
   gROOT->SetBatch();
@@ -4356,10 +4355,15 @@ void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdi
    if (fit_ybins) {
      ystr = "_" + ystring(iy);
    }
-   pdfstr.Form("/results/%s/%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
+   pdfstr.Form("./results/%s/%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
                particleList.at(particle).Data(), ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data(), "pdf");
-   gSystem->Exec(Form("mkdir -p /results/%s/%s/mc_validation_plots/%s",
+
+    gSystem->Exec(Form("mkdir -p ./results/%s/%s",
+               particleList.at(particle).Data(), ptdir.Data()) );
+  gSystem->Exec(Form("mkdir -p ./results/%s/%s/mc_validation_plots/",
+               particleList.at(particle).Data(), ptdir.Data()) );
+   gSystem->Exec(Form("mkdir -p ./results/%s/%s/mc_validation_plots/%s",
                particleList.at(particle).Data(), ptdir.Data(), comp.Data()) );
 
    can.SaveAs(pdfstr);
