@@ -644,7 +644,7 @@ return;
     b.SetTicks(0, 1);
     rp->SetH1DrawOpt("E");
     rp->Draw();
-    rp->GetLowerRefYaxis()->SetTitle("Data(sp)/MC");
+    rp->GetLowerRefYaxis()->SetTitle("Data/MC");
     rp->GetUpperRefYaxis()->SetTitle("normalized entries");
     rp->GetLowerRefGraph()->SetMinimum(-1);
     rp->GetLowerRefGraph()->SetMaximum(3);
@@ -652,15 +652,20 @@ return;
     // rp->GetLowerRefXaxis()->SetRange(0., 0.825);
     b.Update();
      
-    TLegend* leg;	  //THIS LEG ONLY WORKS WELL FOR sPlot comp
-    leg = new TLegend(0.11,0.8,0.25,0.9,NULL,"brNDC");
+    TLegend* leg;	  
+    //leg = new TLegend(0.7, 0.9, 0.9, 1.0); //this works for all cases
+    
+    //THIS LEG ONLY WORKS WELL FOR sPlot comp
+    leg = new TLegend(0.15,0.65,0.25,0.75,NULL,"brNDC");   
 	  leg->SetBorderSize(0);
 	  leg->SetTextSize(0.025);
 	  leg->SetTextFont(42);
 	  leg->SetFillStyle(0);
+    //THIS LEG ONLY WORKS WELL FOR sPlot comp
+
 	TLatex* texB = new TLatex(0.5,0.5,"");
-  if(particle==1){ texB = new TLatex(0.11,0.85, "B^{0}_{s}");}
-	if(particle==0){ texB = new TLatex(0.11,0.85, "B^{+}");}
+  if(particle==1){ texB = new TLatex(0.15,0.85, "B^{0}_{s}");}
+	if(particle==0){ texB = new TLatex(0.15,0.85, "B^{+}");}
 	texB->SetNDC();
 	texB->SetTextFont(62);
 	texB->SetTextSize(0.04);
