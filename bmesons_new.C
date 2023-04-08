@@ -500,10 +500,12 @@ return;
   } else {
     ptdir += Form("/%i_%i", ptlist[ipt], ptlist[ipt + 1]);
   }
+
 TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir);
 
   cout << "CREATE THE FOLDER" << endl;
   gSystem->mkdir( ptdir.Data() );  //create i_i+1 folders
+  gSystem->mkdir(Form("%s/mc_validation_plots/", ptdir.Data()) ); //create next folder
   gSystem->mkdir( weights_folder.Data() );  //create i_i+1 folders
 
   // RATIO BETWEEN DATA (SPLOT) AND MC
@@ -4372,7 +4374,6 @@ void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdi
               ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data(), "pdf");
 
-   gSystem->mkdir(Form("%s/mc_validation_plots/", ptdir.Data()) ); //create next folder
     gSystem->mkdir(Form("%s/mc_validation_plots/%s", ptdir.Data(), comp.Data()) ); //create next folder
    
    can.SaveAs(pdfstr);
