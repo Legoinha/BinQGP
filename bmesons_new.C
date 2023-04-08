@@ -330,23 +330,23 @@ void bmesons_new(int ipt = 3, int iy = 1){
     // input_file_mc = (particle == 0)?
     //   "../files/BPMC_noBDT.root" : "../files/BsMC_noBDT.root";
     input_file_data = (particle == 0)?
-      "../files/BPData.root" : "../files/BsData.root";
+      "/eos/user/h/hmarques/work/data/BPData.root" : "/eos/user/h/hmarques/work/data/BsData.root";
     input_file_mc = (particle == 0)?
-      "../files/BPMC.root" : "../files/BsMC.root";
+      "/eos/user/h/hmarques/work/data/BPMC.root" : "/eos/user/h/hmarques/work/data/BsMC.root";
   } else {
     // Binned pT comparison
     if (particle == 0) {
-      input_file_data = Form("../files/BPData_noBDT_trk5_%i_%i.root",
+      input_file_data = Form("/afs/cern.ch/user/t/tsheng/public/forHenrique/trk5/BPData_noBDT_trk5_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      input_file_data = Form("../files/BsData_noBDT_trk5_%i_%i.root",
+      input_file_data = Form("/afs/cern.ch/user/t/tsheng/public/forHenrique/trk5/BsData_noBDT_trk5_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     }
     if (particle == 0) {
-      input_file_mc = Form("../files/BPMC_noBDT_trk5_%i_%i.root",
+      input_file_mc = Form("/afs/cern.ch/user/t/tsheng/public/forHenrique/trk5/BPMC_noBDT_trk5_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      input_file_mc = Form("../files/BsMC_noBDT_trk5_%i_%i.root",
+      input_file_mc = Form("/afs/cern.ch/user/t/tsheng/public/forHenrique/trk5/BsMC_noBDT_trk5_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     }
   }
@@ -361,7 +361,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
   else if(particle == 2){input_file_reweighted_mc = "./results/B0/mc_validation_plots/weights/tree_with_weight.root";}
 */
   
-  TString input_file_jpsi = "../files/jpsinp_inclusive.root";
+  TString input_file_jpsi = "/eos/user/h/hmarques/work/data/jpsinp_inclusive.root";
   std::vector<TH1D*> histos_sideband_sub;
   std::vector<TH1D*> histos_mc;
   std::vector<TH1D*> histos_splot;
