@@ -4354,19 +4354,16 @@ TString ystring(int iy) {
 // save the plots MC/SS, MC/
 void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdir, int iy) {
    TString pdfstr, gifstr;
-   gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/" + comp + "/pdfs/");
+   gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/" + comp);
    TString ystr = "";
    if (fit_ybins) {
      ystr = "_" + ystring(iy);
    }
-   pdfstr.Form("%s/mc_validation_plots/%s/pdfs/%s_mc_validation_%s%s.%s",
+   pdfstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
                ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data(), "pdf");
-   gifstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
-               ptdir.Data(), comp.Data(), name.Data(),
-               particleList.at(particle).Data(), ystr.Data(), "gif");
+
    can.SaveAs(pdfstr);
-   can.SaveAs(gifstr);
  }
 
 /** Fix or release the parameters for signal shape */
