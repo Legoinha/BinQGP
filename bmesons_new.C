@@ -635,10 +635,10 @@ return;
 
     //y axis: maximum and minimum 
     if((mc_comp_sp[i]->GetMaximum() > sp_comp_mc[i]->GetMaximum())){
-      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.1*mc_comp_sp[i]->GetMaximum());
+      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.3*mc_comp_sp[i]->GetMaximum());
       if(names[i]=="Bpt"){sp_comp_mc[i]->GetXaxis()->SetRangeUser(0,60);} }
     else if((sp_comp_mc[i]->GetMaximum() > mc_comp_sp[i]->GetMaximum())){
-      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*sp_comp_mc[i]->GetMinimum(), 1.1*sp_comp_mc[i]->GetMaximum());
+      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*sp_comp_mc[i]->GetMinimum(), 1.3*sp_comp_mc[i]->GetMaximum());
       if(names[i]=="Bpt"){sp_comp_mc[i]->GetXaxis()->SetRangeUser(0,60);} }
 
 	
@@ -656,7 +656,7 @@ return;
     b.Update();
      
     TLegend* leg;	  
-    leg = new TLegend(0.7, 0.9, 0.9, 1.0); //this works for all cases
+    leg = new TLegend(0.15, 0.75, 0.25, .8); //this works for all cases
 
 	TLatex* texB = new TLatex(0.5,0.5,"");
   if(particle==1){ texB = new TLatex(0.15,0.85, "B^{0}_{s}");}
