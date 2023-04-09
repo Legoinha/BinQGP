@@ -130,14 +130,14 @@ const std::vector<double> bdt_lower_bound_bs =
 
 
 // min and max for BDT histograms
-const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05};
-const std::vector<double> BDTmax_bs = {0.85, 0.821, 0.92};
+const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05, -0.1};
+const std::vector<double> BDTmax_bs = {0.85, 0.821, 0.92, 0.9};
 
 const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1};
 const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.77};
 
 // number of bins
-const std::vector<int> BDTnbins_bs = {11, 30, 20};
+const std::vector<int> BDTnbins_bs = {11, 30, 20, 30};
 const std::vector<int> BDTnbins_bp(5, 40);
 
 // initial values for error function / signal ratio
@@ -307,8 +307,8 @@ const std::vector<TString> particleList = {"Bu", "Bs"};
 
 void bmesons_new(int ipt = 3, int iy = 1){
 
-  gSystem->Exec("mkdir -p ./results/Bu" );
-    gSystem->Exec("mkdir -p ./results/Bs" );
+  gSystem->mkdir("./results/Bu" ,true );
+  gSystem->mkdir("./results/Bs" ,true );
 
   gROOT->SetBatch();
   bool inclusive = false;
@@ -370,22 +370,14 @@ void bmesons_new(int ipt = 3, int iy = 1){
   std::vector<TH1D*> histos_splot;
 
 #if particle == 0
-
-  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5", "BDT_pt_50_100" */};
-  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"};
-  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By"};
-
-  // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt"};
+  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt" /*, "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"*/};
 
 #elif particle == 1
-  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"};
 
-  // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By"};
-
+  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", /*"Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr" */};
 #elif particle == 2
 
   std::vector<TString> variables = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr", "BDT_pt_0_2", "BDT_pt_2_3", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50","nMult"};
-
 #endif
 
   if( (particle != 2) && (MC == 1) ){return;} // only fits the MC for B0
@@ -461,7 +453,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
 //validate_fit(ws, c_vars);
 //  return;
 
-
   #if DIF_A == 1
   DIF_analysis(*ws, VAR_dif_A, "pT.root", c_vars);     
 return;
@@ -471,7 +462,6 @@ return;
   //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
   histos_sideband_sub = sideband_subtraction(*ws, variables , n_var);
  
-
   //SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
   do_splot(*ws,c_vars); 
   histos_splot = splot_method(*ws, variables, n_var); 
@@ -491,6 +481,8 @@ return;
   for(int i=0; i<n_var; i++){
     TString weight = "weight";
     
+    cout << "AQUI_"<<i<<endl;
+
     histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, 40, weight));
     names.push_back(TString(variables[i]));}
   
@@ -500,18 +492,10 @@ return;
   } else {
     ptdir += Form("/%i_%i", ptlist[ipt], ptlist[ipt + 1]);
   }
-
-TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
-
-  cout << "CREATE THE FOLDER" << endl;
-  gSystem->mkdir( ptdir.Data() );  //create i_i+1 folders
-  gSystem->mkdir(Form("%s/mc_validation_plots/", ptdir.Data()) ); //create next folder
-  gSystem->mkdir( weights_folder.Data() );  //create i_i+1 folders
+gSystem->mkdir(Form("%s/mc_validation_plots", ptdir.Data()) );
 
   // RATIO BETWEEN DATA (SPLOT) AND MC
-  if (weights == 1){
-    get_ratio(histos_splot, histos_mc, names,"weights.root", ptdir);
-  }
+  if (weights == 1){ get_ratio(histos_splot, histos_mc, names,"weights.root", ptdir);}
   
   // ADDS WEIGHTS TO MC TREE (use to reweight MC)
   if (add_weights == 1){AddWeights(t1_mc);}  
@@ -527,8 +511,8 @@ TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
     mc_comp_ss[i]->SetStats(0);
     ss_comp_mc[i]->SetStats(0);
 
-    if(particle == 0){mc_comp_ss[i]->SetTitle("");}
-    else if (particle == 1){mc_comp_ss[i]->SetTitle("");}
+    if(particle == 0){mc_comp_ss[i]->SetTitle("B^{+}");}
+    else if (particle == 1){mc_comp_ss[i]->SetTitle("B^{0}_{s}");}
     else if(particle == 2){mc_comp_ss[i]->SetTitle("B^{0}");}
 
     //normalization
@@ -579,8 +563,8 @@ TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
     ss_comp_sp[i]->SetStats(0);
     sp_comp_ss[i]->SetStats(0);
 
-    if(particle == 0){mc_comp_ss[i]->SetTitle("");}
-    else if (particle == 1){mc_comp_ss[i]->SetTitle("");}
+    if(particle == 0){mc_comp_ss[i]->SetTitle("B^{+}");}
+    else if (particle == 1){mc_comp_ss[i]->SetTitle("B^{0}_{s}");}
     else if(particle == 2){mc_comp_ss[i]->SetTitle("B^{0}");}
 
     //normalization
@@ -622,7 +606,7 @@ TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
   for(int i=0; i<n_var; i++){
     TCanvas b;
     mc_comp_sp[i]->SetXTitle(variables[i]);
-    mc_comp_sp[i]->SetYTitle("normalized entries");
+    mc_comp_sp[i]->SetYTitle("Normalized entries");
     mc_comp_sp[i]->SetStats(0);
     sp_comp_mc[i]->SetStats(0);
 
@@ -639,10 +623,9 @@ TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
 
     //y axis: maximum and minimum 
     if((mc_comp_sp[i]->GetMaximum() > sp_comp_mc[i]->GetMaximum())){
-      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.1*mc_comp_sp[i]->GetMaximum());} 
-     else if((sp_comp_mc[i]->GetMaximum() > mc_comp_sp[i]->GetMaximum())){
+      sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*mc_comp_sp[i]->GetMinimum(), 1.1*mc_comp_sp[i]->GetMaximum());}
+    else if((sp_comp_mc[i]->GetMaximum() > mc_comp_sp[i]->GetMaximum())){
       sp_comp_mc[i]->GetYaxis()->SetRangeUser(0.1*sp_comp_mc[i]->GetMinimum(), 1.1*sp_comp_mc[i]->GetMaximum());}
-
 	
     //--TRATIO--//	
     auto rp = new TRatioPlot(sp_comp_mc[i], mc_comp_sp[i], "divsym");
@@ -650,27 +633,27 @@ TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
     rp->SetH1DrawOpt("E");
     rp->Draw();
     rp->GetLowerRefYaxis()->SetTitle("Data/MC");
-    rp->GetUpperRefYaxis()->SetTitle("normalized entries");
+    rp->GetUpperRefYaxis()->SetTitle("Normalized entries");
     rp->GetLowerRefGraph()->SetMinimum(-1);
     rp->GetLowerRefGraph()->SetMaximum(3);
     // rp->GetUpperRefXaxis()->SetRange(0., 0.825);
     // rp->GetLowerRefXaxis()->SetRange(0., 0.825);
-    b.Update();
-     
-    TLegend* leg;	  
-    leg = new TLegend(0.7,0.9,0.9,1.0); //this works for all cases
+    //b.Update();
 
-	TLatex* texB = new TLatex(0.5,0.5,"");
-  if(particle==1){ texB = new TLatex(0.15,0.85, "B^{0}_{s}");}
-	if(particle==0){ texB = new TLatex(0.15,0.85, "B^{+}");}
-	texB->SetNDC();
-	texB->SetTextFont(62);
-	texB->SetTextSize(0.04);
-	texB->SetLineWidth(2);
-	texB->Draw();
-
-    leg->AddEntry(mc_comp_sp[i]->GetName(), "MC", "LE");
+	  TLatex* texB = new TLatex(0.5,0.5,"");
+	  if(particle==1){ texB = new TLatex(0.15,0.85, "B^{0}_{s}");}
+	  if(particle==0){ texB = new TLatex(0.15,0.85, "B^{+}");}
+		texB->SetNDC();
+		texB->SetTextFont(62);
+		texB->SetTextSize(0.04);
+		texB->SetLineWidth(2);
+		texB->Draw();    
+ 
+    TLegend* leg;	
+    leg = new TLegend(0.7, 0.9, 0.9, 1.0);
+    leg->AddEntry(mc_comp_sp[i]->GetName(), "Monte Carlo", "LE");
     leg->AddEntry(sp_comp_mc[i]->GetName(), "sPlot", "LE");
+    leg->SetTextSize(0.03);
     leg->Draw("same");
 	
     save_validation_plot(b, names[i], "mc_sp", ptdir, iy);
@@ -684,14 +667,14 @@ TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
   for(int i=0; i<n_var; i++){
     TCanvas d;	
     mc_comp[i]->SetXTitle(variables[i]);
-    mc_comp[i]->SetYTitle("normalized entries");
+    mc_comp[i]->SetYTitle("Normalized entries");
     mc_comp[i]->SetStats(0);
     sp_comp[i]->SetStats(0);
     ss_comp[i]->SetStats(0);
 
-    if(particle == 0){ss_comp[i]->SetTitle("B^{+}");}
-    else if (particle == 1){ss_comp[i]->SetTitle("B^{0}_{s}");}
-    else if(particle == 2){ss_comp[i]->SetTitle("B^{0}");}
+    if(particle == 0){ss_comp[i]->SetTitle("");}
+    else if (particle == 1){ss_comp[i]->SetTitle("");}
+    else if(particle == 2){ss_comp[i]->SetTitle("");}
 
     //normalization
     mc_comp[i]->Scale(1/mc_comp[i]->Integral());
@@ -718,7 +701,7 @@ TString weights_folder = Form("%s/mc_validation_plots/weights",ptdir.Data());
     rp_ss->SetH1DrawOpt("E");
     rp_ss->Draw();
     rp_ss->GetLowerRefYaxis()->SetTitle("Data/MC");
-    rp_ss->GetUpperRefYaxis()->SetTitle("normalized entries");
+    rp_ss->GetUpperRefYaxis()->SetTitle("Normalized entries");
     rp_ss->GetLowerPad()->cd();
     ratio_sp->Draw("e same");
     TGraph* ratio_ss = rp_ss->GetLowerRefGraph();
@@ -1124,8 +1107,11 @@ if(std::string(variable)=="By"){
   mg_m->GetXaxis()->SetLimits(0,3.5);
   mg_m->GetXaxis()->SetTitle(leg_x.Data());
   mg_m->GetYaxis()->SetTitle(leg_y.Data());
-  const char* pathc_m =Form("./results/%s/%s/raw_yield_MOD_%s.pdf",meson,variable,meson); 
-  c_m.SaveAs(pathc_m);}
+  
+  const char* pathc_m =Form("./results/%s/%s/pdfs/raw_yield_MOD_%s.pdf",meson,variable,meson); 
+  const char* pathc1_m =Form("./results/%s/%s/raw_yield_MOD_%s.gif",meson,variable,meson); 
+  c_m.SaveAs(pathc_m);
+  c_m.SaveAs(pathc1_m);}
 // MOD By MOD By MOD By MOD By MOD By MOD By MOD By
 
   //PLOT SYSTEMATICS_RELATIVE 
@@ -1160,8 +1146,10 @@ if(std::string(variable)=="By"){
   mg_syst->Draw("AP");
   leg->Draw();
   
-  const char* ppddff = Form("./results/%s/%s/rel_systematics_%s.pdf",meson,variable,meson);  
+  const char* ppddff = Form("./results/%s/%s/pdfs/rel_systematics_%s.pdf",meson,variable,meson);  
+  const char* ggiiff = Form("./results/%s/%s/rel_systematics_%s.gif",meson,variable,meson);  
   rel_sys_er.SaveAs(ppddff);
+  rel_sys_er.SaveAs(ggiiff);
 
 
   for(int k=0; k<n_bins; k++){cout << "Uncertanty STAT " << yield_err_low[k] << "  " << yield_err_high[k]<< "   " << endl;}
@@ -1204,8 +1192,10 @@ if(std::string(variable)=="By"){
   mg->GetYaxis()->SetTitle(leg_y.Data());
  //mg->SetTitle("Differential Signal Yield");  
 
-  const char* pathc =Form("./results/%s/%s/raw_yield_%s.pdf",meson,variable,meson); 
+  const char* pathc =Form("./results/%s/%s/pdfs/raw_yield_%s.pdf",meson,variable,meson); 
+  const char* pathc1 =Form("./results/%s/%s/raw_yield_%s.gif",meson,variable,meson); 
   c.SaveAs(pathc);
+  c.SaveAs(pathc1);
 
   TCanvas l;  //log scale
 
@@ -1229,9 +1219,11 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
                 TString ptdir){
 
   TString dir_name;
-  dir_name = ptdir + "/mc_validation_plots/weights/";  
+  dir_name = ptdir + "/mc_validation_plots/weights/";
+  gSystem->mkdir( dir_name.Data() );
   if(particle == 2){dir_name = "./results/B0/mc_validation_plots/weights/";}
 
+  gSystem->Exec("mkdir -p " + dir_name);
   TFile* f_wei = new TFile(dir_name + filename, "recreate");
 
   TH1D* h_aux;
@@ -1256,8 +1248,10 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
     h_aux->Write();
     
     TCanvas c;
-    h_aux->Draw();     
-    c.SaveAs(dir_name+v_name.at(i) + "_weights.pdf");
+    h_aux->Draw();    
+    gSystem->Exec("mkdir -p " + dir_name );
+    c.SaveAs(dir_name+v_name.at(i) + "_weights.pdf");   
+    //output: a root file and plots 
   }
   f_wei->Close();
   return;
@@ -2113,7 +2107,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
     pull_plot->Draw();
     
     if(particle == 0){
-      b.SaveAs(Form("./results/Bu/%s/%lf_%lf_%s_fit_plot_Bu.pdf", name_var, lower_b, higher_b, syst_src.Data()));
+      b.SaveAs(Form("./results/Bu/%s/%lf_%lf_%s_fit_plot_Bu.pdf",name_var, lower_b, higher_b, syst_src.Data()));
     }
     else if(particle == 1){
       b.SaveAs(Form("./results/Bs/%s/%lf_%lf_%s_fit_plot_Bs.pdf",name_var, lower_b, higher_b, syst_src.Data()));
@@ -2645,11 +2639,9 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   else if(std::string(var.GetName()) == "Btrk2PtErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.1)";}
   else if(std::string(var.GetName()) == "Btrk2Pt"){name_string = TString(var.GetName()) + ">>htemp(40,0,8)";}
   else if (indexBDT.count(varName)) {
+    cout << "AQUI_ESTE" << indexBDT.count(varName) << endl;
     auto iBDT = indexBDT.at(varName);
-    name_string = varName + Form(">>htemp(%i, %f, %f)",
-                                            BDTnbins[iBDT],
-                                            BDTmin[iBDT],
-                                            BDTmax[iBDT]);
+    name_string = varName + TString::Format(">>htemp(%i, %f, %f)",BDTnbins[iBDT], BDTmin[iBDT], BDTmax[iBDT]);
   }
   else{ name_string = TString(var.GetName()) + ">>htemp(" + Form("%d",n) +"," + Form("%lf", var.getMin()) + "," + Form("%lf", var.getMax()) + ")";}
 
@@ -2823,10 +2815,10 @@ TLegend *leg = new TLegend (0.7, 0.9, 0.9, 1.0);
   leg->Draw("same");
 
   if(particle == 0){
-    gSystem->Exec("mkdir -p ./results/Bu/sideband_sub");
+    gSystem->Exec("mkdir -p ./results/Bu/sideband_sub/");
     c.SaveAs("./results/Bu/sideband_sub/"+name + "sideband_sub_Bu.pdf");
     }else if(particle == 1){
-    gSystem->Exec("mkdir -p ./results/Bs/sideband_sub");
+    gSystem->Exec("mkdir -p ./results/Bs/sideband_sub/");
     c.SaveAs("./results/Bs/sideband_sub/"+name + "sideband_sub_Bs.pdf");
     }else if(particle == 2){
     c.SaveAs("./results/B0/sideband_sub/"+name + "sideband_sub_B0.pdf");
@@ -3074,7 +3066,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 1));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 1));}
   else if(label == "Bpt"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 5, 60));
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 5, 100));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 5, 100));}
   else if(label == "Bmumumass"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 3, 3.2));
@@ -3151,9 +3143,6 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   else if(label == "Btrk2Pt"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 8));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 8));}
-    else if(label == "BDT_pt_20_50"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, .9));
- 	  histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 0.9));}
   else if (indexBDT.count(label.Data())) {
     auto iBDT = indexBDT.at(label.Data());
     histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,
@@ -3192,10 +3181,8 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   histo_Bp_sig->Draw("E");
 
   if(particle == 0){
-        gSystem->Exec("mkdir -p ./results/Bu/splot/sig");
     prov->SaveAs("./results/Bu/splot/sig/"+label+"sPlot_Bu.pdf");
   }else if(particle == 1){
-        gSystem->Exec("mkdir -p ./results/Bs/splot/sig");
     prov->SaveAs("./results/Bs/splot/sig/"+label+"sPlot_Bs.pdf");
   }else if(particle == 2){
     prov->SaveAs("./results/B0/splot/sig/"+label+"sPlot_B0.pdf");
@@ -3225,6 +3212,9 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   TCanvas* sig_bkg = new TCanvas ("sig_bkg","c3",200,10,700,500); 
   sig_bkg->cd();
 
+  histo_Bp_sig->Draw();
+  histo_Bp_bkg->Draw("same");
+
   //y axis: maximum and minimum 
   if (histo_Bp_bkg->GetMaximum() > histo_Bp_sig->GetMaximum()){
     histo_Bp_sig->GetYaxis()->SetRangeUser(0.1*histo_Bp_sig->GetMinimum(), 1.1*histo_Bp_bkg->GetMaximum());
@@ -3232,18 +3222,6 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   else {
     histo_Bp_sig->GetYaxis()->SetRangeUser(0.1*histo_Bp_sig->GetMinimum(), 1.1*histo_Bp_sig->GetMaximum());
   }
-
-  histo_Bp_sig->Draw();
-  histo_Bp_bkg->Draw("same");
-
-	TLatex* texB = new TLatex(0.5,0.5,"");
-  if(particle==1){ texB = new TLatex(0.15,0.85, "B^{0}_{s}");}
-	if(particle==0){ texB = new TLatex(0.15,0.85, "B^{+}");}
-	texB->SetNDC();
-	texB->SetTextFont(62);
-	texB->SetTextSize(0.04);
-	texB->SetLineWidth(2);
-	texB->Draw();
 
   TLegend* legend = new TLegend(0.7,0.9,0.9,1.0);
   legend->AddEntry(histo_Bp_sig,"Signal","lep");
@@ -4365,17 +4343,19 @@ TString ystring(int iy) {
 
 // save the plots MC/SS, MC/
 void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdir, int iy) {
-   TString pdfstr, gifstr;
+   TString pdfstr;
+
    TString ystr = "";
    if (fit_ybins) {
      ystr = "_" + ystring(iy);
    }
-   pdfstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s%s.%s",
-              ptdir.Data(), comp.Data(), name.Data(),
-               particleList.at(particle).Data(), ystr.Data(), "pdf");
+   pdfstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s%s.pdf",
+               ptdir.Data(), comp.Data(), name.Data(),
+               particleList.at(particle).Data(), ystr.Data());
 
+    gSystem->mkdir(Form("%s/mc_validation_plots/", ptdir.Data()) ); //create next folder
     gSystem->mkdir(Form("%s/mc_validation_plots/%s", ptdir.Data(), comp.Data()) ); //create next folder
-   
+
    can.SaveAs(pdfstr);
  }
 
