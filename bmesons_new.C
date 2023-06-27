@@ -59,7 +59,7 @@
 #include "RooProdPdf.h"
 #include "RooAddition.h"
 #include "RooAbsPdf.h"
-#include "RooFit.h"
+// #include "RooFit.h"
 #include "RooFitResult.h"
 #include "RooMCStudy.h"
 #include <iostream>
@@ -104,8 +104,9 @@ const std::vector<TString> BDTvar_bp = {
     "BDT_pt_7_10",
     "BDT_pt_10_15",
     "BDT_pt_15_20",
-    "BDT_pt_20_50",
-    "BDT_pt_50_60",
+    // "BDT_pt_20_50",
+    // "BDT_pt_50_60",
+    "BDT_pt_20_60",
     };
 
 const std::vector<TString> BDTdir = {"Bu", "Bs"};
@@ -119,8 +120,9 @@ const std::unordered_map<std::string, unsigned> iBDT_bp = {
   {"BDT_pt_7_10", 1},
   {"BDT_pt_10_15", 2},
   {"BDT_pt_15_20", 3},
-  {"BDT_pt_20_50", 4},
-  {"BDT_pt_50_60", 5}};
+  // {"BDT_pt_20_50", 4},
+  // {"BDT_pt_50_60", 5}};
+  {"BDT_pt_20_60", 4}};
 
 // only include events with BDT output higher than this lower bound
 const std::vector<double> bdt_lower_bound_bp =
@@ -329,8 +331,10 @@ auto indexBDT = iBDT_bs;
 auto BDT_lower_bound = bdt_lower_bound_bs;
 #endif
 
+constexpr double bchi2cl_cut = 0.003;
 
-const std::vector<int> ptlist = {5, 7, 10, 15, 20, 50, 60};
+// const std::vector<int> ptlist = {5, 7, 10, 15, 20, 50, 60};
+const std::vector<int> ptlist = {5, 7, 10, 15, 20, 60};
 const std::vector<double> ylist = {0, 1.5, 2.4};
 const std::vector<TString> particleList = {"Bu", "Bs"};
 
@@ -368,17 +372,19 @@ void bmesons_new(int ipt = 3, int iy = 1){
   } else {
     // Binned pT comparison
     if (particle == 0) {
-      input_file_data = Form("../files/BPData_noBDT_trk5_%i_%i.root",
+      // input_file_data = Form("../files/BPData_nom_noBDT_trk5_%i_%i.root",
+      input_file_data = Form("../files/BPData_newsample_presel_noBDT_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      input_file_data = Form("../files/BsData_noBDT_trk5_%i_%i.root",
+      input_file_data = Form("../files/BsData_nom_noBDT_trk5_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     }
     if (particle == 0) {
-      input_file_mc = Form("../files/BPMC_noBDT_trk5_%i_%i.root",
+      // input_file_mc = Form("../files/BPMC_nom_noBDT_trk5_%i_%i.root",
+      input_file_mc = Form("../files/BPMC_newsample_presel_noBDT_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      input_file_mc = Form("../files/BsMC_noBDT_trk5_%i_%i.root",
+      input_file_mc = Form("../files/BsMC_nom_noBDT_trk5_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     }
   }
@@ -393,7 +399,9 @@ void bmesons_new(int ipt = 3, int iy = 1){
   else if(particle == 2){input_file_reweighted_mc = "./results/B0/mc_validation_plots/weights/tree_with_weight.root";}
 */
   
-  TString input_file_jpsi = "../files/jpsinp_inclusive.root";
+  // TString input_file_jpsi = "../files/jpsinp_inclusive.root";
+  // TString input_file_jpsi = "../files/jpsinp_nom.root";
+  TString input_file_jpsi = "../files/jpsinp_newsample_presel_noBDT.root";
   std::vector<TH1D*> histos_sideband_sub;
   std::vector<TH1D*> histos_mc;
   std::vector<TH1D*> histos_splot;
@@ -401,14 +409,17 @@ void bmesons_new(int ipt = 3, int iy = 1){
 #if particle == 0
 
   // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5", "BDT_pt_50_100" */};
-  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"};
+  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"};
   // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By"};
-  // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By", "BsvpvDistance", "BsvpvDisErr"};
+  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_60", "By", "BsvpvDistance", "BsvpvDisErr", "Bchi2cl", "BsvpvDistance_2D", "BsvpvDisErr_2D"};
 
 #elif particle == 1
 
-  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"};
+  // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"};
   // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By"};
+  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20",
+                                    "BDT_pt_20_50", "By",
+                                    "BsvpvDistance", "BsvpvDisErr", "Bchi2cl"};
 
 #elif particle == 2
 
@@ -462,17 +473,36 @@ void bmesons_new(int ipt = 3, int iy = 1){
     }
   }
 
-  // RooFormulaVar BsvpvSig("BsvpvSig", "BsvpvDistance/BsvpvDisErr",
-  //                        RooArgList(*ws->var("BsvpvDistance"),*ws->var("BsvpvDisErr")));
-  // RooDataSet* data = (RooDataSet*) ws->data("data");
-  // RooRealVar* BsvpvSigVar = (RooRealVar*) data->addColumn(BsvpvSig);
-  // BsvpvSigVar->setMax(400);
-  // BsvpvSigVar->setMin(0);
-  // RooDataSet* mc = (RooDataSet*) ws->data("mc");
-  // mc->addColumn(BsvpvSig);
-  // variables.push_back("BsvpvSig");
-  // n_var = variables.size();
+  RooFormulaVar BsvpvSig("BsvpvSig", "BsvpvDistance / BsvpvDisErr",
+                         RooArgList(*ws->var("BsvpvDistance"),*ws->var("BsvpvDisErr")));
+  variables.push_back("BsvpvSig");
+  RooFormulaVar BsvpvSig_2D("BsvpvSig_2D", "BsvpvDistance_2D / BsvpvDisErr_2D",
+                         RooArgList(*ws->var("BsvpvDistance_2D"),*ws->var("BsvpvDisErr_2D")));
+  variables.push_back("BsvpvSig_2D");
+  n_var = variables.size();
+
+  RooDataSet* mc = (RooDataSet*) ws->data("mc");
+  RooRealVar* BsvpvSigVarMC = (RooRealVar*) mc->addColumn(BsvpvSig);
+  BsvpvSigVarMC->setMax(120);
+  BsvpvSigVarMC->setMin(0);
+
+  RooDataSet* data = (RooDataSet*) ws->data("data");
+  RooRealVar* BsvpvSigVar = (RooRealVar*) data->addColumn(BsvpvSig);
+  BsvpvSigVar->setMax(120);
+  BsvpvSigVar->setMin(0);
   // ws->import(*BsvpvSigVar);
+  ws->import(*BsvpvSigVarMC);
+
+  RooRealVar* BsvpvSigVar2DMC = (RooRealVar*) mc->addColumn(BsvpvSig_2D);
+  BsvpvSigVar2DMC->setMax(120);
+  BsvpvSigVar2DMC->setMin(0);
+
+  RooRealVar* BsvpvSigVar2D = (RooRealVar*) data->addColumn(BsvpvSig_2D);
+  BsvpvSigVar2D->setMax(120);
+  BsvpvSigVar2D->setMin(0);
+
+  ws->import(*BsvpvSigVar2D);
+  ws->import(*BsvpvSigVar2DMC);
 
   // use the setting of pT 10-15 for inclusive pT comparison
   if (inclusive) {
@@ -1329,7 +1359,7 @@ void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input){
   for (auto bdt : BDTvars) {
     jpsi_vars.push_back(bdt);
   }
-  read_samples(w, jpsi_vars, f_input, "ntnp", "jpsinp");
+  read_samples(w, jpsi_vars, f_input, "ntKp", "jpsinp");
 }
 
 // work horse to read data/MC/jpsi
@@ -2191,7 +2221,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
       reduce(TString::Format("Bpt > %f && Bpt < %f", (double) pti, (double) ptf));
   }
   // Get rid of B+ at gen level
-  RooDataSet* ds_cont = (RooDataSet*) ds->reduce("Bgen != 23333 && Bgen != 23335");
+  RooDataSet* ds_cont = (RooDataSet*) ds->reduce("Bgen != 23333 && Bgen != 23335 && Bgen > 5000");
   RooDataSet* ds_sig = (RooDataSet*) ds->reduce("Bgen == 23333");
 
 
@@ -2580,7 +2610,10 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> la
   vector<RooRealVar> variables;
   variables.push_back(*(w.var("Bmass"))); 
 
-  for(int i=0; i<n_var; i++){variables.push_back(*(w.var(label[i])));}
+  for(int i=0; i<n_var; i++){
+    cout << "sideband_variable: " << label[i] << "\n";
+    variables.push_back(*(w.var(label[i])));
+  }
 
   RooDataSet* reduceddata_side;
   RooDataSet* reduceddata_central; 
@@ -2662,7 +2695,8 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   else if(std::string(var.GetName()) == "Bpt"){name_string = TString(var.GetName()) + ">>htemp(40,5,100)";}
   else if(std::string(var.GetName()) == "BsvpvDistance"){name_string = TString(var.GetName()) + ">>htemp(40,0,1)";}
   else if(std::string(var.GetName()) == "Bmumumass"){name_string = TString(var.GetName()) + ">>htemp(40,3,3.2)";}
-  else if(std::string(var.GetName()) == "Bchi2cl"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,1)";}
+  // else if(std::string(var.GetName()) == "Bchi2cl"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,1)";}
+  else if(std::string(var.GetName()) == "Bchi2cl"){name_string = TString(var.GetName()) + ">>htemp(50,0.003,1)";}
   else if(std::string(var.GetName()) == "Balpha"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.1)";}
   else if(std::string(var.GetName()) == "Bd0"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.5)";}
   else if(std::string(var.GetName()) == "Bd0Err"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.0001)";}
@@ -2693,6 +2727,12 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
                                             BDTmin[iBDT],
                                             BDTmax[iBDT]);
   }
+  else if(std::string(var.GetName()) == "BsvpvSig") {
+    int nbins_sig = var.getMax() / 2;
+    // name_string ="BsvpvDistance / BsvpvDisErr >> " +
+    name_string ="BsvpvDistance / BsvpvDisErr >> " +
+      TString::Format("htemp(%d, 0, %f)", nbins_sig, var.getMax());
+  }
   else{ name_string = TString(var.GetName()) + ">>htemp(" + Form("%d",n) +"," + Form("%lf", var.getMin()) + "," + Form("%lf", var.getMax()) + ")";}
 
  cout << name_string << endl;
@@ -2703,6 +2743,11 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   h->SetMarkerColor(kGreen);
   h->SetMarkerSize(1);
   h->SetLineColor(kGreen);
+  if(std::string(var.GetName()) == "BsvpvSig") {
+    TCanvas c;
+    h->Draw();
+    c.SaveAs("check.png");
+  }
   return h;
 }
 //create_histogram_mc ends
@@ -2727,8 +2772,9 @@ cout << endl;
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 3, 3.2));
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 3, 3.2));}
   else if(std::string(var.GetName()) == "Bchi2cl"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.05, 1));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.05, 1));}
+	// hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.05, 1));
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(50, bchi2cl_cut, 1));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(50, bchi2cl_cut, 1));}
   else if(std::string(var.GetName()) == "Balpha"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.1));
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.1));}
@@ -3128,8 +3174,10 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 3, 3.2));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 3, 3.2));}
   else if(label == "Bchi2cl"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.05, 1));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.05, 1));}
+   //       histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.05, 1));
+ 	 // histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.05, 1));}
+    histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(50, bchi2cl_cut, 1));
+    histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(50, bchi2cl_cut, 1));}
   else if(label == "Balpha"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0., 0.1));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0., 0.1));}
@@ -3213,7 +3261,15 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   else{
     cout << "Create histogram " << label << " using variable range" << "\n";
    	histo_Bp_sig = (TH1D*)dataWBp->createHistogram(label,n,variable->getMin(),variable->getMax());
-   	histo_Bp_bkg = (TH1D*)dataWBg->createHistogram(label,n,variable->getMin(),variable->getMax());}
+   	histo_Bp_bkg = (TH1D*)dataWBg->createHistogram(label,n,variable->getMin(),variable->getMax());
+    TFile fhist(TString::Format("fhist%d.root", particle), "recreate");
+    auto hist_out_sig = histo_Bp_sig->Clone("hBsvpvsig");
+    hist_out_sig->Write();
+    fhist.Write();
+    // histo_Bp_sig->SetDirectory(0);
+    // histo_Bp_bkg->SetDirectory(0);
+    fhist.Close();
+  }
   
   for (int i=1; i<=n; i++) {
     if (histo_Bp_sig->GetBinContent(i)==0) histo_Bp_sig->SetBinError(i,0.);
@@ -3318,7 +3374,17 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
 std::vector<TH1D*> splot_method(RooWorkspace& w, std::vector<TString> label, int n_var){
 
   std::vector<TH1D*> histos;
-  for(int i = 0;i<n_var;i++){histos.push_back(make_splot(w,40,label[i]));}
+  int nbins = 40;
+  for(int i = 0; i < n_var; i++) {
+    if (label[i] == "BsvpvSig" || label[i] == "BsvpvSig_2D" ) {
+      auto BsvpvSig = w.var(label[i]);
+      const int BsvpvCut = 2;
+      nbins = BsvpvSig->getMax() / BsvpvCut;
+    } else if (label[i] == "Bchi2cl") {
+      nbins = 50;
+    }
+    histos.push_back(make_splot(w, nbins, label[i]));
+  }
 
   return histos;
 }
@@ -3618,6 +3684,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     float BDT_10_15_min, BDT_10_15_max;
     float BDT_15_20_min, BDT_15_20_max;
     float BDT_20_50_min, BDT_20_50_max;
+    float BDT_20_60_min, BDT_20_60_max;
    
     mass_min = 5.0;
     mass_max = 6.0;
@@ -3736,8 +3803,11 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_15_20_min = -1;
     BDT_15_20_max = 1;
 
-    BDT_20_50_min = -1;
-    BDT_20_50_max = 1;
+    // BDT_20_50_min = -1;
+    // BDT_20_50_max = 1;
+
+    BDT_20_60_min = -1;
+    BDT_20_60_max = 1;
 
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);  
@@ -3778,8 +3848,9 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_7_10("BDT_pt_7_10", "BDT_pt_7_10", BDT_7_10_min, BDT_7_10_max);
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
-    RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
-    RooRealVar BDT_pt_50_60("BDT_pt_50_60", "BDT_pt_50_60", BDT_20_50_min, BDT_20_50_max);
+    // RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
+    // RooRealVar BDT_pt_50_60("BDT_pt_50_60", "BDT_pt_50_60", BDT_20_50_min, BDT_20_50_max);
+    RooRealVar BDT_pt_20_60("BDT_pt_20_60", "BDT_pt_20_60", BDT_20_60_min, BDT_20_60_max);
 
     RooRealVar Bgen("Bgen", "Bgen", 0, 30000);
 
@@ -3821,8 +3892,9 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_7_10);
     w.import(BDT_pt_10_15);
     w.import(BDT_pt_15_20);
-    w.import(BDT_pt_20_50);
-    w.import(BDT_pt_50_60);
+    // w.import(BDT_pt_20_50);
+    // w.import(BDT_pt_50_60);
+    w.import(BDT_pt_20_60);
     w.import(nMult);
     w.import(Bgen);
 }
