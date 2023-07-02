@@ -366,9 +366,9 @@ void bmesons_new(int ipt = 3, int iy = 1){
     // input_file_mc = (particle == 0)?
     //   "../files/BPMC_noBDT.root" : "../files/BsMC_noBDT.root";
     input_file_data = (particle == 0)?
-      "../files/BPData.root" : "../files/BsData.root";
+      "/data3/tasheng/presel/BPData_newsample_presel_noBDT.root" : "../files/BsData.root";
     input_file_mc = (particle == 0)?
-      "../files/BPMC.root" : "../files/BsMC.root";
+      "/data3/tasheng/presel/BPMC_newsample_presel_noBDT.root" : "../files/BsMC.root";
   } else {
     // Binned pT comparison
     if (particle == 0) {
@@ -401,7 +401,8 @@ void bmesons_new(int ipt = 3, int iy = 1){
   
   // TString input_file_jpsi = "../files/jpsinp_inclusive.root";
   // TString input_file_jpsi = "../files/jpsinp_nom.root";
-  TString input_file_jpsi = "../files/jpsinp_newsample_presel_noBDT.root";
+  TString input_file_jpsi = "/data3/tasheng/presel/jpsinp_newsample_presel_noBDT.root";
+
   std::vector<TH1D*> histos_sideband_sub;
   std::vector<TH1D*> histos_mc;
   std::vector<TH1D*> histos_splot;
