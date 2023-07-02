@@ -2726,7 +2726,7 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
     name_string = varName + TString::Format(">>htemp(%i, %f, %f)",
                                             BDTnbins[iBDT],
                                             BDTmin[iBDT],
-                                            BDTmax[iBDT]);
+                                            BDTmax[iBDT]).Data();
   }
   else if(std::string(var.GetName()) == "BsvpvSig") {
     int nbins_sig = var.getMax() / 2;
