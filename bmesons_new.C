@@ -1111,7 +1111,7 @@ if( choice != "scale_factor"){
    sigma2 = new RooProduct("sigma2", "sigma2", RooArgList(*sigma1, *ratio_sigma12));
    f_swap = new RooRealVar("f_swap","f_swap",0.,0.,1.);
    cofs1 = new RooRealVar("cofs1", "cofs1", 0.3, 0., 1.);
-   lambda = new RooRealVar("lambda","lambda",-2.,-10.,1.0);
+   lambda = new RooRealVar("lambda","lambda",-1.,-10.,1.0);
    slope = new RooRealVar("slope","slope", -500, -1000, 1);
    n3 = new RooRealVar("n3", "n3", 100., 0., 400.);
    // sigma3 = new RooRealVar("sigma3","sigma3",0.012,0.010,0.030);
@@ -1172,7 +1172,7 @@ cout << "Defining PDF" << endl;
 RooGenericPdf erfn ("erfn", "erfn", "TMath::Erfc((Bmass-m_nonprompt_shift)/m_nonprompt_scale)", RooArgList(Bmass, *m_nonprompt_scale, *m_nonprompt_shift));
 
 // non-prompt jpsi
-RooRealVar np_p0("np_p0", "np_p0", 1, 0.00, 1.5);
+RooRealVar np_p0("np_p0", "np_p0", 1.5, -2, 2);
 RooRealVar np_p1("np_p1", "np_p1", ini_jpsi_p1[ipt][iy], -1000., 1000.);
 RooRealVar np_p2("np_p2", "np_p2", ini_jpsi_p2[ipt][iy], -1000., 1000.);
 RooRealVar np_p3("np_p3", "np_p3", ini_jpsi_p3[ipt][iy], -10, 10);
@@ -1194,17 +1194,16 @@ RooRealVar np_sigma2("np_sigma2", "np_sigma2", 0.2, 0.05, 0.5);
 
 
 
-  RooPolynomial* poly_jpsi = 0;
+  //RooPolynomial* poly_jpsi = 0;
   /* if (ipt <= 2) {poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1, np_p2, np_p3));
   }else{ poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1));} */
 
-  if (ipt <= 2) {poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p0)); //For inclusive Fit the mc can be fited with a lower order poly
-  }else{ poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(/*np_p1*/ np_p0));}
+  //if (ipt <= 2) {poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p0)); //For inclusive Fit the mc can be fited with a lower order poly
+  //}else{ poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(/*np_p1*/ np_p0));}
 
 
-
-
-
+  RooAbsPdf* poly_jpsi = 0;
+  poly_jpsi = new RooExponential("poly_jpsi","poly_jpsi",Bmass, *lambda);
 
 
 
@@ -1785,9 +1784,12 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
   jpsipi_par_list = jpsipi_result->floatParsFinal();
   jpsipiPlot = "./results/Bu/" + TString::Format("%i_%i/np_gen_jpsipi_pt%i-%i%s.pdf",pti, ptf, pti, ptf, ystr.Data());
   if (inclusive) { jpsipiPlot = "./results/Bu/inclusive/np_gen_jpsipi.pdf"; }
-  plot_mcfit(w, &jpsipi_ext, ds_jpsipi, jpsipiPlot,
-             "NP gen-matched B^{+} #rightarrow J/#psi #pi^{+}",RooFit::Name("MCFit"), NormRange("bjpsipi"), LineColor(kRed),LineStyle(1), LineWidth(2));
+  plot_mcfit(w, &jpsipi_ext, ds_jpsipi, jpsipiPlot,"NP gen-matched B^{+} #rightarrow J/#psi #pi^{+}",RooFit::Name("MCFit"), NormRange("bjpsipi"), LineColor(kRed),LineStyle(1), LineWidth(2));
   double jpsipi_width_val = signal_width->getVal() / jpsipi_width_allpt;
+
+
+
+
 
   // NP background fit with no B+ or J/psi pi component
   auto cont_result = model_cont->fitTo(*ds_cont, Save());
@@ -1795,7 +1797,9 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
   TString jpsi_fit_plot = "./results/Bu/" + TString::Format("%i_%i/np_fit_pt%i-%i%s.pdf", pti, ptf, pti, ptf, ystr.Data());
   if (inclusive) { jpsi_fit_plot = "./results/Bu/inclusive/np_fit.pdf";}
   plot_jpsifit(w, model_cont, ds_cont, jpsi_fit_plot, "Non-prompt J/#psi", 0, n_signal);
-  fix_parameters(w, cont_par_list);
+  // fix_parameters(w, cont_par_list);
+  // fix the erf shape
+  fix_parameters(w, "erf");
 
   if (!includeSignal) {return;}
   // Fit pure signal
@@ -1805,7 +1809,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
   auto signal_par_list = signal_result->floatParsFinal();
 
   TString signalPlot = "./results/Bu/" +
-    TString::Format("%i_%i/np_gen_signal_pt%i-%i%s.pdf",pti, ptf, pti, ptf, ystr.Data());
+  TString::Format("%i_%i/np_gen_signal_pt%i-%i%s.pdf",pti, ptf, pti, ptf, ystr.Data());
   if (inclusive) {signalPlot = "./results/Bu/inclusive/np_gen_signal.pdf";}
   plot_mcfit(w, &signal_ext, ds_sig, signalPlot, "NP gen-matched signal", RooFit::Name("MCFit"), Range("bmc"), LineColor(kRed),LineStyle(1), LineWidth(2));
 
@@ -1826,16 +1830,14 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, in
 
   // include signal pdf
   RooAddPdf* model_inclusive = new
-    RooAddPdf("np_signal", "NP with B+",RooArgList(*signal, *jpsipi, *erf, *poly),RooArgList(n_signal, *n_jpsipi, n_erf, n_cont));
+  RooAddPdf("np_signal", "NP with B+",RooArgList(*signal, *jpsipi, *erf, *poly),RooArgList(n_signal, *n_jpsipi, n_erf, n_cont));
   // fit the J/psi using fixed signal and jpsipi shape
   fix_signal_shape(w);
-  // fix the erf shape
-  fix_parameters(w, "erf");
+
   // fix the jpsi pi mean
   m_jpsipi_mean1->setConstant();
   model_inclusive->fitTo(*ds, Save(), Extended(), NumCPU(4));
-  TString jpsi_plot_with_sig = "./results/Bu/" +
-    TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",pti, ptf, pti, ptf, ystr.Data());
+  TString jpsi_plot_with_sig = "./results/Bu/" + TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",pti, ptf, pti, ptf, ystr.Data());
   if (inclusive) {jpsi_plot_with_sig = "./results/Bu/inclusive/np_fit_signal.pdf";}
   plot_jpsifit(w, model_inclusive, ds, jpsi_plot_with_sig, "Non-prompt J/#psi with signal",ds_sig->sumEntries(), n_signal);
 

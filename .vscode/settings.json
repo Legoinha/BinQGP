@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "bmesons_new.C": "cpp"
+        "bmesons_new.C": "cpp",
+        "new": "cpp"
     }
 }
