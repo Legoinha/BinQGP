@@ -256,7 +256,6 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
 void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString, TString);
-void DIF_analysis(RooWorkspace& w, const char* variable, TString, RooArgSet &c_vars);
 double get_yield_syst(RooDataSet *dt, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma, const char* name_var);
 void fit_syst_error(TString, int n_var, std::vector<TString> label, RooArgSet &c_vars);
 void fit_syst_error_bin(TString, int n_var, std::vector<TString> label, double a, double b, RooArgSet &c_vars);
@@ -345,15 +344,10 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
   gROOT->SetBatch();
   bool inclusive = false;
-  if (ipt < 0) {
-    inclusive = true;
-  }
+  if (ipt < 0) { inclusive = true;}
 
-  // if (particle == 0 && ipt <= 1 && ipt >= 0) {
-  if (ipt <= 1 && ipt >= 0) {
-    fit_ybins = true;
-  }
-
+  // analysis fiducial region
+  if (ipt <= 1 && ipt >= 0) {fit_ybins = true;}
 
   int n_var;
   TString input_file_data;
@@ -796,25 +790,15 @@ double MC_fit_result(TString input_file, TString inVarName){
   RooFitResult* fitresult;
   fitresult = (RooFitResult*)f->Get("fitresult_model_data");
   RooRealVar* var = (RooRealVar*)fitresult->floatParsFinal().find(inVarName);
- 
+
   return var->getVal();}
 
 void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooArgSet &c_pdfs){
-
   TFile* f = new TFile(input_file);
-
   RooFitResult* fitresult;
-
   fitresult = (RooFitResult*)f->Get("fitresult_model_data");
-
   RooRealVar* var = (RooRealVar*)fitresult->floatParsFinal().find(inVarName); 
-
-  RooGaussian* gauss_constr = new RooGaussian(Form("gauss_%s",var->GetName()),
-                                              Form("gauss_%s",var->GetName()),
-                                              *var,
-                                              RooConst(var->getVal()),
-                                              RooConst(var->getError())
-                                              );
+  RooGaussian* gauss_constr = new RooGaussian(Form("gauss_%s",var->GetName()),Form("gauss_%s",var->GetName()),*var,RooConst(var->getVal()),RooConst(var->getError()));
   c_vars.add(*var);
   c_pdfs.add(*gauss_constr);
 }
@@ -1026,6 +1010,7 @@ void build_pdf(RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt=3, in
   RooRealVar* p1 = 0;
   RooRealVar* p2 = 0;
   RooRealVar* p3 = 0;
+  RooRealVar* p4 = 0;
 
   if( (particle == 2) && (MC == 0)){
 if( choice != "scale_factor"){ 
@@ -1116,9 +1101,10 @@ if( choice != "scale_factor"){
    n3 = new RooRealVar("n3", "n3", 100., 0., 400.);
    // sigma3 = new RooRealVar("sigma3","sigma3",0.012,0.010,0.030);
    sigma3 = new RooProduct("sigma3", "sigma3", RooArgList(*sigma1, *ratio_sigma13));
-   p1 = new RooRealVar("p1", "p1", ini_p1[ipt][iy], -150., 150.);
-   p2 = new RooRealVar("p2", "p2", ini_p2[ipt][iy], -15., 15.);
-   p3 = new RooRealVar("p3", "p3", ini_p3[ipt][iy], -2., 2.);
+   p1 = new RooRealVar("p1", "p1", ini_p1[ipt][iy], -100., 100.);
+   p2 = new RooRealVar("p2", "p2", ini_p2[ipt][iy], -100., 100.);
+   p3 = new RooRealVar("p3", "p3", ini_p3[ipt][iy], -100., 100.);
+   p4 = new RooRealVar("p4", "p4", 0, -100., 100.);
 
   m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale",ini_erf_scale[ipt][iy], 6e-4, 0.1);
   m_nonprompt_shift = new RooRealVar("m_nonprompt_shift", "m_nonprompt_shift", 5.14425, 4.5, 6.);
@@ -1187,25 +1173,12 @@ RooRealVar np_sigma2("np_sigma2", "np_sigma2", 0.2, 0.05, 0.5);
   RooAddPdf* jpsipi = new RooAddPdf("jpsipi", "jpsipi", RooArgList(m_jpsipi_gaussian2, m_jpsipi_gaussian1), RooArgList(*m_jpsipi_fraction2));
   // RooAbsPdf* jpsipi = new RooBifurGauss(*m_jpsipi_gaussian1, "jpsipi");
 
-
-
-
-
-
-
-
   //RooPolynomial* poly_jpsi = 0;
   /* if (ipt <= 2) {poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1, np_p2, np_p3));
   }else{ poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1));} */
 
-  //if (ipt <= 2) {poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p0)); //For inclusive Fit the mc can be fited with a lower order poly
-  //}else{ poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(/*np_p1*/ np_p0));}
-
-
   RooAbsPdf* poly_jpsi = 0;
   poly_jpsi = new RooExponential("poly_jpsi","poly_jpsi",Bmass, *lambda);
-
-
 
   RooRealVar jpsinp_poly_fraction("jpsinp_poly_fraction", "fraction", ini_jpsi_poly_f[ipt][iy], 0.01, 1);
   // fraction of B+ -> J/psi pi+ in the NP
