@@ -81,8 +81,8 @@
 #include "RooCmdArg.h"
 
 //particle
-// 0 = Bu
-// 1 = Bs
+// 0 = B+
+// 1 = B0s
 // 2 = B0
 #define particle 0
 
@@ -97,17 +97,8 @@ bool fit_ybins = false;
 constexpr bool include_np = true;
 
 // should be constexpr, but let's simplify runtime arguments and omit that for now
-const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15",
-                                        "BDT_pt_15_20", "BDT_pt_20_50"};
-const std::vector<TString> BDTvar_bp = {
-    "BDT_pt_5_7",
-    "BDT_pt_7_10",
-    "BDT_pt_10_15",
-    "BDT_pt_15_20",
-    // "BDT_pt_20_50",
-    // "BDT_pt_50_60",
-    "BDT_pt_20_60",
-    };
+const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15","BDT_pt_15_20", "BDT_pt_20_50"};
+const std::vector<TString> BDTvar_bp = {"BDT_pt_5_7","BDT_pt_7_10","BDT_pt_10_15","BDT_pt_15_20", /* "BDT_pt_20_50","BDT_pt_50_60", */ "BDT_pt_20_60",};
 
 const std::vector<TString> BDTdir = {"Bu", "Bs"};
 const std::unordered_map<std::string, unsigned> iBDT_bs = {
@@ -142,7 +133,6 @@ const std::vector<double> bdt_lower_bound_bs =
 // min and max for BDT histograms
 const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05, -1};
 const std::vector<double> BDTmax_bs = {0.85, 0.821, 0.92, 0.85};
-
 const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1, -1};
 const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.77, 0.77};
 
@@ -239,7 +229,6 @@ using namespace std;
 
 std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> label, int n_var);
 std::vector<TH1D*> splot_method(RooWorkspace& w, std::vector<TString> label, int n_var);
-
 void set_up_workspace_variables(RooWorkspace& w);
 TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight); 
 TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n); 
@@ -250,7 +239,7 @@ void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
 void reduce_ybins(RooWorkspace& w, int iy);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
-void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
+void fit_jpsinp (RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
@@ -268,49 +257,32 @@ void fix_parameters(RooWorkspace& w, TString pdfName, bool release=false);
 void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release=false);
 
 template<typename... Targs>
-void plot_mcfit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
-                TString plotName, TString title, Targs... options);
-
-void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
-                  TString plotName, TString title, double nGen, RooRealVar& n_signal);
-
-const char* VAR_dif_A = "By";
-// change according to what we want to compute: "Bpt"  or  "By"  or  "nMul"
-
-// DIF_A
-// 1 = computes differential signal yields
-// 0 = computes MC and data comparissons
-#define DIF_A 0 
-
+void plot_mcfit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,TString plotName, TString title, Targs... options);
+void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,TString plotName, TString title, double nGen, RooRealVar& n_signal);
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
 // 0 = does not calculate weights 
-
 #define weights 1
 
 //background
 // 0 = does MC validation with data
 // 1 = does MC validation with background
-
 #define background 0
 
 //add_weights
 // 1 = adds weights to tree
 // 0 = does not add weights to tree
-
 # define add_weights 0
 
 //MC
 // 1 = does fit to MC 
 // 0 = does fit to data
-
 # define MC 0
 
 //component
 // 1 = WT
 // 0 = RT
-
 # define component 1
 
 
@@ -356,9 +328,9 @@ void bmesons_new(int ipt = 3, int iy = 1){
   // Inclusive pT comparison
   if (ipt < 0) {
     input_file_data = (particle == 0)?
-      "../files/BPData_newsample_presel_noBDT.root" : "../files/BsData.root";
+      "../files/BPData_newsample_presel_chi2all.root" : "../files/BsData_newsample_presel_chi2all.root";
     input_file_mc = (particle == 0)?
-      "../files/BPMC_newsample_presel_noBDT.root" : "../files/BsMC.root";
+      "../files/BPMC_newsample_presel_chi2all.root" : "../files/BsMC_newsample_presel_chi2all.root";
   } else {
     // Binned pT comparison
     if (particle == 0) {
@@ -380,10 +352,8 @@ void bmesons_new(int ipt = 3, int iy = 1){
   else if(particle == 1){input_file_reweighted_mc = "./results/Bs/mc_validation_plots/weights/tree_with_weight.root";}
   else if(particle == 2){input_file_reweighted_mc = "./results/B0/mc_validation_plots/weights/tree_with_weight.root";}
 */
-  
-  // TString input_file_jpsi = "../files/jpsinp_inclusive.root";
-  // TString input_file_jpsi = "../files/jpsinp_nom.root";
-  TString input_file_jpsi = "../files/jpsinp_newsample_presel_noBDT.root";
+
+  TString input_file_jpsi = "../files/jpsinp_newsample_presel_chi2all.root";
 
   std::vector<TH1D*> histos_sideband_sub;
   std::vector<TH1D*> histos_mc;
@@ -486,29 +456,28 @@ void bmesons_new(int ipt = 3, int iy = 1){
     ipt = 2;
     cout << "Using initial values for pT 10-15" << "\n";
   }
-  TString signal_shape = (particle == 0 && ipt == 0)? "sig3gauss" : "nominal";
-  // TString signal_shape = "nominal";
+
+  //TString signal_shape = (particle == 0 && ipt == 0)? "sig3gauss" : "nominal";  
+  //For now use 3gaussians for all fits
+  TString signal_shape = "sig3gauss";
   cout << "choice:" << signal_shape << "\n";
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
   if (inclusive) {subname = "inclusive";}
-
 
 // [BUILD PDF] and fit the jpsi sample for B+
 // PERFORM FIT TO DATA
 
   build_pdf(*ws, signal_shape, c_vars, ipt, iy);
   if (include_np && (particle == 0)) {
-    fit_jpsinp(*ws, "nominal", c_vars, ipt, iy, inclusive);
-    cout<< "FIT TO JPSIPI SAMPLE COMPLETED" << endl; }
+    fit_jpsinp(*ws, c_vars, ipt, iy, inclusive);
+    cout<< "FIT TO JPSIPI SAMPLE COMPLETED" << endl;
+    }
   
   plot_complete_fit(*ws, c_vars, subname, iy);
   if (early) {return;}
   if(MC == 1){return;}
 
 //validate_fit(ws, c_vars);
-
-// [BUILD PDF] and fit the jpsi sample for B+
-// PERFORM FIT TO DATA
 
   //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
   histos_sideband_sub = sideband_subtraction(*ws, variables , n_var);
@@ -530,10 +499,10 @@ void bmesons_new(int ipt = 3, int iy = 1){
   std::vector<TString> names;
 
   for(int i=0; i<n_var; i++){
-    TString weight = "weight";
+  TString weight = "weight";
     
-    histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, 40, weight));
-    names.push_back(TString(variables[i]));}
+  histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, 40, weight));
+  names.push_back(TString(variables[i]));}
   
   TString ptdir = "./results/" + particleList.at(particle);
   if (inclusive) {ptdir += "/inclusive";} 
@@ -1685,7 +1654,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
    The relative yields and widths between signal and J/psi pi are fixed
    during successive fits
  */
-void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool inclusive, bool includeSignal) {
+void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive, bool includeSignal) {
   int pti = ptlist[ipt];
   int ptf = ptlist[ipt + 1];
   double yi = ylist[iy];
