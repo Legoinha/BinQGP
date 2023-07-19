@@ -1347,7 +1347,7 @@ RooRealVar np_sigma2("np_sigma2", "np_sigma2", 0.2, 0.05, 0.5);
       w.import(*f_erf);
     }
     else if (choice == "sig3gauss") {
-      RooAddPdf model("model", "model", RooArgList(*signal_triple, *fit_side,),RooArgList(*n_signal, *n_combinatorial));
+      RooAddPdf model("model", "model", RooArgList(*signal_triple, *fit_side),RooArgList(*n_signal, *n_combinatorial));
       signal_triple->SetName("signal");
       sigma1->setMax(0.015);
       w.import(model, RecycleConflictNodes());
