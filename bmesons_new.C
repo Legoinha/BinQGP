@@ -239,7 +239,7 @@ void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
 void fit_jpsinp (RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
-void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy, bool inc);
+void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy, bool inc=false);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
@@ -478,7 +478,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
 //validate_fit(ws, c_vars);
 
-  //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
+  //SIDEBAND SUBTRACTION 
   histos_sideband_sub = sideband_subtraction(*ws, variables , n_var);
 
   //SPLOT (completly fixes parameters of the fit) 
