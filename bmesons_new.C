@@ -382,19 +382,18 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
   n_var = variables.size();
   cout << "number of variables in TString: "<< n_var << endl;
-
-   RooWorkspace* ws = new RooWorkspace("ws");
-
-   set_up_workspace_variables(*ws);
+  RooWorkspace* ws = new RooWorkspace("ws");
+  set_up_workspace_variables(*ws);
 
   if( (MC == 1) && (component == 0) ){read_data(*ws, variables, input_file_mc);}
   else if( (MC == 1) && (component == 1)){read_data(*ws, variables, input_file_mc_swap);}
   else if(MC == 0) {
+
+    cout << input_file_data << endl;
+    cout << input_file_mc << endl;
     read_data(*ws, variables, input_file_data);
     read_mc(*ws, variables, input_file_mc);
-    if (particle == 0) {
-      read_jpsinp(*ws, variables, input_file_jpsi);
-    }
+    if (particle == 0) {read_jpsinp(*ws, variables, input_file_jpsi);}
   }
 
 
@@ -1215,7 +1214,6 @@ RooRealVar np_sigma2("np_sigma2", "np_sigma2", 0.2, 0.05, 0.5);
     RT_yield_initial = n_signal_initial-WT_yield_initial;
   }
  
-cout << "Definig B0 model" << endl;
   // B0 FULL MODEL
   // RT component
   RooCBShape* cb1_rt = new RooCBShape("cb1_rt","cb1_rt",Bmass,*mean,*sigma_cb1,*alpha1,*n1);
@@ -1252,6 +1250,7 @@ cout << "Definig B0 model" << endl;
   //   cb2_rt_sf = new RooCBShape("cb2_rt_sf","cb2_rt_sf",Bmass,*mean,*sigma2_fix,*alpha2,*n2);
   //   sum_cb_rt_sf = new RooAddPdf("sum_cb_rt_sf","sum_cb_rt_sf",RooArgList(*cb1_rt_sf,*cb2_rt_sf),*cofs);
   //   double_CB_wt_sf = new RooDoubleCBFast("double_CB_wt_sf", "double_CB_wt_sf", Bmass, *mass_swp, *sigma1_swp_fix, *alpha1_swp, *n1_swp, *alpha2_swp, *n2_swp);}
+  // B0 FULL MODEL
 
   // NORMALISATIONS
   double n_combinatorial_initial = data->sumEntries() - n_signal_initial;
@@ -1346,7 +1345,16 @@ cout << "Definig B0 model" << endl;
       w.import(model);
       w.import(*lambda);
       w.import(*f_erf);
-    }else if(choice == "bkg_poly"){
+    }
+    else if (choice == "sig3gauss") {
+      RooAddPdf model("model", "model", RooArgList(*signal_triple, *fit_side,),RooArgList(*n_signal, *n_combinatorial));
+      signal_triple->SetName("signal");
+      sigma1->setMax(0.015);
+      w.import(model, RecycleConflictNodes());
+    w.import(*lambda);
+    w.import(*f_erf);
+    }
+    else if(choice == "bkg_poly"){
       RooAddPdf model("model","model",RooArgList(*signal,*poly_bkg),RooArgList(*n_signal,*n_combinatorial));
       w.import(model);
     }else if(choice == "gauss"){
