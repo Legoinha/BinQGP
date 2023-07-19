@@ -1647,7 +1647,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
    The relative yields and widths between signal and J/psi pi are fixed
    during successive fits
  */
-void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive, bool includeSignal, bool inc) {
+void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool includeSignal, bool inc) {
   int pti = ptlist[ipt];
   int ptf = ptlist[ipt + 1];
   double yi = ylist[iy];
