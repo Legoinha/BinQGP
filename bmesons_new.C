@@ -237,7 +237,7 @@ void read_data(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
-void reduce_ybins(RooWorkspace& w, int iy);
+void reduce_ybins(RooWorkspace& w);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
 void fit_jpsinp (RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
@@ -317,9 +317,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
   gROOT->SetBatch();
   bool inclusive = false;
   if (ipt < 0) { inclusive = true;}
-
-  // analysis fiducial region
-  if (ipt <= 1 && ipt >= 0) {fit_ybins = true;}
+  if (ipt <= 1) {fit_ybins = true;}   // analysis fiducial region
 
   int n_var;
   TString input_file_data;
@@ -388,7 +386,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
   if( (MC == 1) && (component == 0) ){read_data(*ws, variables, input_file_mc);}
   else if( (MC == 1) && (component == 1)){read_data(*ws, variables, input_file_mc_swap);}
   else if(MC == 0) {
-
     cout << input_file_data << endl;
     cout << input_file_mc << endl;
     read_data(*ws, variables, input_file_data);
@@ -396,28 +393,32 @@ void bmesons_new(int ipt = 3, int iy = 1){
     if (particle == 0) {read_jpsinp(*ws, variables, input_file_jpsi);}
   }
 
-
   if(MC == 1){cout << "Running fit on MC" << endl;}
   else if(MC == 0){cout << "Running fit on data" << endl;}
 
   RooArgSet c_vars;
 
-  if (fit_ybins) {
-    reduce_ybins(*ws, iy);
-  }
+  if (fit_ybins){
+    std::vector<TString> dataset_y = {"data", "mc"};
+    if (particle == 0) {dataset_y.push_back("jpsinp");}
+    for (auto name : dataset_y) {
+      RooDataSet* sample = (RooDataSet*) w.data(name);
+      sample->SetName(name + "_ally");
+      sample = (RooDataSet*) sample->reduce("(Bpt < 10 && abs(By)>1.5 ) || (Bpt > 10)");
+      ws->import(*sample, Rename(name));
+    }
+  } 
+
   if (ipt >= 0) {
     // apply BDT cut
     std::vector<TString> labels = {"data", "mc"};
-    if (particle == 0) {
-      labels.push_back("jpsinp");
-    }
+    if (particle == 0) {labels.push_back("jpsinp");}
     for (auto l : labels) {
       auto BDTvar = TString::Format("BDT_pt_%d_%d", ptlist[ipt], ptlist[ipt+1]);
       auto iBDT = indexBDT.at(BDTvar.Data());
       auto data = ws->data(l);
       data->SetName(l + "_allbdt");
-      data = (RooDataSet*) data->
-        reduce(TString::Format("%s > %f", BDTvar.Data(), BDT_lower_bound[iBDT]));
+      data = (RooDataSet*) data->reduce(TString::Format("%s > %f", BDTvar.Data(), BDT_lower_bound[iBDT]));
       cout << data->sumEntries() << "\n";
       ws->import(*data, Rename(l));
     }
@@ -874,21 +875,6 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
   RooDataSet* ds = new RooDataSet(sample, sample, t1, arg_list);
   cout << "input filename = " << fName << "; entries: " << ds->sumEntries() << endl;
   w.import(*ds, Rename(sample));
-}
-
-/** Select events from a rapidity bin */
-void reduce_ybins(RooWorkspace& w, int iy) {
-  std::vector<TString> dataset = {"data", "mc"};
-  if (particle == 0) {
-    dataset.push_back("jpsinp");
-  }
-  for (auto name : dataset) {
-    RooDataSet* sample = (RooDataSet*) w.data(name);
-    sample->SetName(name + "_ally");
-    sample = (RooDataSet*) sample->
-      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
-    w.import(*sample, Rename(name));
-  }
 }
 
 //build_pdf
@@ -1671,7 +1657,7 @@ void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool 
   RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
   // Apply y selections
   RooDataSet* ds = fullds;
-  if (fit_ybins) { ds = (RooDataSet*) ds->reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));}
+  if (fit_ybins) { ds = (RooDataSet*) ds->reduce("(Bpt < 10 && abs(By)>1.5 ) || (Bpt > 10)");}
   // get B -> jpsi pi dataset before applying pT cut
   RooDataSet* ds_jpsipi = (RooDataSet*) ds->reduce("Bgen == 23335");
   // Apply pT cuts for all the other datasets
@@ -1693,9 +1679,7 @@ void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool 
   RooRealVar n_erf("n_nonprompt", "n_nonprompt",4000, 1000., (ds->sumEntries()));
 
   TString ystr = "";
-  if (fit_ybins) {
-    ystr = "_" + ystring(iy);
-  }
+  if (fit_ybins && inclusive == false) {ystr = "_" + ystring(iy);}
   // get relative yields of Jpsi pi to signal
   RooRealVar n_jpsipi_ext("n_jpsipi_ext", "n_jpsipi_ext", 0.1 * n_erf.getVal() , 0., (ds->sumEntries())*2);
   RooExtendPdf jpsipi_ext("jpsipi_ext", "extended jpsipi", *jpsipi, n_jpsipi_ext);
@@ -1807,9 +1791,7 @@ cout <<"ploting complete fit"<< endl;
   double yi = ylist[iy];
   double yf = ylist[iy + 1];
   TString ystr = "";
-  if (fit_ybins) {
-    ystr = "_" + ystring(iy);
-  }
+  if (fit_ybins && inclusive == false) {ystr = "_" + ystring(iy);}
 
   RooRealVar Bmass = *(w.var("Bmass"));
   RooRealVar* lambda   = w.var("lambda");
@@ -3919,9 +3901,7 @@ void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdi
    TString pdfstr, gifstr;
    gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/" + comp + "/pdfs/");
    TString ystr = "";
-   if (fit_ybins) {
-     ystr = "_" + ystring(iy);
-   }
+   if (fit_ybins && inclusive == false) {ystr = "_" + ystring(iy);}
    pdfstr.Form("%s/mc_validation_plots/%s/pdfs/%s_mc_validation_%s%s.%s",
                ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data(), "pdf");
