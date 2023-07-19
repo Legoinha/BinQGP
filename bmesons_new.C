@@ -237,10 +237,9 @@ void read_data(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
-void reduce_ybins(RooWorkspace& w);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
-void fit_jpsinp (RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
-void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
+void fit_jpsinp (RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true, bool inc);
+void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy, bool inc);
 void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
@@ -251,7 +250,7 @@ void fit_syst_error_bin(TString, int n_var, std::vector<TString> label, double a
 void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooArgSet &c_pdfs);
 double MC_fit_result(TString input_file, TString inVarName);
 TString ystring(int iy);
-void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdir, int iy);
+void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdir, int iy, bool inc);
 void fix_signal_shape(RooWorkspace& w, bool release=false);
 void fix_parameters(RooWorkspace& w, TString pdfName, bool release=false);
 void fix_parameters(RooWorkspace& w, RooArgList& parlist, bool release=false);
@@ -402,7 +401,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
     std::vector<TString> dataset_y = {"data", "mc"};
     if (particle == 0) {dataset_y.push_back("jpsinp");}
     for (auto name : dataset_y) {
-      RooDataSet* sample = (RooDataSet*) w.data(name);
+      RooDataSet* sample = (RooDataSet*) ws->data(name);
       sample->SetName(name + "_ally");
       sample = (RooDataSet*) sample->reduce("(Bpt < 10 && abs(By)>1.5 ) || (Bpt > 10)");
       ws->import(*sample, Rename(name));
@@ -473,7 +472,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
     cout<< "FIT TO JPSIPI SAMPLE COMPLETED" << endl;
     }
   
-  plot_complete_fit(*ws, c_vars, subname, iy);
+  plot_complete_fit(*ws, c_vars, subname, iy, inclusive);
   if (early) {return;}
   if(MC == 1){return;}
 
@@ -563,7 +562,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
     leg->SetTextSize(0.03);
     leg->Draw("same");
    
-    save_validation_plot(c, names[i], "ss_mc", ptdir, iy);
+    save_validation_plot(c, names[i], "ss_mc", ptdir, iy, inclusive);
   }
   
   //SPlot vs. Sideband subtraction
@@ -609,7 +608,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
     leg->AddEntry(sp_comp_ss[i]->GetName(), "SPlot", "LE");
     leg->SetTextSize(0.03);
     leg->Draw("same");
-    save_validation_plot(a, names[i], "ss_sp", ptdir, iy);
+    save_validation_plot(a, names[i], "ss_sp", ptdir, iy, inclusive);
    }
 
   //SPlot vs. Monte Carlo
@@ -660,7 +659,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
     leg->SetTextSize(0.03);
     leg->Draw("same");
 	
-    save_validation_plot(b, names[i], "mc_sp", ptdir, iy);
+    save_validation_plot(b, names[i], "mc_sp", ptdir, iy, inclusive);
   }
  
   //Sideband subtraction vs. Monte Carlo vs SPlot
@@ -738,7 +737,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
     leg->SetTextSize(0.03);
     leg->Draw("same");
 
-    save_validation_plot(d, names[i], "ss_mc_sp", ptdir, iy);
+    save_validation_plot(d, names[i], "ss_mc_sp", ptdir, iy, inclusive);
   }
 //comparisons end
 }
@@ -1648,7 +1647,7 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
    The relative yields and widths between signal and J/psi pi are fixed
    during successive fits
  */
-void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive, bool includeSignal) {
+void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive, bool includeSignal, bool inc) {
   int pti = ptlist[ipt];
   int ptf = ptlist[ipt + 1];
   double yi = ylist[iy];
@@ -1679,7 +1678,7 @@ void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool 
   RooRealVar n_erf("n_nonprompt", "n_nonprompt",4000, 1000., (ds->sumEntries()));
 
   TString ystr = "";
-  if (fit_ybins && inclusive == false) {ystr = "_" + ystring(iy);}
+  if (fit_ybins && (inc == false)){ystr = "_" + ystring(iy);}
   // get relative yields of Jpsi pi to signal
   RooRealVar n_jpsipi_ext("n_jpsipi_ext", "n_jpsipi_ext", 0.1 * n_erf.getVal() , 0., (ds->sumEntries())*2);
   RooExtendPdf jpsipi_ext("jpsipi_ext", "extended jpsipi", *jpsipi, n_jpsipi_ext);
@@ -1781,7 +1780,7 @@ void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool 
   cout << "MC fit for NP J/psi complete" << "\n";
 }
 
-void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy=1){
+void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy=1, bool inc ){
 cout <<"ploting complete fit"<< endl;
   RooAbsPdf*  model = w.pdf("model");
   RooAbsPdf*  signal = w.pdf("signal");
@@ -1791,7 +1790,7 @@ cout <<"ploting complete fit"<< endl;
   double yi = ylist[iy];
   double yf = ylist[iy + 1];
   TString ystr = "";
-  if (fit_ybins && inclusive == false) {ystr = "_" + ystring(iy);}
+  if (fit_ybins && (inc == false)) {ystr = "_" + ystring(iy);}
 
   RooRealVar Bmass = *(w.var("Bmass"));
   RooRealVar* lambda   = w.var("lambda");
@@ -3897,11 +3896,11 @@ TString ystring(int iy) {
 }
 
 // save the plots MC/SS, MC/
-void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdir, int iy) {
+void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdir, int iy, bool inc) {
    TString pdfstr, gifstr;
    gSystem->Exec("mkdir -p " + ptdir + "/mc_validation_plots/" + comp + "/pdfs/");
    TString ystr = "";
-   if (fit_ybins && inclusive == false) {ystr = "_" + ystring(iy);}
+   if (fit_ybins && (inc == false)) {ystr = "_" + ystring(iy);}
    pdfstr.Form("%s/mc_validation_plots/%s/pdfs/%s_mc_validation_%s%s.%s",
                ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data(), "pdf");
