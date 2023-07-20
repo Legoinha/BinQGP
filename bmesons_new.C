@@ -248,7 +248,7 @@ void read_data(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
-void reduce_ybins(RooWorkspace& w, int iy);
+void reduce_ybins(RooWorkspace& w, int iy, double maxpt=100);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
 void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
@@ -350,7 +350,8 @@ void bmesons_new(int ipt = 3, int iy = 1){
   }
 
   // if (particle == 0 && ipt <= 1 && ipt >= 0) {
-  if (ipt <= 1 && ipt >= 0) {
+  // if (ipt <= 1 && ipt >= 0) {
+  if (ipt >=0 && ptlist.at(ipt) < 10) {
     fit_ybins = true;
   }
 
@@ -411,15 +412,15 @@ void bmesons_new(int ipt = 3, int iy = 1){
   // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", /*"BDT_pt_3_5", "BDT_pt_50_100" */};
   // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By", "nMult", "Bpt", "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"};
   // std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "BDT_pt_50_60", "By"};
-  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_60", "By", "BsvpvDistance", "BsvpvDisErr", "Bchi2cl", "BsvpvDistance_2D", "BsvpvDisErr_2D"};
+  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_60", "Bpt", "By", "BsvpvDistance", "BsvpvDisErr", "Bchi2cl", "BsvpvDistance_2D", "BsvpvDisErr_2D",  "Bmumumass"};
 
 #elif particle == 1
 
   // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr"};
   // std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "By"};
   std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20",
-                                    "BDT_pt_20_50", "By",
-                                    "BsvpvDistance", "BsvpvDisErr", "Bchi2cl"};
+                                    "BDT_pt_20_50", "By", "Bpt",
+                                    "BsvpvDistance", "BsvpvDisErr", "Bchi2cl", "Bmumumass"};
 
 #elif particle == 2
 
@@ -452,9 +453,10 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
   RooArgSet c_vars;
 
-  if (fit_ybins) {
-    reduce_ybins(*ws, iy);
+  if (inclusive || ptlist.at(ipt) < 10) {
+    reduce_ybins(*ws, iy, 10.0);
   }
+
   if (ipt >= 0) {
     // apply BDT cut
     std::vector<TString> labels = {"data", "mc"};
@@ -726,9 +728,32 @@ cout << "AQUI_"<<i<<endl;
     leg->SetTextSize(0.03);
     leg->Draw("same");
 	
+		TLatex* tex_pt;
+		TLatex* tex_y;
+    tex_pt = new TLatex(0.15,0.95,Form("%d < p_{T} < %d GeV/c", ptlist[ipt], ptlist[ipt+1]));
+    if (!inclusive) {
+      if(ptlist.at(i) <= 10) {
+        tex_y = new TLatex(0.15, 0.89,"1.5 < |y| < 2.4");
+      } else {
+        tex_y = new TLatex(0.15, 0.89,"|y| < 2.4");
+      }
+    } else {
+      tex_pt = new TLatex(0.15,0.95,"");
+      tex_y = new TLatex(0.15,0.95,"");
+    }
+    tex_pt->SetNDC();
+    tex_pt->SetTextFont(42);
+    tex_pt->SetTextSize(0.04);
+    tex_pt->SetLineWidth(2);
+    tex_y->SetNDC();
+    tex_y->SetTextFont(42);
+    tex_y->SetTextSize(0.04);
+    tex_y->SetLineWidth(2);
+    tex_pt->Draw();
+    tex_y->Draw();
     save_validation_plot(b, names[i], "mc_sp", ptdir, iy);
   }
- 
+
   //Sideband subtraction vs. Monte Carlo vs SPlot
   vector<TH1D*> sp_comp(histos_splot);
   vector<TH1D*> mc_comp(histos_mc);
@@ -1388,7 +1413,7 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
 }
 
 /** Select events from a rapidity bin */
-void reduce_ybins(RooWorkspace& w, int iy) {
+void reduce_ybins(RooWorkspace& w, int iy, double maxpt) {
   std::vector<TString> dataset = {"data", "mc"};
   if (particle == 0) {
     dataset.push_back("jpsinp");
@@ -1397,7 +1422,8 @@ void reduce_ybins(RooWorkspace& w, int iy) {
     RooDataSet* sample = (RooDataSet*) w.data(name);
     sample->SetName(name + "_ally");
     sample = (RooDataSet*) sample->
-      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
+      reduce(TString::Format("(abs(By) > %f && abs(By) < %f && Bpt < %f) || Bpt > %f",
+                             ylist[iy], ylist[iy + 1], maxpt, maxpt));
     w.import(*sample, Rename(name));
   }
 }
@@ -2209,10 +2235,6 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
   // Apply y selections
   RooDataSet* ds = fullds;
-  if (fit_ybins) {
-    ds = (RooDataSet*) ds->
-      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
-  }
   // get B -> jpsi pi dataset before applying pT cut
   RooDataSet* ds_jpsipi = (RooDataSet*) ds->reduce("Bgen == 23335");
   // Apply pT cuts for all the other datasets
