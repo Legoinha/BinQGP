@@ -332,7 +332,7 @@ auto indexBDT = iBDT_bs;
 auto BDT_lower_bound = bdt_lower_bound_bs;
 #endif
 
-constexpr double bchi2cl_cut = 0.003;
+constexpr double bchi2cl_cut = 0.000;
 
 // const std::vector<int> ptlist = {5, 7, 10, 15, 20, 50, 60};
 const std::vector<int> ptlist = {5, 7, 10, 15, 20, 60};
@@ -361,32 +361,53 @@ void bmesons_new(int ipt = 3, int iy = 1){
   TString input_file_data;
   TString input_file_mc;
   TString input_file_mc_swap;
+  TString input_file_jpsi;
   // Inclusive pT comparison
-  if (ipt < 0) {
+  if (ipt == -2) {
+    input_file_data = (particle == 0)?
+      "../files/BPData_newsample_presel_chi2all_5_15.root" : "../files/BsData_newsample_presel_chi2all_7_15.root";
+    input_file_mc = (particle == 0)?
+      "../files/BPMC_newsample_presel_chi2all_5_15.root" : "../files/BsMC_newsample_presel_chi2all_7_15.root";
+    input_file_jpsi = "../files/jpsinp_newsample_presel_chi2all_5_15.root";
+  } else if (ipt == -1) {
+      input_file_data = (particle == 0)?
+        "../files/BPData_newsample_presel_chi2all_15_60.root" : "../files/BsData_newsample_presel_chi2all_15_50.root";
+      input_file_mc = (particle == 0)?
+        "../files/BPMC_newsample_presel_chi2all_15_60.root" : "../files/BsMC_newsample_presel_chi2all_15_50.root";
+      input_file_jpsi = "../files/jpsinp_newsample_presel_chi2all_5_15.root";
+  } else if(ipt < 0) {
     // input_file_data = (particle == 0)?
     //   "../files/BPData_noBDT.root" : "../files/BsData_noBDT.root";
     // input_file_mc = (particle == 0)?
     //   "../files/BPMC_noBDT.root" : "../files/BsMC_noBDT.root";
     input_file_data = (particle == 0)?
-      "../files/BPData.root" : "../files/BsData.root";
+      "../files/BPData_newsample_presel_chi2all.root" : "../files/BsData_newsample_presel_chi2all.root";
     input_file_mc = (particle == 0)?
-      "../files/BPMC.root" : "../files/BsMC.root";
+      "../files/BPMC_newsample_presel_chi2all.root" : "../files/BsMC_newsample_presel_chi2all.root";
+    input_file_jpsi = "../files/jpsinp_newsample_presel_chi2all.root";
   } else {
+    input_file_jpsi = "../files/jpsinp_newsample_presel_noBDT.root";
     // Binned pT comparison
     if (particle == 0) {
       // input_file_data = Form("../files/BPData_nom_noBDT_trk5_%i_%i.root",
-      input_file_data = Form("../files/BPData_newsample_presel_noBDT_%i_%i.root",
+      // input_file_data = Form("../files/BPData_newsample_presel_noBDT_%i_%i.root",
+      input_file_data = Form("../files/BPData_newsample_presel_chi2all_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      input_file_data = Form("../files/BsData_nom_noBDT_trk5_%i_%i.root",
+      // input_file_data = Form("../files/BsData_nom_noBDT_trk5_%i_%i.root",
+      // input_file_data = Form("../files/BsData_newsample_presel_noBDT_%i_%i.root",
+      input_file_data = Form("../files/BsData_newsample_presel_chi2all_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     }
     if (particle == 0) {
       // input_file_mc = Form("../files/BPMC_nom_noBDT_trk5_%i_%i.root",
-      input_file_mc = Form("../files/BPMC_newsample_presel_noBDT_%i_%i.root",
+      // input_file_mc = Form("../files/BPMC_newsample_presel_noBDT_%i_%i.root",
+      input_file_mc = Form("../files/BPMC_newsample_presel_chi2all_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      input_file_mc = Form("../files/BsMC_nom_noBDT_trk5_%i_%i.root",
+      // input_file_mc = Form("../files/BsMC_nom_noBDT_trk5_%i_%i.root",
+      // input_file_mc = Form("../files/BsMC_newsample_presel_noBDT_%i_%i.root",
+      input_file_mc = Form("../files/BsMC_newsample_presel_chi2all_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     }
   }
@@ -403,7 +424,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
   
   // TString input_file_jpsi = "../files/jpsinp_inclusive.root";
   // TString input_file_jpsi = "../files/jpsinp_nom.root";
-  TString input_file_jpsi = "../files/jpsinp_newsample_presel_noBDT.root";
   std::vector<TH1D*> histos_sideband_sub;
   std::vector<TH1D*> histos_mc;
   std::vector<TH1D*> histos_splot;
