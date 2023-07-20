@@ -88,6 +88,7 @@
 
 constexpr bool early = false;
 // constexpr bool early = true;
+constexpr bool debug = true;
 
 // Whether to fit B mass in different y bins
 // this is assigned based on input to bmesons_new()
@@ -2722,9 +2723,9 @@ TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
   if(std::string(var.GetName()) == "BsvpvDisErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.03)";}
   else if(std::string(var.GetName()) == "Bpt"){name_string = TString(var.GetName()) + ">>htemp(40,5,100)";}
   else if(std::string(var.GetName()) == "BsvpvDistance"){name_string = TString(var.GetName()) + ">>htemp(40,0,1)";}
-  else if(std::string(var.GetName()) == "Bmumumass"){name_string = TString(var.GetName()) + ">>htemp(40,3,3.2)";}
+  else if(std::string(var.GetName()) == "Bmumumass"){name_string = TString(var.GetName()) + ">>htemp(40,2.9,3.3)";}
   // else if(std::string(var.GetName()) == "Bchi2cl"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,1)";}
-  else if(std::string(var.GetName()) == "Bchi2cl"){name_string = TString(var.GetName()) + ">>htemp(50,0.003,1)";}
+  else if(std::string(var.GetName()) == "Bchi2cl"){name_string = TString(var.GetName()) + ">>htemp(20,0.003,1)";}
   else if(std::string(var.GetName()) == "Balpha"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.1)";}
   else if(std::string(var.GetName()) == "Bd0"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.5)";}
   else if(std::string(var.GetName()) == "Bd0Err"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.0001)";}
@@ -2797,12 +2798,12 @@ cout << endl;
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 1));
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 1));}
   else if(std::string(var.GetName()) == "Bmumumass"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 3, 3.2));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 3, 3.2));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 2.9, 3.3));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 2.9, 3.3));}
   else if(std::string(var.GetName()) == "Bchi2cl"){
 	// hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.05, 1));
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(50, bchi2cl_cut, 1));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(50, bchi2cl_cut, 1));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(20, bchi2cl_cut, 1));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(20, bchi2cl_cut, 1));}
   else if(std::string(var.GetName()) == "Balpha"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.1));
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.1));}
@@ -3199,13 +3200,14 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 5, 100));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 5, 100));}
   else if(label == "Bmumumass"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 3, 3.2));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 3, 3.2));}
+    histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 2.9, 3.3));
+    histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 2.9, 3.3));
+  }
   else if(label == "Bchi2cl"){
    //       histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0.05, 1));
  	 // histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0.05, 1));}
-    histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(50, bchi2cl_cut, 1));
-    histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(50, bchi2cl_cut, 1));}
+    histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(20, bchi2cl_cut, 1));
+    histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(20, bchi2cl_cut, 1));}
   else if(label == "Balpha"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0., 0.1));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0., 0.1));}
@@ -3305,7 +3307,8 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
      histo_Bp_sig->SetBinContent(i,histo_Bp_sig->GetBinContent(i)/sigYield);
      histo_Bp_sig->SetBinError(i,histo_Bp_sig->GetBinError(i)/sigYield);
      histo_Bp_bkg->SetBinContent(i,histo_Bp_bkg->GetBinContent(i)/bkgYield);
-     histo_Bp_bkg->SetBinError(i,histo_Bp_bkg->GetBinError(i)/bkgYield);}
+     histo_Bp_bkg->SetBinError(i,histo_Bp_bkg->GetBinError(i)/bkgYield);
+  }
 
   TCanvas* prov = new TCanvas ("prov","c1",200,10,700,500);
   prov->cd();
@@ -3402,14 +3405,16 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
 std::vector<TH1D*> splot_method(RooWorkspace& w, std::vector<TString> label, int n_var){
 
   std::vector<TH1D*> histos;
-  int nbins = 40;
   for(int i = 0; i < n_var; i++) {
+    int nbins;
     if (label[i] == "BsvpvSig" || label[i] == "BsvpvSig_2D" ) {
       auto BsvpvSig = w.var(label[i]);
       const int BsvpvCut = 2;
       nbins = BsvpvSig->getMax() / BsvpvCut;
     } else if (label[i] == "Bchi2cl") {
-      nbins = 50;
+      nbins = 20;
+    } else {
+      nbins = 40;
     }
     histos.push_back(make_splot(w, nbins, label[i]));
   }
