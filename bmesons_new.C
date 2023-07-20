@@ -1650,8 +1650,8 @@ double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars,
 void fit_jpsinp(RooWorkspace& w, const RooArgSet &c_vars, int ipt, int iy, bool inclusive, bool includeSignal) {
   int pti = ptlist[ipt];
   int ptf = ptlist[ipt + 1];
-  double yi = ylist[iy];
-  double yf = ylist[iy + 1];
+
+
   RooAbsPdf*  model_cont = w.pdf("m_jpsinp_cont");
   RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
   // Apply y selections
@@ -1787,8 +1787,6 @@ cout <<"ploting complete fit"<< endl;
   RooDataSet* data = (RooDataSet*) w.data("data");
   RooDataSet* mc = (RooDataSet*) w.data("mc");
 
-  double yi = ylist[iy];
-  double yf = ylist[iy + 1];
   TString ystr = "";
   if (fit_ybins && (inc == false)) {ystr = "_" + ystring(iy);}
 
