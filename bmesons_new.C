@@ -1334,12 +1334,18 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
     //normalization
     h_aux->Scale(1/h_aux->Integral());
     mc[i]->Scale(1/mc[i]->Integral());
+    data[i]->Scale(1/data[i]->Integral());
 
     h_aux->Divide(mc.at(i));
     
     f_wei->cd();
     h_aux->Write();
-    
+
+    TH1D *h_mc = (TH1D*)mc.at(i)->Clone("mc_" + v_name.at(i));
+    TH1D *h_data = (TH1D *)data.at(i)->Clone("data_" + v_name.at(i));
+    h_mc->Write();
+    h_data->Write();
+
     TCanvas c;
     h_aux->Draw();    
     gSystem->Exec("mkdir -p " + dir_name + "pdfs");
