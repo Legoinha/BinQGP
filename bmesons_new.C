@@ -507,12 +507,14 @@ void bmesons_new(int ipt = 3, int iy = 1){
   ws->import(*BsvpvSigVar2D);
   ws->import(*BsvpvSigVar2DMC);
 
+  TString signal_shape = (particle == 0 && ipt == 0)? "sig3gauss" : "nominal";
   // use the setting of pT 10-15 for inclusive pT comparison
   if (inclusive) {
     ipt = 2;
     cout << "Using initial values for pT 10-15" << "\n";
+    signal_shape = "sig3gauss";
   }
-  TString signal_shape = (particle == 0 && ipt == 0)? "sig3gauss" : "nominal";
+
   // TString signal_shape = "nominal";
   cout << "choice:" << signal_shape << "\n";
 
@@ -1933,6 +1935,15 @@ cout << "Definig B0 model" << endl;
     if(choice == "nominal"){
       RooAddPdf model("model","model",RooArgList(*signal,*fit_side),RooArgList(*n_signal,*n_combinatorial)); 
       w.import(model);
+      w.import(*lambda);
+      w.import(*f_erf);
+    } else if (choice == "sig3gauss") {
+      RooAddPdf model("model", "model",
+                      RooArgList(*signal_triple, *fit_side),
+                      RooArgList(*n_signal, *n_combinatorial));
+      signal_triple->SetName("signal");
+      sigma1->setMax(0.015);
+      w.import(model, RecycleConflictNodes());
       w.import(*lambda);
       w.import(*f_erf);
     }else if(choice == "bkg_poly"){
