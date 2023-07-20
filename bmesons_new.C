@@ -126,28 +126,28 @@ const std::unordered_map<std::string, unsigned> iBDT_bp = {
 
 // only include events with BDT output higher than this lower bound
 const std::vector<double> bdt_lower_bound_bp =
-  {-0.01,
-   -0.12,
-   -1.0,
-   -1.0,
-   -1.0,
+  {0.08,
+   0.07,
+   0.0,
+   0.02,
+   0.04,
    -1.0};
 const std::vector<double> bdt_lower_bound_bs =
-  {-0.01,
-   -1.0,
-   -1.0,
+  {0.06,
+   -0.04,
+   0.05,
    -1.0};
 
 
 // min and max for BDT histograms
-const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05, -1};
+const std::vector<double> BDTmin_bs = {-0.1, -0.2, -0.05, -0.3};
 const std::vector<double> BDTmax_bs = {0.85, 0.821, 0.92, 0.85};
 
-const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1, -1};
+const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.12, -0.12, -0.1, -1};
 const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.77, 0.77};
 
 // number of bins
-const std::vector<int> BDTnbins_bs = {11, 30, 20, 30};
+const std::vector<int> BDTnbins_bs = {11, 30, 20, 12};
 const std::vector<int> BDTnbins_bp = {40, 40, 40, 40, 40, 18};
 
 // initial values for error function / signal ratio
