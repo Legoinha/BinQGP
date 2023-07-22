@@ -1645,9 +1645,11 @@ if( choice != "scale_factor"){
    p2 = new RooRealVar("p2", "p2", ini_p2[ipt][iy], -15., 15.);
    p3 = new RooRealVar("p3", "p3", ini_p3[ipt][iy], -2., 2.);
 
+  // m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale",
+  //                                    ini_erf_scale[ipt][iy], 1e-2, 0.07);
   m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale",
-                                     ini_erf_scale[ipt][iy], 6e-4, 0.1);
-  m_nonprompt_shift = new RooRealVar("m_nonprompt_shift", "m_nonprompt_shift", 5.14425, 4.5, 6.);
+                                     0.04, 0.01, 0.07);
+  m_nonprompt_shift = new RooRealVar("m_nonprompt_shift", "m_nonprompt_shift", 5.14425, 4.5, 5.3);
   RooRealVar jpsipi_to_signal_width_ratio("jpsipi_to_signal_width_ratio",
                                           "jpsipi_to_signal_width_ratio",
                                           1 / sigma1->getVal());
@@ -1781,7 +1783,9 @@ cout << "Defining PDF" << endl;
 
   RooAbsPdf* fit_side = 0;
   bool use_polynomial_for_background = (ipt <= 1);
-  const int poly_order = 3 - ipt;
+  // const int poly_order = 3 - ipt;
+  // const int poly_order = 0;
+  const int poly_order = 3;
 
   switch (poly_order) {
   case 3: {
