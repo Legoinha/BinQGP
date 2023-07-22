@@ -79,6 +79,7 @@
 #include "TGraphErrors.h"
 #include "RooCBShape.h"
 #include "RooCmdArg.h"
+#include <TRegexp.h>
 
 //particle
 // 0 = Bu
@@ -339,10 +340,13 @@ const std::vector<int> ptlist = {5, 7, 10, 15, 20, 60};
 const std::vector<double> ylist = {0, 1.5, 2.4};
 const std::vector<TString> particleList = {"Bu", "Bs"};
 
+// evil global variable
+TString cutvarname;
+
    // for B+, ipt is 0--4
    // for Bs, ipt is 1--4
 
-void bmesons_new(int ipt = 3, int iy = 1){
+void bmesons_new(TString cutvar, int ipt = 3, int iy = 1){
 
   gROOT->SetBatch();
   bool inclusive = false;
@@ -374,42 +378,38 @@ void bmesons_new(int ipt = 3, int iy = 1){
         "../files/BPData_newsample_presel_chi2all_15_60.root" : "../files/BsData_newsample_presel_chi2all_15_50.root";
       input_file_mc = (particle == 0)?
         "../files/BPMC_newsample_presel_chi2all_15_60.root" : "../files/BsMC_newsample_presel_chi2all_15_50.root";
-      input_file_jpsi = "../files/jpsinp_newsample_presel_chi2all_5_15.root";
+      input_file_jpsi = "../files/jpsinp_newsample_presel_chi2all_15_60.root";
   } else if(ipt < 0) {
-    // input_file_data = (particle == 0)?
-    //   "../files/BPData_noBDT.root" : "../files/BsData_noBDT.root";
-    // input_file_mc = (particle == 0)?
-    //   "../files/BPMC_noBDT.root" : "../files/BsMC_noBDT.root";
     input_file_data = (particle == 0)?
-      "../files/BPData_newsample_presel_chi2all.root" : "../files/BsData_newsample_presel_chi2all.root";
+      "../files/BPData_newsample_presel_chi2all_5_60.root" : "../files/BsData_newsample_presel_chi2all_7_50.root";
     input_file_mc = (particle == 0)?
-      "../files/BPMC_newsample_presel_chi2all.root" : "../files/BsMC_newsample_presel_chi2all.root";
-    input_file_jpsi = "../files/jpsinp_newsample_presel_chi2all.root";
+      "../files/BPMC_newsample_presel_chi2all_5_60.root" : "../files/BsMC_newsample_presel_chi2all_7_50.root";
+    input_file_jpsi = "../files/jpsinp_newsample_presel_chi2all_5_60.root";
   } else {
     input_file_jpsi = "../files/jpsinp_newsample_presel_noBDT.root";
     // Binned pT comparison
     if (particle == 0) {
-      // input_file_data = Form("../files/BPData_nom_noBDT_trk5_%i_%i.root",
-      // input_file_data = Form("../files/BPData_newsample_presel_noBDT_%i_%i.root",
       input_file_data = Form("../files/BPData_newsample_presel_chi2all_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      // input_file_data = Form("../files/BsData_nom_noBDT_trk5_%i_%i.root",
-      // input_file_data = Form("../files/BsData_newsample_presel_noBDT_%i_%i.root",
       input_file_data = Form("../files/BsData_newsample_presel_chi2all_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     }
     if (particle == 0) {
-      // input_file_mc = Form("../files/BPMC_nom_noBDT_trk5_%i_%i.root",
-      // input_file_mc = Form("../files/BPMC_newsample_presel_noBDT_%i_%i.root",
       input_file_mc = Form("../files/BPMC_newsample_presel_chi2all_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      // input_file_mc = Form("../files/BsMC_nom_noBDT_trk5_%i_%i.root",
-      // input_file_mc = Form("../files/BsMC_newsample_presel_noBDT_%i_%i.root",
       input_file_mc = Form("../files/BsMC_newsample_presel_chi2all_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     }
+  }
+  TRegexp eof = "_[0-9]+[^\\.]*";
+  input_file_mc = input_file_mc(0,input_file_mc.Length()-5) + "_" + cutvar  + ".root";
+  input_file_data = input_file_data(0,input_file_data.Length()-5) + "_" + cutvar  + ".root";
+  input_file_jpsi = input_file_jpsi(0,input_file_jpsi.Length()-5) + "_" + cutvar  + ".root";
+  cutvarname = input_file_mc(eof) + "_poly";
+  if (purify_jpsi) {
+    cutvarname += "_no5000";
   }
 
   // else if(particle == 2){
@@ -547,7 +547,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
   TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
   if (inclusive) {
-    subname = "inclusive";
+    subname = "inclusive" + cutvarname;
   }
   plot_complete_fit(*ws, c_vars, subname, iy);
   if (early) {return;}
@@ -591,7 +591,7 @@ cout << "AQUI_"<<i<<endl;
   
   TString ptdir = "./results/" + particleList.at(particle);
   if (inclusive) {
-    ptdir += "/inclusive";
+    ptdir += "/inclusive" + cutvarname;
   } else {
     ptdir += Form("/%i_%i", ptlist[ipt], ptlist[ipt + 1]);
   }
@@ -1717,6 +1717,8 @@ cout << "Defining PDF" << endl;
   RooRealVar np_mean2("np_mean2", "np_mean2", 5.55, 5, 6);
   RooRealVar np_sigma2("np_sigma2", "np_sigma2", 0.2, 0.05, 0.5);
 
+  RooRealVar np_lambda("np_lambda","lambda",-2.,-10.,1.0);
+
   // For B->Jpsi pi, bifur Gaussian + Gaussian
   RooBifurGauss m_jpsipi_gaussian1("m_jpsipi_gaussian1", "m_jpsipi_gaussian1", Bmass,
                                    *m_jpsipi_mean1, jpsipi_sigma1l, jpsipi_sigma1r);
@@ -1731,15 +1733,18 @@ cout << "Defining PDF" << endl;
   // RooAbsPdf* jpsipi = new RooBifurGauss(*m_jpsipi_gaussian1, "jpsipi");
 
 
-  RooPolynomial* poly_jpsi = 0;
-  if (ipt <= 2) {
-    poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1, np_p2, np_p3));
-  } else {
-    poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1));
-  }
+  // RooPolynomial* poly_jpsi = 0;
+  // if (ipt <= 2 && ipt >= 0) {
+  //   poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1, np_p2, np_p3));
+  // } else {
+  //   poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1));
+  // }
+  RooExponential* poly_jpsi = new RooExponential("poly_jpsi", "exponential_jpsi", Bmass, np_lambda);
 
+  // RooRealVar jpsinp_poly_fraction("jpsinp_poly_fraction", "fraction",
+  //                                 ini_jpsi_poly_f[ipt][iy], 0.01, 0.99);
   RooRealVar jpsinp_poly_fraction("jpsinp_poly_fraction", "fraction",
-                                  ini_jpsi_poly_f[ipt][iy], 0.01, 1);
+                                  0.97, 0.01, 0.99);
   // fraction of B+ -> J/psi pi+ in the NP
   RooRealVar jpsinp_jpsipi_fraction("jpsinp_jpsipi_fraction", "fraction",
                                     ini_jpisnp_jpsipi_f[ipt][iy], 0.001, 1);
@@ -2325,8 +2330,8 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   if (inclusive) {
     cout << "make inclusive plot" << "\n";
 
-    gSystem->MakeDirectory("./results/Bu/inclusive" );
-    jpsipiPlot = "./results/Bu/inclusive/np_gen_jpsipi_all.pdf";
+    gSystem->MakeDirectory("./results/Bu/inclusive" + cutvarname );
+    jpsipiPlot = "./results/Bu/inclusive" + cutvarname + "/np_gen_jpsipi_all.pdf";
   }
   plot_mcfit(w, &jpsipi_ext, ds_jpsipi, jpsipiPlot,
              "NP gen-matched B^{+} #rightarrow J/#psi #pi^{+}",
@@ -2347,7 +2352,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
     TString::Format("%i_%i/np_gen_jpsipi_pt%i-%i%s.pdf",
                     pti, ptf, pti, ptf, ystr.Data());
   if (inclusive) {
-    jpsipiPlot = "./results/Bu/inclusive/np_gen_jpsipi.pdf";
+    jpsipiPlot = "./results/Bu/inclusive" + cutvarname + "/np_gen_jpsipi.pdf";
   }
   plot_mcfit(w, &jpsipi_ext, ds_jpsipi, jpsipiPlot,
              "NP gen-matched B^{+} #rightarrow J/#psi #pi^{+}",
@@ -2361,7 +2366,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   TString jpsi_fit_plot = "./results/Bu/" +
     TString::Format("%i_%i/np_fit_pt%i-%i%s.pdf", pti, ptf, pti, ptf, ystr.Data());
   if (inclusive) {
-    jpsi_fit_plot = "./results/Bu/inclusive/np_fit.pdf";
+    jpsi_fit_plot = "./results/Bu/inclusive" + cutvarname + "/np_fit.pdf";
   }
   plot_jpsifit(w, model_cont, ds_cont, jpsi_fit_plot, "Non-prompt J/#psi", 0, n_signal);
   fix_parameters(w, cont_par_list);
@@ -2379,7 +2384,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
     TString::Format("%i_%i/np_gen_signal_pt%i-%i%s.pdf",
                     pti, ptf, pti, ptf, ystr.Data());
   if (inclusive) {
-    signalPlot = "./results/Bu/inclusive/np_gen_signal.pdf";
+    signalPlot = "./results/Bu/inclusive" + cutvarname + "/np_gen_signal.pdf";
   }
   plot_mcfit(w, &signal_ext, ds_sig, signalPlot, "NP gen-matched signal",
              RooFit::Name("MCFit"), Range("bmc"), LineColor(kRed),
@@ -2418,7 +2423,7 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
     TString::Format("%i_%i/np_fit_signal_pt%i-%i%s.pdf",
                     pti, ptf, pti, ptf, ystr.Data());
   if (inclusive) {
-    jpsi_plot_with_sig = "./results/Bu/inclusive/np_fit_signal.pdf";
+    jpsi_plot_with_sig = "./results/Bu/inclusive" + cutvarname + "/np_fit_signal.pdf";
   }
   plot_jpsifit(w, model_inclusive, ds, jpsi_plot_with_sig, "Non-prompt J/#psi with signal",
                ds_sig->sumEntries(), n_signal);
