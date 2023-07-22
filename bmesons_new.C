@@ -98,6 +98,8 @@ bool fit_ybins = false;
 // Use NP Jpsi shape for mass fitting (Err fn + Gaussians)
 constexpr bool include_np = true;
 
+constexpr bool purify_jpsi = false;
+
 // should be constexpr, but let's simplify runtime arguments and omit that for now
 const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15",
                                         "BDT_pt_15_20", "BDT_pt_20_50"};
@@ -408,7 +410,7 @@ void bmesons_new(TString cutvar, int ipt = 3, int iy = 1){
   input_file_data = input_file_data(0,input_file_data.Length()-5) + "_" + cutvar  + ".root";
   input_file_jpsi = input_file_jpsi(0,input_file_jpsi.Length()-5) + "_" + cutvar  + ".root";
   cutvarname = input_file_mc(eof) + "_poly";
-  if (purify_jpsi) {
+  if (!purify_jpsi) {
     cutvarname += "_no5000";
   }
 
@@ -2286,7 +2288,10 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
       reduce(TString::Format("Bpt > %f && Bpt < %f", (double) pti, (double) ptf));
   }
   // Get rid of B+ at gen level
-  RooDataSet* ds_cont = (RooDataSet*) ds->reduce("Bgen != 23333 && Bgen != 23335 && Bgen > 5000");
+  RooDataSet* ds_cont = (RooDataSet*) ds->reduce("Bgen != 23333 && Bgen != 23335");
+  if (purify_jpsi) {
+    ds_cont = (RooDataSet*) ds->reduce("Bgen != 23333 && Bgen != 23335 && Bgen > 5000");
+  }
   RooDataSet* ds_sig = (RooDataSet*) ds->reduce("Bgen == 23333");
 
 
