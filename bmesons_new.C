@@ -825,7 +825,7 @@ void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input){
 
 void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input){
   cout << "reading J/psi inclusive file" << "\n";
-  std::vector<TString> jpsi_vars = {"By", "Bpt", "Bgen"};
+  std::vector<TString> jpsi_vars = {"Bgen"};
   for (auto bdt : BDTvars) {
     jpsi_vars.push_back(bdt);
   }
@@ -840,7 +840,6 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
   t1 = (TTree*) fin->Get(treeName);
   int n_var = label.size();
   cout << "size: " << n_var  << "\n";
-
 
   RooArgList arg_list ("arg_list");
   // read the fitting variable
