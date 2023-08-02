@@ -718,7 +718,7 @@ gSystem->mkdir(Form("%s/mc_validation_plots", ptdir.Data()) );
 
     save_validation_plot(d, names[i], "ss_mc_sp", ptdir, iy);
   }
-#endif
+
 //comparisons end
 }
 //main function ends
