@@ -382,7 +382,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
     read_data(*ws, variables, input_file_data);
     read_mc(*ws, variables, input_file_mc);
     if (particle == 0) {
-      read_jpsinp(*ws, variables, input_file_jpsi);
+      read_jpsinp(*ws, BDTvars, input_file_jpsi);
     }
   }
 
@@ -825,11 +825,13 @@ void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input){
 
 void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input){
   cout << "reading J/psi inclusive file" << "\n";
-  std::vector<TString> jpsi_vars = {"Bgen"};
-  for (auto bdt : BDTvars) {
+  std::vector<TString> jpsi_vars = {"Bgen", "By", "Bpt"};
+  for (auto bdt : label) {
     jpsi_vars.push_back(bdt);
   }
-  read_samples(w, jpsi_vars, f_input, "ntnp", "jpsinp");
+  read_samples(w, jpsi_vars, f_input, "ntKp", "jpsinp");
+
+  cout << "finished the going through samples of JpsiPi" << endl;
 }
 
 // work horse to read data/MC/jpsi
