@@ -89,18 +89,8 @@
 constexpr bool early = false;
 // constexpr bool early = true;
 
-// Whether to fit B mass in different y bins
-// this is assigned based on input to bmesons_new()
-bool fit_ybins = false;
-
 // Use NP Jpsi shape for mass fitting (Err fn + Gaussians)
 constexpr bool include_np = true;
-
-// should be constexpr, but let's simplify runtime arguments and omit that for now
-const std::vector<TString> BDTvar_bs = {"BDT_pt_7_10", "BDT_pt_10_15",
-                                        "BDT_pt_15_20", "BDT_pt_20_50"};
-const std::vector<TString> BDTvar_bp = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15",
-                                        "BDT_pt_15_20", "BDT_pt_20_50"};
 
 const std::vector<TString> BDTdir = {"Bu", "Bs"};
 const std::unordered_map<std::string, unsigned> iBDT_bs = {
@@ -135,6 +125,7 @@ const std::vector<double> BDTmax_bs = {0.85, 0.821, 0.92, 0.9};
 
 const std::vector<double> BDTmin_bp = {0.00, -0.00, -0.18, -0.12, -0.1};
 const std::vector<double> BDTmax_bp = {0.8, 0.82, 0.74, 0.74, 0.77};
+// min and max for BDT histograms
 
 // number of bins
 const std::vector<int> BDTnbins_bs = {11, 30, 20, 30};
@@ -207,14 +198,11 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> la
 std::vector<TH1D*> splot_method(RooWorkspace& w, std::vector<TString> label, int n_var);
 
 void set_up_workspace_variables(RooWorkspace& w);
-TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight); 
+TH1D* create_histogram_mc(RooWorkspace& w, RooRealVar var, int n, TString weight); 
 TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n); 
 void AddWeights(TTree* t);
-void read_data(RooWorkspace& w, std::vector<TString> label, TString f_input);
-void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input);
-void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input);
+void read_MC_DATA_samples(RooWorkspace& w, std::vector<TString> label, TString f_input, TString dataORmc);
 void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString treeName, TString sample);
-void reduce_ybins(RooWorkspace& w, int iy);
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
 void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
@@ -222,10 +210,6 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
 void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString, TString);
-void DIF_analysis(RooWorkspace& w, const char* variable, TString, RooArgSet &c_vars);
-double get_yield_syst(RooDataSet *dt, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma, const char* name_var);
-void fit_syst_error(TString, int n_var, std::vector<TString> label, RooArgSet &c_vars);
-void fit_syst_error_bin(TString, int n_var, std::vector<TString> label, double a, double b, RooArgSet &c_vars);
 void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooArgSet &c_pdfs);
 double MC_fit_result(TString input_file, TString inVarName);
 TString ystring(int iy);
@@ -242,12 +226,6 @@ void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
                   TString plotName, TString title, double nGen, RooRealVar& n_signal);
 
 // change according to what we want to compute: "Bpt"  or  "By"  or  "nMul"
-
-// DIF_A
-// 1 = computes differential signal yields
-// 0 = computes MC and data comparissons
-#define DIF_A 0 
-
 
 //weights
 // 1 = calculates ratio between MC and sPlot 
@@ -281,14 +259,12 @@ void plot_jpsifit(RooWorkspace& w, RooAbsPdf* model, RooDataSet* ds,
 
 
 #if particle == 0
-auto BDTvars = BDTvar_bp;
 auto BDTmin = BDTmin_bp;
 auto BDTmax = BDTmax_bp;
 auto BDTnbins = BDTnbins_bp;
 auto indexBDT = iBDT_bp;
 auto BDT_lower_bound = bdt_lower_bound_bp;
 #elif particle == 1
-auto BDTvars = BDTvar_bs;
 auto BDTmin = BDTmin_bs;
 auto BDTmax = BDTmax_bs;
 auto BDTnbins = BDTnbins_bs;
@@ -314,12 +290,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
   if (ipt < 0) {
     inclusive = true;
   }
-
-  // if (particle == 0 && ipt <= 1 && ipt >= 0) {
-  if (ipt <= 1 && ipt >= 0) {
-    fit_ybins = true;
-  }
-
 
   int n_var;
   TString input_file_data;
@@ -351,7 +321,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
   }
 
 
-  TString input_file_jpsi = "/eos/user/h/hmarques/work/data/jpsinp_nom.root";
   std::vector<TH1D*> histos_sideband_sub;
   std::vector<TH1D*> histos_mc;
   std::vector<TH1D*> histos_splot;
@@ -376,42 +345,15 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
    set_up_workspace_variables(*ws);
 
-  if( (MC == 1) && (component == 0) ){read_data(*ws, variables, input_file_mc);}
-  else if( (MC == 1) && (component == 1)){read_data(*ws, variables, input_file_mc_swap);}
-  else if(MC == 0) {
-    read_data(*ws, variables, input_file_data);
-    read_mc(*ws, variables, input_file_mc);
-    if (particle == 0) {
-      read_jpsinp(*ws, BDTvars, input_file_jpsi);
-    }
+  /*if( (MC == 1) && (component == 0) ){read_MC_DATA_samples(*ws, variables, input_file_mc, "mc");}
+  else if( (MC == 1) && (component == 1)){read_MC_DATA_samples(*ws, variables, input_file_mc_swap, "mc");}*/
+  
+  if(MC == 0) {
+    read_MC_DATA_samples(*ws, variables, input_file_data, "data");
+    read_MC_DATA_samples(*ws, variables, input_file_mc, "mc");
   }
-
-
-  if(MC == 1){cout << "Running fit on MC" << endl;}
-  else if(MC == 0){cout << "Running fit on data" << endl;}
 
   RooArgSet c_vars;
-
-  if (fit_ybins) {
-    reduce_ybins(*ws, iy);
-  }
-  if (ipt >= 0) {
-    // apply BDT cut
-    std::vector<TString> labels = {"data", "mc"};
-    if (particle == 0) {
-      labels.push_back("jpsinp");
-    }
-    for (auto l : labels) {
-      auto BDTvar = TString::Format("BDT_pt_%d_%d", ptlist[ipt], ptlist[ipt+1]);
-      auto iBDT = indexBDT.at(BDTvar.Data());
-      auto data = ws->data(l);
-      data->SetName(l + "_allbdt");
-      data = (RooDataSet*) data->
-        reduce(TString::Format("%s > %f", BDTvar.Data(), BDT_lower_bound[iBDT]));
-      cout << data->sumEntries() << "\n";
-      ws->import(*data, Rename(l));
-    }
-  }
 
   // use the setting of pT 10-15 for inclusive pT comparison
   if (inclusive) {
@@ -424,7 +366,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
   build_pdf(*ws, signal_shape, c_vars, ipt, iy);
 
-
   if (include_np && (particle == 0)) {
     fit_jpsinp(*ws, "nominal", c_vars, ipt, iy, inclusive);
   }
@@ -435,7 +376,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
   }
   plot_complete_fit(*ws, c_vars, subname, iy);
   if (early) {return;}
-  if(MC == 1){return;}
 
 //validate_fit(ws, c_vars);
 //  return;
@@ -461,11 +401,8 @@ void bmesons_new(int ipt = 3, int iy = 1){
   std::vector<TString> names;
 
   for(int i=0; i<n_var; i++){
-    TString weight = "weight";
-    
-    cout << "AQUI_"<<i<<endl;
-
-    histos_mc.push_back(create_histogram_mc((*ws->var(variables[i])), t1_mc, 40, weight));
+    TString weight = "weight";                
+    histos_mc.push_back(create_histogram_mc(*ws, (*ws->var(variables[i])) , 40, weight));
     names.push_back(TString(variables[i]));}
   
   TString ptdir = "./results/" + particleList.at(particle);
@@ -782,7 +719,6 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
     mc[i]->Scale(1/mc[i]->Integral());
 
     h_aux->Divide(mc.at(i));
-    
     f_wei->cd();
     h_aux->Write();
     
@@ -798,40 +734,17 @@ void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
 //get_ratio ends
 
 //read_data
-void read_data(RooWorkspace& w, std::vector<TString> label, TString f_input){
+void read_MC_DATA_samples(RooWorkspace& w, std::vector<TString> label, TString f_input, TString dataORmc){
   TString treeName;
   if(particle == 0) {
     treeName = "ntKp";
-  } else if (particle == 1) {
-    treeName = "ntphi";
-  } else {
-    treeName = "ntKstar";
-  }
-  read_samples(w, label, f_input, treeName, "data");
-}
-
-void read_mc(RooWorkspace& w, std::vector<TString> label, TString f_input){
-  TString treeName;
-  if(particle == 0) {
-    treeName = "ntKp";
-  } else if (particle == 1) {
-    treeName = "ntphi";
-  } else {
-    std::cerr << "Invalid particle type: " << particle << "!\n";
-    return;
-  }
-  read_samples(w, label, f_input, treeName, "mc");
-}
-
-void read_jpsinp(RooWorkspace& w, std::vector<TString> label, TString f_input){
-  cout << "reading J/psi inclusive file" << "\n";
-  std::vector<TString> jpsi_vars = {"Bgen", "By", "Bpt"};
-  for (auto bdt : label) {
-    jpsi_vars.push_back(bdt);
-  }
-  read_samples(w, jpsi_vars, f_input, "ntKp", "jpsinp");
-
-  cout << "finished the going through samples of JpsiPi" << endl;
+    cout << "reading J/psi inclusive file" << "\n";
+    std::vector<TString> jpsi_vars = {"Bgen", "By", "Bpt", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15","BDT_pt_15_20", "BDT_pt_20_50"};
+    read_samples(w, jpsi_vars, "/eos/user/h/hmarques/work/data/jpsinp_nom.root", treeName, "jpsinp");
+  } 
+  else if (particle == 1) { treeName = "ntphi";}
+  else {treeName = "ntKstar";}
+  read_samples(w, label, f_input, treeName, dataORmc.Data());
 }
 
 // work horse to read data/MC/jpsi
@@ -844,8 +757,8 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
   cout << "size: " << n_var  << "\n";
 
   RooArgList arg_list ("arg_list");
-  // read the fitting variable
-  arg_list.add(*(w.var("Bmass")));
+  arg_list.add(*(w.var("Bmass")));  // read the fitting variable
+
   // read additional variables
   for(auto lab : label){
     cout << lab << "\n";
@@ -854,23 +767,19 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
   }
 
   RooDataSet* ds = new RooDataSet(sample, sample, t1, arg_list);
-  cout << "input filename = " << fName << "; entries: " << ds->sumEntries() << endl;
-  w.import(*ds, Rename(sample));
-}
+  cout << "input filename = " << fName << "; entries before FID region: " << ds->sumEntries() << endl;
+  ds = (RooDataSet*)ds->reduce("(Bpt < 10 &&  abs(By) > 1.5 ) || (Bpt > 10)");  //FID REGION
+  cout << "input filename = " << fName << "; entries after FID region: " << ds->sumEntries() << endl;
 
-/** Select events from a rapidity bin */
-void reduce_ybins(RooWorkspace& w, int iy) {
-  std::vector<TString> dataset = {"data", "mc"};
-  if (particle == 0) {
-    dataset.push_back("jpsinp");
-  }
-  for (auto name : dataset) {
-    RooDataSet* sample = (RooDataSet*) w.data(name);
-    sample->SetName(name + "_ally");
-    sample = (RooDataSet*) sample->
-      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
-    w.import(*sample, Rename(name));
-  }
+  //should be optimized: use the global arrays and vectors to make it easier changing the values
+  #if particle == 0
+  ds = (RooDataSet*)ds->reduce("(BDT_pt_5_7 > 0.08 && Bpt >= 5 && Bpt < 7) || (BDT_pt_7_10 > 0.07 && Bpt >= 7 && Bpt < 10) || (BDT_pt_10_15 > 0 && Bpt >= 10 && Bpt < 15) || (BDT_pt_15_20 > 0.02 && Bpt >= 15 && Bpt < 20) || (BDT_pt_20_50 > 0.04 && Bpt >= 20 && Bpt < 50) || (Bpt >= 50 && Bpt < 60) ");
+  #elif particle == 1
+  ds = (RooDataSet*)ds->reduce("(BDT_pt_7_10 > 0.06 && Bpt >= 7 && Bpt < 10) || (BDT_pt_10_15 > -0.04 && Bpt >= 10 && Bpt < 15) || (BDT_pt_15_20 > 0.05 && Bpt >= 15 && Bpt < 20) || (BDT_pt_20_50 > -1 && Bpt >= 20 && Bpt < 50) ");
+  #endif
+  cout << "input filename = " << fName << "; entries before FID region: " << ds->sumEntries() << endl;
+
+  w.import(*ds, Rename(sample));
 }
 
 //build_pdf
@@ -1412,253 +1321,7 @@ cout << "Definig B0 model" << endl;
 } 
 //build_pdf ends
 
-void fit_syst_error(TString fname, int n_var, std::vector<TString> label, RooArgSet &c_vars){
-  //returns the yield's systematic uncertainty
-  
-  RooWorkspace* ws = new RooWorkspace("ws");
-  set_up_workspace_variables(*ws);
-  read_data(*ws, label, fname);
 
-  RooDataSet* data = (RooDataSet*) ws->data("data");
-
-  build_pdf(*ws,"nominal", c_vars);
-  RooAbsPdf* model = ws->pdf("model");
-  RooFitResult* fitres_nom = model->fitTo(*data,Save());
-
-  build_pdf(*ws,"bkg_poly", c_vars);
-  model = ws->pdf("model");
-  RooFitResult* fitres_bgpol = model->fitTo(*data,Save());
-
-  build_pdf(*ws,"bkg_range", c_vars);
-  model = ws->pdf("model");
-  RooFitResult* fitres_bgrange = model->fitTo(*data,Range("peakright"),Save());
-
-  build_pdf(*ws,"sig1gauss", c_vars);
-  model = ws->pdf("model");
-  RooFitResult* fitres_sig1 = model->fitTo(*data,Save());
-  
-  RooRealVar* n_nom = (RooRealVar*) fitres_nom  ->floatParsFinal().find("n_signal");
-  RooRealVar* n_bgp = (RooRealVar*) fitres_bgpol->floatParsFinal().find("n_signal");
-  RooRealVar* n_bra = (RooRealVar*) fitres_bgrange->floatParsFinal().find("n_signal");
-  RooRealVar* n_sig1 = (RooRealVar*) fitres_sig1->floatParsFinal().find("n_signal");
-
-  double n0  = n_nom->getVal();
-  double n1  = n_bgp->getVal();
-  double n2  = n_bra->getVal();
-  double n3 = n_sig1->getVal();
-
-  double syst1 = (n1-n0)/n0;
-  double syst2 = (n2-n0)/n0;
-  double syst3 = (n3-n0)/n0;
-  
-  cout << "syst bg pdf:" << syst1 * 100 << "\%\trange" << syst2 * 100 << "\%\tsig1gauss" << syst3 *100;
-}
-//fit_syst_error ends
-
-void fit_syst_error_bin(TString fname, int n_var, std::vector<TString> label, double bin_min, double bin_max, RooArgSet &c_vars){
-  //prints the yield's systematic uncertainty per bin
-  
-  RooWorkspace* ws = new RooWorkspace("ws");
-  set_up_workspace_variables(*ws);
-  read_data(*ws, label, fname);
-
-  //  RooRealVar* Bpt  = ws->var("Bpt");
-  RooDataSet* data = (RooDataSet*) ws->data("data");
-  RooDataSet* data_bin;
-  //select data subset corresponding to pT bin
-  data_bin = (RooDataSet*) data->reduce(Form("Bpt>%lf",bin_min));
-  data_bin = (RooDataSet*) data_bin->reduce(Form("Bpt<%lf",bin_max));
-  //ws->import(*data_bin, Rename(Form("data_bin_%g_%g",bin_min,bin_max)));   
-
-  build_pdf(*ws, "nominal", c_vars);
-  RooAbsPdf* model = ws->pdf("model");
-  RooFitResult* fitres_nom = model->fitTo(*data_bin,Save());
-
-  build_pdf(*ws,"bkg_poly", c_vars);
-  model = ws->pdf("model");
-  RooFitResult* fitres_bgpol = model->fitTo(*data_bin,Save());
-
-  build_pdf(*ws,"bkg_range", c_vars);
-  model = ws->pdf("model");
-  RooFitResult* fitres_bgrange = model->fitTo(*data_bin,Range("peakright"),Save());
-
-  build_pdf(*ws,"sig1gauss", c_vars);
-  model = ws->pdf("model");
-  RooFitResult* fitres_sig1 = model->fitTo(*data_bin,Save());
-    
-  RooRealVar* n_nom = (RooRealVar*) fitres_nom  ->floatParsFinal().find("n_signal");
-  RooRealVar* n_bgp = (RooRealVar*) fitres_bgpol->floatParsFinal().find("n_signal");
-  RooRealVar* n_bra = (RooRealVar*) fitres_bgrange->floatParsFinal().find("n_signal");
-  RooRealVar* n_sig1 = (RooRealVar*) fitres_sig1->floatParsFinal().find("n_signal");
-
-  double n0  = n_nom->getVal();
-  double n1  = n_bgp->getVal();
-  double n2  = n_bra->getVal();
-  double n3 = n_sig1->getVal();
-
-  double syst1 = (n1-n0)/n0;
-  double syst2 = (n2-n0)/n0;
-  double syst3 = (n3-n0)/n0;
-  
-  cout << "bin_min"<<bin_min<< "_" << " bin_max" << bin_max << endl;
-  cout << "syst bg pdf:" << std::setw(5) << syst1 * 100 << "\%\trange" << syst2 * 100 << "\%\tsig1gauss" << syst3 *100 << "\%" << endl;
- 
-}
-//fit_syst_error_bin ends 
-
-double get_yield_syst(RooDataSet* data_bin, TString syst_src, RooArgSet &c_vars, double lower_b, double higher_b, RooRealVar b_ma, const char* name_var){
- //returns the yield's value per bin
-  
-  RooWorkspace* ws = new RooWorkspace("ws");
-  set_up_workspace_variables(*ws);
-  ws->import(*data_bin, Rename("data"));
- 
-  TString rng = (syst_src.Contains("range")) ? "peakright" : "all";
-  cout << "pdf = " << syst_src.Data() << endl;
-  build_pdf(*ws,syst_src.Data(), c_vars);
-
-  RooAbsPdf* model = ws->pdf("model");
-  RooFitResult* fitres;
-  if((particle == 2) && (MC == 0)){fitres = model->fitTo(*data_bin,Range(rng),Save(),Constrain(c_vars));}
-  else{fitres = model->fitTo(*data_bin, Range(rng), Save());}
-
-  RooRealVar* n1_var = 0;
-  if( (particle == 2) && (MC == 0) ){n1_var = (RooRealVar*) fitres ->floatParsFinal().find("RT_yield");}
-  else{n1_var = (RooRealVar*) fitres ->floatParsFinal().find("n_signal");}
-
-  double n1 = n1_var->getVal();
-
-
-    //plot the fit result
-    TCanvas b;
-    b.SetTitle(Form("%s: BIN %f_%f",name_var, lower_b, higher_b)  );
-  
-    TPad *p1 = new TPad("p1","p1",0.0,0.27,0.82,0.99);
-//CMS_lumi(p1,19011,0);
-    p1->SetTitle("");
-    p1->SetBorderMode(1);
-    p1->SetFrameBorderMode(0);
-    p1->SetBorderSize(2);
-    p1->SetBottomMargin(0.10);
-    p1->Draw();
-
-    TPad *p2 = new TPad("p2","p2",0.0,0.065,0.82,0.24);
-//CMS_lumi(p2,19011,0);
-    p2->SetTitle("");
-    p2->SetTopMargin(0.);
-    p2->SetBottomMargin(0.2);
-    p2->SetBorderMode(1);
-    p2->Draw();
-    p1->cd();
-    
-    RooPlot* massframe = b_ma.frame(Title(""));
-    data_bin->plotOn(massframe,RooFit::Name("Data"),NormRange("all"));
-    model->plotOn(massframe, RooFit::Name("Fit"),NormRange("all"),LineColor(kRed),LineStyle(1),LineWidth(2));
-    model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("fit_side"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("signal"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF")); 
-    if(syst_src == "bkg_poly"){model->plotOn(massframe, RooFit::Name("Combinatorial"),Components("poly_bkg"),NormRange("all"),LineColor(kBlue),LineStyle(kDashed));} 
- 
-    if(particle == 0){
-    model->plotOn(massframe, RooFit::Name("B->J/psi X"),Components("erf"),NormRange("all"),LineColor(kGreen+3),LineStyle(1),LineWidth(3),FillStyle(3005),FillColor(kGreen+3),VLines(),DrawOption("LF"));
-    model->plotOn(massframe, RooFit::Name("B->J/psi #pi"),Components("jpsipi"),NormRange("all"),LineColor(kPink+10),LineStyle(kDashed));
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("sum_CB")  ,NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF"));
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("gauss_CB"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF"));
-    massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}) [GeV]");
-    }
-    
-    else if(particle == 1){
-    if(syst_src=="gauss"){model->plotOn(massframe, RooFit::Name("Signal"),Components("signal1"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF"));}
-    model->plotOn(massframe, RooFit::Name("Signal"),Components("CB1"),NormRange("all"),LineColor(kOrange-3),LineStyle(kDashed),LineWidth(3), FillStyle(3002),FillColor(kOrange-3),VLines(),DrawOption("LF"));
-    massframe->SetXTitle("m(#mu^{+}#mu^{-}K^{+}K^{-}) [GeV]");}  
-    
-    //model->paramOn(massframe,Layout(0.60,0.99,0.95));
-    massframe->SetTitle(" ");
-    massframe->Draw();
-		
-		TLatex* tex_pt;
-		TLatex* tex_y;
-		if(std::string(name_var)=="Bpt"){		
-		tex_pt = new TLatex(0.4,0.75,Form("%.0f < p_{T} < %.0f GeV/c",lower_b,higher_b));
-		if(higher_b<=10){tex_y = new TLatex(0.4, 0.69,"1.5 < |y| < 2.4");}
-                else{tex_y = new TLatex(0.4,0.69,"|y| < 2.4");}	
-                tex_pt->SetNDC();
-		tex_pt->SetTextFont(42);
-		tex_pt->SetTextSize(0.04);
-		tex_pt->SetLineWidth(2);
-		tex_y->SetNDC();
-		tex_y->SetTextFont(42);
-		tex_y->SetTextSize(0.04);
-		tex_y->SetLineWidth(2);	
-		tex_pt->Draw();
-		tex_y->Draw();}
-
-  TLatex* tex11 = new TLatex(0.66,0.92,"302.3 pb^{-1} (pp) 5.02 TeV");
-  tex11->SetNDC(kTRUE);
-  tex11->SetLineWidth(2);
-  tex11->SetTextSize(0.04);
-  tex11->Draw();
-  tex11 = new TLatex(0.1,0.92,"CMS Preliminary");
-  tex11->SetNDC(kTRUE);
-  tex11->SetTextFont(42);
-  tex11->SetTextSize(0.04);
-  tex11->SetLineWidth(2);
-  tex11->Draw();
- 
-  TLegend *leg = new TLegend (0.6, 0.4, 0.9, 0.85);
-    leg->AddEntry(massframe->findObject("Data"), "Data", "p");
-    leg->AddEntry(massframe->findObject("Signal"), "Signal", "f");
-    leg->AddEntry(massframe->findObject("Combinatorial"), "Combinatorial", "l");
-    leg->AddEntry(massframe->findObject("Fit"),"Fit","l");
-
-  if(particle == 0){
-    if(syst_src=="bkg_range"){leg->AddEntry(massframe->findObject("B->J/psi #pi"), "B->J/#psi #pi^{+}", "l");}
-    else{ 
-	 leg->AddEntry(massframe->findObject("B->J/psi X"), "B->J/#psi X", "f");
-    	 leg->AddEntry(massframe->findObject("B->J/psi #pi"), "B->J/#psi #pi^{+}", "l");}
-	}
-
-  leg->SetTextSize(0.06);
-  leg->SetBorderSize(0);
-  leg->SetFillStyle(0);
-  leg->Draw("same");
- 
- 
-    p2->cd();
-    RooHist* pull_hist = massframe->pullHist("Data","Fit");
-    RooPlot* pull_plot = b_ma.frame(Title(""));
-    pull_plot->addPlotable(static_cast<RooPlotable*>(pull_hist),"P");
-    pull_plot->SetTitle("");
-    pull_plot->GetXaxis()->SetTitle("");
-    pull_plot->GetXaxis()->SetTitleFont(42);
-    pull_plot->GetXaxis()->SetTitleSize(0.17);
-    pull_plot->GetXaxis()->SetTitleOffset(1.09);
-    pull_plot->GetXaxis()->SetLabelFont(42);
-    pull_plot->GetXaxis()->SetLabelSize(0.15);
-    pull_plot->GetXaxis()->SetLabelOffset(0.01);
-    pull_plot->GetXaxis()->SetTickLength(0.13);
-    pull_plot->GetYaxis()->SetTitle("Pull Plot");
-    pull_plot->GetYaxis()->SetTitleFont(42);
-    pull_plot->GetYaxis()->SetTitleSize(0.10);
-    pull_plot->GetYaxis()->SetTitleOffset(1.09);
-    pull_plot->GetYaxis()->SetLabelFont(42);
-    pull_plot->GetYaxis()->SetLabelSize(0.13);
-    pull_plot->GetYaxis()->SetLabelOffset(0.005);
-    pull_plot->GetYaxis()->SetNdivisions(305);
-    pull_plot->Draw();
-    
-    if(particle == 0){
-      b.SaveAs(Form("./results/Bu/%s/%lf_%lf_%s_fit_plot_Bu.pdf",name_var, lower_b, higher_b, syst_src.Data()));
-    }
-    else if(particle == 1){
-      b.SaveAs(Form("./results/Bs/%s/%lf_%lf_%s_fit_plot_Bs.pdf",name_var, lower_b, higher_b, syst_src.Data()));
-    }
-    else if(particle == 2){
-      b.SaveAs(Form("./results/B0/%s/%lf_%lf_%s_fit_plot_B0.pdf",name_var, lower_b, higher_b, syst_src.Data()));
-    }
- 
-  return n1; 
-}
-//get_yield_syst ends
 
 /**
    Fit the non-prompt J/psi MC sample
@@ -1671,16 +1334,11 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
                 int ipt, int iy, bool inclusive, bool includeSignal) {
   int pti = ptlist[ipt];
   int ptf = ptlist[ipt + 1];
-  double yi = ylist[iy];
-  double yf = ylist[iy + 1];
+
   RooAbsPdf*  model_cont = w.pdf("m_jpsinp_cont");
   RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
-  // Apply y selections
+
   RooDataSet* ds = fullds;
-  if (fit_ybins) {
-    ds = (RooDataSet*) ds->
-      reduce(TString::Format("abs(By) > %f && abs(By) < %f", ylist[iy], ylist[iy + 1]));
-  }
   // get B -> jpsi pi dataset before applying pT cut
   RooDataSet* ds_jpsipi = (RooDataSet*) ds->reduce("Bgen == 23335");
   // Apply pT cuts for all the other datasets
@@ -1708,9 +1366,6 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
                     n_erf_initial[ipt], 0., (ds->sumEntries())*2);
 
   TString ystr = "";
-  if (fit_ybins) {
-    ystr = "_" + ystring(iy);
-  }
   // get relative yields of Jpsi pi to signal
   RooRealVar n_jpsipi_ext("n_jpsipi_ext", "n_jpsipi_ext",
                           0.1 * n_erf.getVal() , 0., (ds->sumEntries())*2);
@@ -1843,12 +1498,7 @@ cout <<"ploting complete fit"<< endl;
   RooDataSet* data = (RooDataSet*) w.data("data");
   RooDataSet* mc = (RooDataSet*) w.data("mc");
 
-  double yi = ylist[iy];
-  double yf = ylist[iy + 1];
   TString ystr = "";
-  if (fit_ybins) {
-    ystr = "_" + ystring(iy);
-  }
 
   RooRealVar Bmass = *(w.var("Bmass"));
   RooRealVar* lambda   = w.var("lambda");
@@ -2143,61 +1793,58 @@ std::vector<TH1D*> sideband_subtraction(RooWorkspace& w, std::vector<TString> la
 }
 //sideband_subtraction ends
 
-TH1D* create_histogram_mc(RooRealVar var, TTree* t, int n, TString weight){
+//create_histogram_mc starts
+TH1D* create_histogram_mc(RooWorkspace& w, RooRealVar var, int n, TString weight){
+
+  RooDataSet* mcSAMPLE = (RooDataSet*) w.data("mc");
 
   TH1D* h = new TH1D(var.GetName(), var.GetName(), n, var.getMin(), var.getMax());
-  TString name_string;
-  
-  cout << "CREATE_H  var.GetName: " << var.GetName() << "   min: " << var.getMin() << "   max: " << var.getMax()<< endl;
-  std::string varName = var.GetName();
-  if(std::string(var.GetName()) == "BsvpvDisErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.03)";}
-  else if(std::string(var.GetName()) == "Bpt"){name_string = TString(var.GetName()) + ">>htemp(40,5,100)";}
-  else if(std::string(var.GetName()) == "BsvpvDistance"){name_string = TString(var.GetName()) + ">>htemp(40,0,1)";}
-  else if(std::string(var.GetName()) == "Bmumumass"){name_string = TString(var.GetName()) + ">>htemp(40,3,3.2)";}
-  else if(std::string(var.GetName()) == "Bchi2cl"){name_string = TString(var.GetName()) + ">>htemp(40,0.05,1)";}
-  else if(std::string(var.GetName()) == "Balpha"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.1)";}
-  else if(std::string(var.GetName()) == "Bd0"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.5)";}
-  else if(std::string(var.GetName()) == "Bd0Err"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.0001)";}
-  else if(std::string(var.GetName()) == "Bdtheta"){name_string = TString(var.GetName()) + ">>htemp(40,0.0,0.1)";}
-  else if(std::string(var.GetName()) == "Bmu1dxyPV"){name_string = TString(var.GetName()) + ">>htemp(40,-0.1,0.1)";}
-  else if(std::string(var.GetName()) == "Bmu1dzPV"){name_string = TString(var.GetName()) + ">>htemp(40,-0.2,0.2)";}
-  else if(std::string(var.GetName()) == "Bmu1pt"){name_string = TString(var.GetName()) + ">>htemp(40,0,16)";}
-  else if(std::string(var.GetName()) == "Bmu2dxyPV"){name_string = TString(var.GetName()) + ">>htemp(40,-0.1,0.1)";}
-  else if(std::string(var.GetName()) == "Bmu2dzPV"){name_string = TString(var.GetName()) + ">>htemp(40,-0.2,0.2)";}
-  else if(std::string(var.GetName()) == "Bmu2pt"){name_string = TString(var.GetName()) + ">>htemp(40,0,16)";}
-  else if(std::string(var.GetName()) == "Bmumueta"){name_string = TString(var.GetName()) + ">>htemp(40,-3.5,3.5)";}
-  else if(std::string(var.GetName()) == "Bmumupt"){name_string = TString(var.GetName()) + ">>htemp(40,0,30)";}
-  else if(std::string(var.GetName()) == "BsvpvDisErr_2D"){name_string = TString(var.GetName()) + ">>htemp(40,0.002,0.012)";}
-  else if(std::string(var.GetName()) == "BsvpvDistance_2D"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.5)";}
-  else if(std::string(var.GetName()) == "Btrk1Dxy1"){name_string = TString(var.GetName()) + ">>htemp(40,-0.1,0.1)";}
-  else if(std::string(var.GetName()) == "Btrk1DxyError1"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.03)";}
-  else if(std::string(var.GetName()) == "Btrk1Dz1"){name_string = TString(var.GetName()) + ">>htemp(40,-0.25,0.25)";}
-  else if(std::string(var.GetName()) == "Btrk1Pt"){name_string = TString(var.GetName()) + ">>htemp(40,0,8)";}
-  else if(std::string(var.GetName()) == "Btrk1DzError1"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.05)";}
-  else if(std::string(var.GetName()) == "nMult"){name_string = TString(var.GetName()) + ">>htemp(40,0,100)";}
-  else if(std::string(var.GetName()) == "Btrk1PtErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.1)";}
-  else if(std::string(var.GetName()) == "Btrk2PtErr"){name_string = TString(var.GetName()) + ">>htemp(40,0,0.1)";}
-  else if(std::string(var.GetName()) == "Btrk2Pt"){name_string = TString(var.GetName()) + ">>htemp(40,0,8)";}
-  else if (indexBDT.count(varName)) {
-    cout << "AQUI_ESTE" << indexBDT.count(varName) << endl;
-    auto iBDT = indexBDT.at(varName);
-    name_string = varName + TString::Format(">>htemp(%i, %f, %f)",BDTnbins[iBDT], BDTmin[iBDT], BDTmax[iBDT]);
-  }
-  else{ name_string = TString(var.GetName()) + ">>htemp(" + Form("%d",n) +"," + Form("%lf", var.getMin()) + "," + Form("%lf", var.getMax()) + ")";}
 
- cout << name_string << endl;
-  t->Draw(name_string, weight);
-  h = (TH1D*)gDirectory->Get("htemp")->Clone();
+  if(std::string(var.GetName()) == "BsvpvDisErr"){          h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0, 0.03));}
+  else if(std::string(var.GetName()) == "Bpt"){             h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 5, 60));}
+  else if(std::string(var.GetName()) == "BsvpvDistance"){   h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0, 1));}
+  else if(std::string(var.GetName()) == "Bmumumass"){       h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 3, 3.2));}
+  else if(std::string(var.GetName()) == "Bchi2cl"){         h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0.05, 1));}
+  else if(std::string(var.GetName()) == "Balpha"){          h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.1));}
+  else if(std::string(var.GetName()) == "Bd0"){             h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0.0, 0.5));}
+  else if(std::string(var.GetName()) == "Bd0Err"){          h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0., 0.0001));}
+  else if(std::string(var.GetName()) == "Bdtheta"){         h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0.05, 0.1));}
+  else if(std::string(var.GetName()) == "Bmu1dxyPV"){       h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, -0.1, 0.1));}
+  else if(std::string(var.GetName()) == "Bmu1dzPV"){        h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, -0.2, 0.2));}
+  else if(std::string(var.GetName()) == "Bmu1pt"){          h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0, 16));}
+  else if(std::string(var.GetName()) == "Bmu2dxyPV"){       h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, -0.1, 0.1));}
+  else if(std::string(var.GetName()) == "Bmu2dzPV"){        h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, -0.2, 0.2));}
+  else if(std::string(var.GetName()) == "Bmu2pt"){          h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0, 16));}
+  else if(std::string(var.GetName()) == "Bmumueta"){        h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, -3.5, 3.5));}
+  else if(std::string(var.GetName()) == "Bmumupt"){         h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0, 30));}
+  else if(std::string(var.GetName()) == "BsvpvDisErr_2D"){  h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0.002, 0.012));}
+  else if(std::string(var.GetName()) == "BsvpvDistance_2D"){h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0, 0.5));}
+  else if(std::string(var.GetName()) == "Btrk1Dxy1"){       h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, -0.1, 0.1));}
+  else if(std::string(var.GetName()) == "Btrk1DxyError1"){  h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, 0, 0.03));}
+  else if(std::string(var.GetName()) == "Btrk1Dz1"){        h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, -0.25, 0.25));}
+  else if(std::string(var.GetName()) == "Btrk1Pt"){         h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n,0 , 8));}
+  else if(std::string(var.GetName()) == "Btrk1DzError1"){   h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n,0 ,0.05));}
+  else if(std::string(var.GetName()) == "nMult"){           h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n,0, 100 ));}
+  else if(std::string(var.GetName()) == "Btrk1PtErr"){      h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n,0, 0.1 ));}
+  else if(std::string(var.GetName()) == "Btrk2PtErr"){      h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n,0, 0.1));}
+  else if(std::string(var.GetName()) == "Btrk2Pt"){         h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n,0 , 8));}
+  else if (indexBDT.count(var.GetName())) {
+    auto iBDT = indexBDT.at(var.GetName());
+    h = (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var,Binning(BDTnbins[iBDT],BDTmin[iBDT],BDTmax[iBDT]));
+  }
+  else{ h= (TH1D*) mcSAMPLE->createHistogram(var.GetName(), var, Binning(n, var.getMin(), var.getMax()));}
+
   h->SetTitle("");
   //h->SetMarkerStyle(29);
   h->SetMarkerColor(kGreen);
   h->SetMarkerSize(1);
   h->SetLineColor(kGreen);
   return h;
+
 }
 //create_histogram_mc ends
 
-//create_histogram
+//create_histogram  TO BE USED IN SIDEBAND
 TH1D* create_histogram(RooRealVar var,TString name, double factor, RooDataSet* reduced, RooDataSet* central, RooDataSet* total, int n){
 
   TH1D* dist_side;
@@ -2206,10 +1853,10 @@ cout << endl;
 
   if(std::string(var.GetName()) == "BsvpvDisErr"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 0.03));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 0.03));}
+	dist_side      = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 0.03));}
   else if(std::string(var.GetName()) == "Bpt"){
-	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 5, 100));
-	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 5, 100));}
+	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 5, 60));
+	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 5, 60));}
   else if(std::string(var.GetName()) == "BsvpvDistance"){
 	hist_dist_peak = (TH1D*) central->createHistogram(var.GetName(), var, Binning(n, 0, 1));
 	dist_side = (TH1D*) reduced->createHistogram(var.GetName(), var, Binning(n, 0, 1));}
@@ -2356,18 +2003,18 @@ TLegend *leg = new TLegend (0.7, 0.9, 0.9, 1.0);
 
   if(particle == 0){
     gSystem->Exec("mkdir -p ./results/Bu/sideband_sub/");
-    c.SaveAs("./results/Bu/sideband_sub/"+name + "sideband_sub_Bu.pdf");
+    c.SaveAs("./results/Bu/sideband_sub/"+ name + "sideband_sub_Bu.pdf");
     }else if(particle == 1){
     gSystem->Exec("mkdir -p ./results/Bs/sideband_sub/");
-    c.SaveAs("./results/Bs/sideband_sub/"+name + "sideband_sub_Bs.pdf");
+    c.SaveAs("./results/Bs/sideband_sub/"+ name + "sideband_sub_Bs.pdf");
     }else if(particle == 2){
-    c.SaveAs("./results/B0/sideband_sub/"+name + "sideband_sub_B0.pdf");
+    c.SaveAs("./results/B0/sideband_sub/"+ name + "sideband_sub_B0.pdf");
     }
    
     if(background == 0){return dist_peak;}
     else if(background == 1){return dist_side;}
     }
-//create_histogram
+//create_histogram  TO BE USED IN SIDEBAND
 
 //do_splot
 void do_splot(RooWorkspace& w, RooArgSet &c_vars){
@@ -2457,10 +2104,34 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   // RooArgList pdfComp(*BpYield, *combYield);
   RooArgList pdfComp(*BpYield, *combYield);
   // For B+, include non-prompt J/psi component
-  if (particle == 0) {
-    pdfComp.add(*npYield);
-  }
+  if (particle == 0) {pdfComp.add(*npYield);}
+
   SPlot* sData = new SPlot("sData","An sPlot",*data, model, pdfComp);
+
+
+
+
+
+    // Get the sWeights
+    const RooArgList& sWeights = sData->GetSWeightVars();
+
+    // Loop over the dataset and print the sWeights for each event
+    for (int i = 0; i < 100; ++i) {
+        const RooArgSet* event = data->get(i);
+        const RooRealVar* sWeightVar = dynamic_cast<const RooRealVar*>(sWeights.at(0)); // Assuming there's only one sWeight variable
+
+        if (sWeightVar) {
+            double sWeight = event->getRealValue(sWeightVar->GetName());
+            cout << "xxxx Event " << i << ": sWeight = " << sWeight << endl;
+        } else {
+            cerr << "Error: Unable to access sWeight variable." << endl;
+        }
+    }
+
+
+
+
+
 
   cout << endl <<  "Yield of B+ is "
        << BpYield->getVal() << ".  From sWeights it is "
@@ -2606,8 +2277,8 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 0, 1));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 0, 1));}
   else if(label == "Bpt"){
-         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 5, 100));
- 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 5, 100));}
+         histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 5, 60));
+ 	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 5, 60));}
   else if(label == "Bmumumass"){
          histo_Bp_sig = (TH1D*) dataWBp->createHistogram(label,*variable,Binning(40, 3, 3.2));
  	 histo_Bp_bkg = (TH1D*) dataWBg->createHistogram(label,*variable,Binning(40, 3, 3.2));}
@@ -3886,9 +3557,6 @@ void save_validation_plot(TCanvas& can, TString name, TString comp, TString ptdi
    TString pdfstr;
 
    TString ystr = "";
-   if (fit_ybins) {
-     ystr = "_" + ystring(iy);
-   }
    pdfstr.Form("%s/mc_validation_plots/%s/%s_mc_validation_%s%s.pdf",
                ptdir.Data(), comp.Data(), name.Data(),
                particleList.at(particle).Data(), ystr.Data());
