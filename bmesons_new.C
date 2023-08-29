@@ -2144,6 +2144,7 @@ outputTree->Branch("BDT_pt_7_10", &BDT_pt_7_10, "Variable5/D");
 outputTree->Branch("BDT_pt_10_15", &BDT_pt_10_15, "Variable6/D");
 outputTree->Branch("BDT_pt_15_20", &BDT_pt_15_20, "Variable7/D");
 outputTree->Branch("BDT_pt_20_50", &BDT_pt_20_50, "Variable8/D");
+outputTree->Branch("nMult", &nMult, "Variable9/D");
 outputTree->Branch("sWeight", &sWeight, "sWeight/D");
 
 const RooArgList& sWeights = sData->GetSWeightVars();
