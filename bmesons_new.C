@@ -2125,6 +2125,7 @@ Double_t Bpt;
 Double_t By;
 Double_t nMult;
 Double_t sWeight;
+Double_t Bmass;
 
 #if particle == 0
   double BDT_pt_5_7;
@@ -2145,6 +2146,8 @@ outputTree->Branch("BDT_pt_10_15", &BDT_pt_10_15, "Variable6/D");
 outputTree->Branch("BDT_pt_15_20", &BDT_pt_15_20, "Variable7/D");
 outputTree->Branch("BDT_pt_20_50", &BDT_pt_20_50, "Variable8/D");
 outputTree->Branch("nMult", &nMult, "Variable9/D");
+outputTree->Branch("Bmass", &Bmass, "Variable9/D");
+
 outputTree->Branch("sWeight", &sWeight, "sWeight/D");
 
 const RooArgList& sWeights = sData->GetSWeightVars();
@@ -2161,6 +2164,7 @@ for (Int_t i = 0; i < data->numEntries(); ++i) {
     Bpt = event->getRealValue("Bpt");
     By = event->getRealValue("By");
     nMult = event->getRealValue("nMult");
+    Bmass = event->getRealValue("Bmass");
     sWeight = event->getRealValue(sWeightVar->GetName());
     BDT_pt_7_10 = event->getRealValue("BDT_pt_7_10");
     BDT_pt_10_15 = event->getRealValue("BDT_pt_10_15");
