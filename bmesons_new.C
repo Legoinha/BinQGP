@@ -326,11 +326,11 @@ void bmesons_new(int ipt = 3, int iy = 1){
   std::vector<TH1D*> histos_splot;
 
 #if particle == 0
-  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt" /*, "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"*/};
+  std::vector<TString> variables = {"BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "nMult", "Bpt", "track" /*, "Btrk1Pt", "Btrk1Eta", "BsvpvDisErr", "Btrk1PtErr", "Bchi2cl" , "BsvpvDistance", "Bmumumass", "Bmu1eta","Bmu2eta", "Bmu1pt", "Bmu2pt","Bmu1dxyPV","Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha"*/};
 
 #elif particle == 1
 
-  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", /*"Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr" */};
+  std::vector<TString> variables = {"BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50", "By", "Bpt", "nMult", "track" /*"Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr" */};
 #elif particle == 2
 
   std::vector<TString> variables = {"By", "Bpt", "Btrk1Pt", "Btrk1Eta", "Btrk1PtErr", "Bchi2cl", "BsvpvDistance", "BsvpvDisErr", "BsvpvDistance_2D", "BsvpvDisErr_2D", "Bmumumass", "Bmu1eta", "Bmu2eta", "Bmu1pt", "Bmu2pt", "Bmu1dxyPV", "Bmu2dxyPV", "Bmu1dzPV", "Bmu2dzPV", "Bd0", "Bd0Err", "Bdtheta", "Balpha", "Btrk1Dz1", "Btrk1DzError1", "Btrk1Dxy1", "Btrk1DxyError1", "Bmumueta", "Bmumuphi", "Bmumupt", "Btrk2Pt", "Btrk2Eta", "Btrk2PtErr", "BDT_pt_0_2", "BDT_pt_2_3", "BDT_pt_3_5", "BDT_pt_5_7", "BDT_pt_7_10", "BDT_pt_10_15", "BDT_pt_15_20", "BDT_pt_20_50","nMult"};
@@ -2108,8 +2108,80 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
   RooStats::SPlot* sData = new RooStats::SPlot("sData", "An sPlot", *data, model, pdfComp);
 
-  // Get the sWeights
-  const RooArgList& sWeights = sData->GetSWeightVars();
+
+
+
+TString ofiletree;
+if (particle == 0) {ofiletree= "ntKp" ;}
+else {ofiletree= "ntphi";}
+
+// Create a new ROOT file
+TFile* outputFile = new TFile(Form("%s_w_sWeights.root",ofiletree.Data()), "RECREATE");
+// Create a TTree
+TTree* outputTree = new TTree(ofiletree.Data(), ofiletree.Data());
+
+Double_t track;
+Double_t Bpt;
+Double_t By;
+Double_t nMult;
+Double_t sWeight;
+
+#if particle == 0
+  double BDT_pt_5_7;
+  outputTree->Branch("BDT_pt_5_7", &BDT_pt_5_7, "Variable4/D");
+#endif
+
+  double BDT_pt_7_10;
+  double BDT_pt_10_15; 
+  double BDT_pt_15_20; 
+  double BDT_pt_20_50;
+
+// Link variables to TTree branches
+outputTree->Branch("Bpt", &Bpt, "Variable1/D");
+outputTree->Branch("By", &By, "Variable2/D");
+outputTree->Branch("track", &track, "Variable3/D");
+outputTree->Branch("BDT_pt_7_10", &BDT_pt_7_10, "Variable5/D");
+outputTree->Branch("BDT_pt_10_15", &BDT_pt_10_15, "Variable6/D");
+outputTree->Branch("BDT_pt_15_20", &BDT_pt_15_20, "Variable7/D");
+outputTree->Branch("BDT_pt_20_50", &BDT_pt_20_50, "Variable8/D");
+outputTree->Branch("sWeight", &sWeight, "sWeight/D");
+
+const RooArgList& sWeights = sData->GetSWeightVars();
+const RooRealVar* sWeightVar = dynamic_cast<const RooRealVar*>(sWeights.at(0)); // Assuming there's only one sWeight variable
+
+cout << "num Entries in data before saving TTree w/ sWeights is " << data->numEntries() << endl;
+// Loop through your RooDataSet and save the data to the TTree
+for (Int_t i = 0; i < data->numEntries(); ++i) {
+    // Get the event from the RooDataSet
+    const RooArgSet* event = data->get(i);
+
+    // Retrieve variables for the event
+    track = event->getRealValue("track");
+    Bpt = event->getRealValue("Bpt");
+    By = event->getRealValue("By");
+    nMult = event->getRealValue("nMult");
+    sWeight = event->getRealValue(sWeightVar->GetName());
+    BDT_pt_7_10 = event->getRealValue("BDT_pt_7_10");
+    BDT_pt_10_15 = event->getRealValue("BDT_pt_10_15");
+    BDT_pt_15_20 = event->getRealValue("BDT_pt_15_20");
+    BDT_pt_20_50 = event->getRealValue("BDT_pt_20_50");
+    #if particle == 0
+      BDT_pt_5_7 = event->getRealValue("BDT_pt_5_7");
+    #endif
+
+    // Fill the TTree
+    outputTree->Fill();
+}
+
+// Write the TTree to the ROOT file
+outputTree->Write();
+// Close the ROOT file
+outputFile->Close();
+
+
+
+
+
 
   cout << endl <<  "Yield of B+ is "
        << BpYield->getVal() << ".  From sWeights it is "
@@ -2124,13 +2196,7 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   w.import(*data, Rename("dataWithSWeights"));
   //the reweighted data is saved in the woorkspace 
 
-TString ofiletree;
-if (particle == 0) {ofiletree= "ntKp" ;}
-else {ofiletree= "ntphi";}
 
-TFile* outputFile = new TFile(Form("%s_myDataWithSWeights.root",ofiletree.Data()), "RECREATE");
-w.Write();
-outputFile->Close();
 
 }
 //do_splot ends
@@ -2755,7 +2821,8 @@ void set_up_workspace_variables(RooWorkspace& w){
     float BDT_10_15_min, BDT_10_15_max;
     float BDT_15_20_min, BDT_15_20_max;
     float BDT_20_50_min, BDT_20_50_max;
-   
+    float trackmin, trackmax;
+
     mass_min = 5.0;
     mass_max = 6.0;
     
@@ -2876,6 +2943,10 @@ void set_up_workspace_variables(RooWorkspace& w){
     BDT_20_50_min = -1;
     BDT_20_50_max = 1;
 
+    trackmin= -10;
+    trackmax= 10;
+
+
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);  
     RooRealVar Bpt("Bpt","Bpt",pt_min,pt_max);
@@ -2916,7 +2987,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
     RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
-
+    RooRealVar track("track", "track", trackmin, trackmax);
     RooRealVar Bgen("Bgen", "Bgen", 0, 30000);
 
     w.import(Bmass);
@@ -2959,6 +3030,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
     w.import(nMult);
+    w.import(track);
     w.import(Bgen);
 }
       
@@ -3010,6 +3082,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     double BDT_10_15_min, BDT_10_15_max;
     double BDT_15_20_min, BDT_15_20_max;
     double BDT_20_50_min, BDT_20_50_max;
+    double trackmin, trackmax;
     // double BDT_30_50_min, BDT_30_50_max;
 
     mass_min = 5.0;
@@ -3156,6 +3229,10 @@ void set_up_workspace_variables(RooWorkspace& w){
     // BDT_30_50_min = -0.7;
     // BDT_30_50_max = 0.85;
 
+    trackmin= -10;
+    trackmax= 10;
+
+
     RooRealVar Bmass("Bmass","Bmass",mass_min,mass_max);
     RooRealVar By("By","By",y_min,y_max);
     RooRealVar Bpt("Bpt","Bpt",pt_min,pt_max);
@@ -3203,6 +3280,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     RooRealVar BDT_pt_10_15("BDT_pt_10_15", "BDT_pt_10_15", BDT_10_15_min, BDT_10_15_max);
     RooRealVar BDT_pt_15_20("BDT_pt_15_20", "BDT_pt_15_20", BDT_15_20_min, BDT_15_20_max);
     RooRealVar BDT_pt_20_50("BDT_pt_20_50", "BDT_pt_20_50", BDT_20_50_min, BDT_20_50_max);
+    RooRealVar track("track", "track", trackmin, trackmax);
     // RooRealVar BDT_pt_30_50("BDT_pt_30_50", "BDT_pt_30_50", BDT_30_50_min, BDT_30_50_max);
 
     w.import(Bmass);
@@ -3252,6 +3330,7 @@ void set_up_workspace_variables(RooWorkspace& w){
     w.import(BDT_pt_15_20);
     w.import(BDT_pt_20_50);
     // w.import(BDT_pt_30_50);
+    w.import(track);
     w.import(nMult);
   }
 
