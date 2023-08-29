@@ -2101,37 +2101,15 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
   //add sWeights to dataset based on model and yield variables
   //sPlot class adds a new variable that has the name of the corresponding yield + "_sw".
-  // RooArgList pdfComp(*BpYield, *combYield);
+
   RooArgList pdfComp(*BpYield, *combYield);
   // For B+, include non-prompt J/psi component
   if (particle == 0) {pdfComp.add(*npYield);}
 
-  SPlot* sData = new SPlot("sData","An sPlot",*data, model, pdfComp);
+  RooStats::SPlot* sData = new RooStats::SPlot("sData", "An sPlot", *data, model, pdfComp);
 
-
-
-
-
-    // Get the sWeights
-    const RooArgList& sWeights = sData->GetSWeightVars();
-
-    // Loop over the dataset and print the sWeights for each event
-    for (int i = 0; i < 100; ++i) {
-        const RooArgSet* event = data->get(i);
-        const RooRealVar* sWeightVar = dynamic_cast<const RooRealVar*>(sWeights.at(0)); // Assuming there's only one sWeight variable
-
-        if (sWeightVar) {
-            double sWeight = event->getRealValue(sWeightVar->GetName());
-            cout << "xxxx Event " << i << ": sWeight = " << sWeight << endl;
-        } else {
-            cerr << "Error: Unable to access sWeight variable." << endl;
-        }
-    }
-
-
-
-
-
+  // Get the sWeights
+  const RooArgList& sWeights = sData->GetSWeightVars();
 
   cout << endl <<  "Yield of B+ is "
        << BpYield->getVal() << ".  From sWeights it is "
@@ -2145,8 +2123,27 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   
   w.import(*data, Rename("dataWithSWeights"));
   //the reweighted data is saved in the woorkspace 
+
+TString ofiletree;
+if (particle == 0) {ofiletree= "ntKp" ;}
+else {ofiletree= "ntphi";}
+
+TFile* outputFile = new TFile(Form("%s_myDataWithSWeights.root",ofiletree.Data()), "RECREATE");
+w.Write();
+outputFile->Close();
+
 }
 //do_splot ends
+
+
+
+
+
+
+
+
+
+
 
 //make_splot
 TH1D* make_splot(RooWorkspace& w, int n, TString label){

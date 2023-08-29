@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "bmesons_new.C": "cpp"
+        "bmesons_new.C": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "vector": "cpp"
     }
 }
