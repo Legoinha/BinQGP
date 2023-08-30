@@ -386,6 +386,16 @@ void bmesons_new(int ipt = 3, int iy = 1){
  
   //SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
   do_splot(*ws,c_vars); 
+
+
+
+
+return;
+
+
+
+
+
   histos_splot = splot_method(*ws, variables, n_var); 
 
   //MONTE CARLO HISTOGRAMS
@@ -2111,9 +2121,137 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
 
 
+
+
+
+
+
+
+
+
+
+
+const RooArgList& sWeights = sData->GetSWeightVars();
+const RooRealVar* sWeightVar = dynamic_cast<const RooRealVar*>(sWeights.at(0)); // signal
+const RooRealVar* bWeightVar = dynamic_cast<const RooRealVar*>(sWeights.at(1)); // background
+
+TH1D* signalHist = new TH1D("signalHist", "", 40, 5, 60);
+TH1D* backgroundHist = new TH1D("backgroundHist", "", 40, 5, 60);
+TH1D* signalHist_sm = new TH1D("signalHist_sm", "", 40, 5, 60);
+TH1D* backgroundHist_sm = new TH1D("backgroundHist_sm", "", 40, 5, 60);
+
+
+
+
+
+double_t signal_softmaxsum = 0;
+double_t backg_softmaxsum = 0;
+
+for (Int_t i = 0; i < data->numEntries(); ++i) {
+    const RooArgSet* event = data->get(i);
+    Double_t Bpt_h = event->getRealValue("Bpt");
+    //if (Bpt_h<20){continue;}
+    // Retrieve signal and background weights from sPlot
+    Double_t signalWeight = sData->GetSWeight(i, sWeightVar->GetName());
+    Double_t backgroundWeight = sData->GetSWeight(i, bWeightVar->GetName());
+    
+    // Re-weight Bpt variable and fill the histograms
+    signalHist->Fill(Bpt_h, signalWeight);
+    backgroundHist->Fill(Bpt_h, backgroundWeight);
+
+    signal_softmaxsum += std::exp(signalWeight);
+    backg_softmaxsum += std::exp(backgroundWeight);
+
+}
+
+
+
+
+
+
+
+double_t signal_softmax = 0;
+double_t backg_softmax = 0;
+
+for (Int_t i = 0; i < data->numEntries(); ++i) {
+    const RooArgSet* event = data->get(i);
+    Double_t Bpt_h = event->getRealValue("Bpt");
+
+    // Retrieve signal and background weights from sPlot
+    Double_t signalWeight = sData->GetSWeight(i, sWeightVar->GetName());
+    Double_t backgroundWeight = sData->GetSWeight(i, bWeightVar->GetName());
+    
+    signal_softmax = std::exp(signalWeight) / signal_softmaxsum;
+    backg_softmax = std::exp(backgroundWeight) / backg_softmaxsum;
+
+    // Re-weight Bpt variable and fill the histograms
+    signalHist_sm->Fill(Bpt_h, signal_softmax);
+    backgroundHist_sm->Fill(Bpt_h, backg_softmax);
+
+}
+
+
+
+
+
+
 TString ofiletree;
 if (particle == 0) {ofiletree= "ntKp" ;}
 else {ofiletree= "ntphi";}
+
+TCanvas* c1 = new TCanvas("c1", "Bpt Distribution", 700, 700);
+signalHist->SetLineColor(kRed);
+backgroundHist->SetLineColor(kBlue);
+
+signalHist->Scale(1.0 / signalHist->Integral());
+backgroundHist->Scale(1.0 / backgroundHist->Integral());
+
+backgroundHist->Draw();
+signalHist->Draw("SAME");
+
+TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
+legend->AddEntry(signalHist, "Signal", "l");
+legend->AddEntry(backgroundHist, "Background", "l");
+legend->SetFillColor(0); 
+legend->Draw();
+c1->BuildLegend();
+c1->SaveAs(Form("%s_Bpt_Distribution.png",ofiletree.Data()));
+
+
+
+
+
+
+
+
+
+TCanvas* c2 = new TCanvas("c2", "Bpt Distribution", 700, 700);
+signalHist_sm->SetLineColor(kRed);
+backgroundHist_sm->SetLineColor(kBlue);
+
+signalHist_sm->Scale(1.0 / signalHist_sm->Integral());
+backgroundHist_sm->Scale(1.0 / backgroundHist_sm->Integral());
+
+backgroundHist_sm->Draw();
+signalHist_sm->Draw("SAME");
+
+TLegend* legend2 = new TLegend(0.7, 0.7, 0.9, 0.9);
+legend2->AddEntry(signalHist_sm, "Signal", "l");
+legend2->AddEntry(backgroundHist_sm, "Background", "l");
+legend2->SetFillColor(0); 
+legend2->Draw();
+c2->BuildLegend();
+c2->SaveAs(Form("%s_Bpt_softM_Distribution.png",ofiletree.Data()));
+
+
+
+
+
+
+
+
+
+
 
 // Create a new ROOT file
 TFile* outputFile = new TFile(Form("%s_w_sWeights.root",ofiletree.Data()), "RECREATE");
@@ -2147,11 +2285,7 @@ outputTree->Branch("BDT_pt_15_20", &BDT_pt_15_20, "Variable7/D");
 outputTree->Branch("BDT_pt_20_50", &BDT_pt_20_50, "Variable8/D");
 outputTree->Branch("nMult", &nMult, "Variable9/D");
 outputTree->Branch("Bmass", &Bmass, "Variable9/D");
-
 outputTree->Branch("sWeight", &sWeight, "sWeight/D");
-
-const RooArgList& sWeights = sData->GetSWeightVars();
-const RooRealVar* sWeightVar = dynamic_cast<const RooRealVar*>(sWeights.at(0)); // Assuming there's only one sWeight variable
 
 cout << "num Entries in data before saving TTree w/ sWeights is " << data->numEntries() << endl;
 // Loop through your RooDataSet and save the data to the TTree
