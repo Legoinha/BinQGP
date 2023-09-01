@@ -264,12 +264,19 @@ auto BDTmax = BDTmax_bp;
 auto BDTnbins = BDTnbins_bp;
 auto indexBDT = iBDT_bp;
 auto BDT_lower_bound = bdt_lower_bound_bp;
+const int nbins = 7;
+const std::array<int, nbins + 1> ptb = { 5, 7, 10, 15, 20, 30, 50, 60};
+TString ofiletree = "ntKp";
+
 #elif particle == 1
 auto BDTmin = BDTmin_bs;
 auto BDTmax = BDTmax_bs;
 auto BDTnbins = BDTnbins_bs;
 auto indexBDT = iBDT_bs;
 auto BDT_lower_bound = bdt_lower_bound_bs;
+const int nbins = 4;
+const std::array<int, nbins + 1> ptb = { 7, 10, 15, 20, 50};
+TString ofiletree = "ntphi";
 #endif
 
 
@@ -305,17 +312,17 @@ void bmesons_new(int ipt = 3, int iy = 1){
   } else {
     // Binned pT comparison
     if (particle == 0) {
-      input_file_data = Form("/afs/cern.ch/user/t/tsheng/public/forHenrique/trk5/BPData_noBDT_trk5_%i_%i.root",
+      input_file_data = Form("/eos/user/h/hmarques/work/BPData_noBDT_trk5_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      input_file_data = Form("/afs/cern.ch/user/t/tsheng/public/forHenrique/trk5/BsData_noBDT_trk5_%i_%i.root",
+      input_file_data = Form("/eos/user/h/hmarques/work/BsData_noBDT_trk5_%i_%i.root",
                              ptlist.at(ipt), ptlist.at(ipt+1));
     }
     if (particle == 0) {
-      input_file_mc = Form("/afs/cern.ch/user/t/tsheng/public/forHenrique/trk5/BPMC_noBDT_trk5_%i_%i.root",
+      input_file_mc = Form("/eos/user/h/hmarques/work/BPMC_noBDT_trk5_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     } else if(particle == 1) {
-      input_file_mc = Form("/afs/cern.ch/user/t/tsheng/public/forHenrique/trk5/BsMC_noBDT_trk5_%i_%i.root",
+      input_file_mc = Form("/eos/user/h/hmarques/work/BsMC_noBDT_trk5_%i_%i.root",
                            ptlist.at(ipt), ptlist.at(ipt+1));
     }
   }
@@ -1067,22 +1074,15 @@ cout << "Defining PDF" << endl;
 
 
   RooPolynomial* poly_jpsi = 0;
-  if (ipt <= 2) {
-    poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1, np_p2, np_p3));
-  } else {
-    poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1));
-  }
+  if (ipt <= 2) {poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1, np_p2, np_p3));} 
+  else {poly_jpsi = new RooPolynomial("poly_jpsi", "poly_jpsi", Bmass, RooArgList(np_p1));}
 
-  RooRealVar jpsinp_poly_fraction("jpsinp_poly_fraction", "fraction",
-                                  ini_jpsi_poly_f[ipt][iy], 0.01, 1);
+  RooRealVar jpsinp_poly_fraction("jpsinp_poly_fraction", "fraction", ini_jpsi_poly_f[ipt][iy], 0.01, 1);
   // fraction of B+ -> J/psi pi+ in the NP
-  RooRealVar jpsinp_jpsipi_fraction("jpsinp_jpsipi_fraction", "fraction",
-                                    ini_jpisnp_jpsipi_f[ipt][iy], 0.001, 1);
+  RooRealVar jpsinp_jpsipi_fraction("jpsinp_jpsipi_fraction", "fraction", ini_jpisnp_jpsipi_f[ipt][iy], 0.001, 1);
   RooAbsPdf* erf = 0;
   erf = new RooGenericPdf(erfn, "erf");
-  RooAddPdf model_jpsinp_cont("m_jpsinp_cont", "model for jpsi nonprompt bg",
-                             RooArgList(*poly_jpsi, *erf),
-                             RooArgList(jpsinp_poly_fraction));
+  RooAddPdf model_jpsinp_cont("m_jpsinp_cont", "model for jpsi nonprompt bg", RooArgList(*poly_jpsi, *erf),RooArgList(jpsinp_poly_fraction));
   // erf = new RooAddPdf(model_jpsinp, "erf");
   w.import(model_jpsinp_cont);
   w.import(*jpsipi);
@@ -1229,25 +1229,15 @@ cout << "Definig B0 model" << endl;
   }
 
 
-  RooAddPdf model_np("model_nonprompt", "erf and jpsipi",
-                     RooArgList(*jpsipi, *erf),
-                     RooArgList(jpsinp_jpsipi_fraction));
-  RooRealVar n_nonprompt("n_nonprompt", "n_nonprompt",
-                         n_nonprompt_initial, 0., data->sumEntries());
-  RooRealVar jpsipi_to_signal_ratio("jpsipi_to_signal_ratio", "jpsipi_to_signal_ratio",
-                                    0.05, 0, 1);
-  RooProduct* n_jpsipi = new RooProduct("n_jpsipi_by_signal",
-                                        "number of jpsi pi with fixed ratio to n_signal",
-                                        RooArgList(*n_signal, jpsipi_to_signal_ratio));
+  RooAddPdf model_np("model_nonprompt", "erf and jpsipi",RooArgList(*jpsipi, *erf),RooArgList(jpsinp_jpsipi_fraction));
+  RooRealVar n_nonprompt("n_nonprompt", "n_nonprompt",n_nonprompt_initial, 0., data->sumEntries());
+  RooRealVar jpsipi_to_signal_ratio("jpsipi_to_signal_ratio", "jpsipi_to_signal_ratio",0.05, 0, 1);
+  RooProduct* n_jpsipi = new RooProduct("n_jpsipi_by_signal","number of jpsi pi with fixed ratio to n_signal",RooArgList(*n_signal, jpsipi_to_signal_ratio));
 
   if(particle == 0){//B+
     if(choice == "nominal"){
-      RooAddPdf model("model", "model",
-                      RooArgList(*signal, *jpsipi, *fit_side, *erf),
-                      RooArgList(*n_signal, *n_jpsipi, *n_combinatorial, n_nonprompt));
-      RooAddPdf model_nonp("model_nonp","model",
-                           RooArgList(*signal,*fit_side),
-                           RooArgList(*n_signal,*n_combinatorial));
+      RooAddPdf model("model", "model",RooArgList(*signal, *jpsipi, *fit_side, *erf),RooArgList(*n_signal, *n_jpsipi, *n_combinatorial, n_nonprompt));
+      RooAddPdf model_nonp("model_nonp","model",RooArgList(*signal,*fit_side),RooArgList(*n_signal,*n_combinatorial));
       if (include_np) {
         w.import(model, RecycleConflictNodes());
       } else {
@@ -1257,9 +1247,7 @@ cout << "Definig B0 model" << endl;
       w.import(*lambda);
       w.import(*f_erf);
     } else if (choice == "sig3gauss") {
-      RooAddPdf model("model", "model",
-                      RooArgList(*signal_triple, *jpsipi, *fit_side, *erf),
-                      RooArgList(*n_signal, *n_jpsipi, *n_combinatorial, n_nonprompt));
+      RooAddPdf model("model", "model",RooArgList(*signal_triple, *jpsipi, *fit_side, *erf),RooArgList(*n_signal, *n_jpsipi, *n_combinatorial, n_nonprompt));
       signal_triple->SetName("signal");
       sigma1->setMax(0.015);
       w.import(model, RecycleConflictNodes());
@@ -2028,7 +2016,8 @@ TLegend *leg = new TLegend (0.7, 0.9, 0.9, 1.0);
 
 //do_splot
 void do_splot(RooWorkspace& w, RooArgSet &c_vars){
-
+  
+  gSystem->mkdir( "./bck_sub_tests" , true);
   RooDataSet* data = (RooDataSet*) w.data("data");   
   RooAbsPdf* model = w.pdf("model");
   //we need the fit and the dataset previously saved in the woorkspace
@@ -2109,113 +2098,138 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
   cout << "before splot" << "\n";
   RooMsgService::instance().setSilentMode(true);
 
-  //add sWeights to dataset based on model and yield variables
+
+  // sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot 
+  //add sPWeights to dataset based on model and yield variables
   //sPlot class adds a new variable that has the name of the corresponding yield + "_sw".
 
   RooArgList pdfComp(*BpYield, *combYield);
-  // For B+, include non-prompt J/psi component
   if (particle == 0) {pdfComp.add(*npYield);}
-
   RooStats::SPlot* sData = new RooStats::SPlot("sData", "An sPlot", *data, model, pdfComp);
 
+  cout << endl <<  "Yield of B+ is "
+       << BpYield->getVal() << ".  From sPWeights it is "
+       << sData->GetYieldFromSWeight("n_signal") << endl;
+
+  cout << "Yield of background is "
+       << combYield->getVal() << ".  From sPWeights it is "
+       << sData->GetYieldFromSWeight("n_combinatorial") << endl
+       << endl;
+
+    w.import(*data, Rename("dataWithSWeights"));
+  //the reweighted data is saved in the woorkspace 
+
+  // sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot 
 
 
 
+// Eff. Tests Eff. Tests Eff. Tests Eff. Tests
+//retrieve the sPlot weights
+const RooArgList& sPWeights = sData->GetSWeightVars();
+const RooRealVar* sWeightVar = dynamic_cast<const RooRealVar*>(sPWeights.at(0)); // signal
+const RooRealVar* bWeightVar = dynamic_cast<const RooRealVar*>(sPWeights.at(1)); // background
+//retrieve the sPlot weights
 
+TH1D* EFF_signalHist = new TH1D("EFF signalHist", "", 30, 0, 150); //------------> weighted eff comes from the mean of this hist
+TH1D* EFF_backgroundHist = new TH1D("EFF backgroundHist", "", 30, 0, 150);
+TH1D* EFF_Hist = new TH1D("hist eff", "", 30, 0, 150); //-----------------------> nominal eff comes from the mean of this hist
+EFF_Hist->GetXaxis()->SetTitle("1/Eff"); 
+EFF_signalHist->GetXaxis()->SetTitle("1/Eff"); 
 
+//open and read 2D map (for the efficiency)
+TFile * fin1DEff;
+if (particle == 0) {fin1DEff = new TFile("BP_EffFineBDT.root");}
+else if (particle == 1) {fin1DEff = new TFile("Bs_EffFineBDT.root");}
+TH2D * invEff2D = (TH2D *) fin1DEff->Get("invEff2DY");
+//open and read 2D map (for the efficiency)
 
+int XBin;
+int YBin;
+RooDataSet * data_bin;
+TH1D* signalHist;
+TH1D* backgroundHist; 
 
+for(int j=0; j< nbins; j++){
 
+data_bin = (RooDataSet*)data->reduce(Form("(Bpt > %i) && (Bpt < %i)", ptb[j], ptb[j+1] ));  
+//signalHist = new TH1D(Form("signalHist %i", j), "", 40, ptb[j], ptb[j+1]);
+//backgroundHist  = new TH1D(Form("backgroundHist %i",j), "", 40, ptb[j], ptb[j+1]);
+//backgroundHist->GetXaxis()->SetTitle("Bpt"); 
 
+for (Int_t i = 0; i < data_bin->numEntries(); ++i) {
+  const RooArgSet* event = data_bin->get(i);
+  Double_t Bpt_h = event->getRealValue("Bpt");
+  Double_t By_h = event->getRealValue("By");
+  Double_t B_massa = event->getRealValue("Bmass");
 
-
-
-
-const RooArgList& sWeights = sData->GetSWeightVars();
-const RooRealVar* sWeightVar = dynamic_cast<const RooRealVar*>(sWeights.at(0)); // signal
-const RooRealVar* bWeightVar = dynamic_cast<const RooRealVar*>(sWeights.at(1)); // background
-
-TH1D* signalHist = new TH1D("signalHist", "", 40, 5, 60);
-TH1D* backgroundHist = new TH1D("backgroundHist", "", 40, 5, 60);
-TH1D* signalHist_sm = new TH1D("signalHist_sm", "", 40, 5, 60);
-TH1D* backgroundHist_sm = new TH1D("backgroundHist_sm", "", 40, 5, 60);
-
-
-
-
-
-double_t signal_softmaxsum = 0;
-double_t backg_softmaxsum = 0;
-
-for (Int_t i = 0; i < data->numEntries(); ++i) {
-    const RooArgSet* event = data->get(i);
-    Double_t Bpt_h = event->getRealValue("Bpt");
-    //if (Bpt_h<20){continue;}
-    // Retrieve signal and background weights from sPlot
-    Double_t signalWeight = sData->GetSWeight(i, sWeightVar->GetName());
-    Double_t backgroundWeight = sData->GetSWeight(i, bWeightVar->GetName());
+  // Retrieve signal and background weights from sPlot
+  Double_t signalWeight = sData->GetSWeight(i, sWeightVar->GetName());
+  Double_t backgroundWeight = sData->GetSWeight(i, bWeightVar->GetName());
     
+  XBin = invEff2D->GetXaxis()->FindBin( Bpt_h);
+  YBin = invEff2D->GetYaxis()->FindBin( TMath::Abs(By_h));
+  Float_t BEffInv = invEff2D->GetBinContent(XBin,YBin);
+
+  if( (particle==0 && ((B_massa>5.27932-0.08) && (B_massa<5.27932+0.08))) || (particle == 1 && ((B_massa>5.3663-0.08) && (B_massa<5.3663+0.08))) ){
+    // Nominal Eff (from the 2D map)
+    EFF_Hist->Fill(BEffInv);
+    // Re-weight Eff and fill the histograms
+    EFF_signalHist->Fill(BEffInv, signalWeight);
+    EFF_backgroundHist->Fill(BEffInv, backgroundWeight);
+  }
     // Re-weight Bpt variable and fill the histograms
-    signalHist->Fill(Bpt_h, signalWeight);
-    backgroundHist->Fill(Bpt_h, backgroundWeight);
-
-    signal_softmaxsum += std::exp(signalWeight);
-    backg_softmaxsum += std::exp(backgroundWeight);
-
+    //signalHist->Fill(Bpt_h, signalWeight);
+    //backgroundHist->Fill(Bpt_h, backgroundWeight);
 }
 
+cout << "1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_Hist->GetMean() << endl;
+cout << "1/Mean of weighted Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_signalHist->GetMean() << endl;
+cout << "relative diff (%): " << abs(1/EFF_Hist->GetMean() - 1/EFF_signalHist->GetMean() ) / (1/EFF_Hist->GetMean() )*100 << endl;
 
-
-
-
-
-
-double_t signal_softmax = 0;
-double_t backg_softmax = 0;
-
-for (Int_t i = 0; i < data->numEntries(); ++i) {
-    const RooArgSet* event = data->get(i);
-    Double_t Bpt_h = event->getRealValue("Bpt");
-
-    // Retrieve signal and background weights from sPlot
-    Double_t signalWeight = sData->GetSWeight(i, sWeightVar->GetName());
-    Double_t backgroundWeight = sData->GetSWeight(i, bWeightVar->GetName());
-    
-    signal_softmax = std::exp(signalWeight) / signal_softmaxsum;
-    backg_softmax = std::exp(backgroundWeight) / backg_softmaxsum;
-
-    // Re-weight Bpt variable and fill the histograms
-    signalHist_sm->Fill(Bpt_h, signal_softmax);
-    backgroundHist_sm->Fill(Bpt_h, backg_softmax);
-
-}
-
-
-
-
-
-
-TString ofiletree;
-if (particle == 0) {ofiletree= "ntKp" ;}
-else {ofiletree= "ntphi";}
-
+/*
+// sig and back pT Distribution as a check-test
 TCanvas* c1 = new TCanvas("c1", "Bpt Distribution", 700, 700);
 signalHist->SetLineColor(kRed);
 backgroundHist->SetLineColor(kBlue);
-
 signalHist->Scale(1.0 / signalHist->Integral());
 backgroundHist->Scale(1.0 / backgroundHist->Integral());
-
 backgroundHist->Draw();
 signalHist->Draw("SAME");
-
-TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
+TLegend* legend = new TLegend(0.5, 0.7, 0.7, 0.9);
 legend->AddEntry(signalHist, "Signal", "l");
 legend->AddEntry(backgroundHist, "Background", "l");
 legend->SetFillColor(0); 
 legend->Draw();
-c1->BuildLegend();
-c1->SaveAs(Form("%s_Bpt_Distribution.png",ofiletree.Data()));
+c1->SaveAs(Form("./bck_sub_tests/%s_%i_%i_Bpt_Distribution.png",ofiletree.Data(),ptb[j],ptb[j+1]));
+// sig and back pT Distribution as a check-test
+*/
+
+//sPlot sig and back weighted Eff
+TCanvas* c3 = new TCanvas("c3", "EFF sig_back Distribution", 700, 700);
+EFF_signalHist->SetLineColor(kRed);
+EFF_backgroundHist->SetLineColor(kBlue);
+EFF_signalHist->Scale(1.0 / EFF_signalHist->Integral());
+EFF_backgroundHist->Scale(1.0 / EFF_backgroundHist->Integral());
+EFF_signalHist->Draw();
+EFF_backgroundHist->Draw("SAME");
+TLegend* legend3 = new TLegend(0.5, 0.7, 0.7, 0.9);
+legend3->AddEntry(EFF_signalHist, "Signal", "l");
+legend3->AddEntry(EFF_backgroundHist, "Background", "l");
+legend3->SetFillColor(0); 
+legend3->Draw();
+c3->SaveAs(Form("./bck_sub_tests/%s_%i_%i_EFF_sWeight_Distribution.png",ofiletree.Data(),ptb[j],ptb[j+1]));
+//sPlot sig and back weighted Eff
+
+//Nominal Eff
+TCanvas* c4 = new TCanvas("c4", "EFF", 700, 700);
+EFF_Hist->SetLineColor(kRed);
+EFF_Hist->Scale(1.0 / EFF_Hist->Integral());
+EFF_Hist->Draw();
+c4->SaveAs(Form("./bck_sub_tests/%s_%i_%i_EFF_hist.png",ofiletree.Data(),ptb[j],ptb[j+1]));
+//Nominal Eff
+}
+
+// Eff. Tests Eff. Tests Eff. Tests Eff. Tests
 
 
 
@@ -2225,34 +2239,15 @@ c1->SaveAs(Form("%s_Bpt_Distribution.png",ofiletree.Data()));
 
 
 
-TCanvas* c2 = new TCanvas("c2", "Bpt Distribution", 700, 700);
-signalHist_sm->SetLineColor(kRed);
-backgroundHist_sm->SetLineColor(kBlue);
-
-signalHist_sm->Scale(1.0 / signalHist_sm->Integral());
-backgroundHist_sm->Scale(1.0 / backgroundHist_sm->Integral());
-
-backgroundHist_sm->Draw();
-signalHist_sm->Draw("SAME");
-
-TLegend* legend2 = new TLegend(0.7, 0.7, 0.9, 0.9);
-legend2->AddEntry(signalHist_sm, "Signal", "l");
-legend2->AddEntry(backgroundHist_sm, "Background", "l");
-legend2->SetFillColor(0); 
-legend2->Draw();
-c2->BuildLegend();
-c2->SaveAs(Form("%s_Bpt_softM_Distribution.png",ofiletree.Data()));
 
 
 
 
 
-
-
-
-
-
-
+////////////////////////////////////////////////////////////////// 
+/////  NO LONGER NEEDED, BUT IS HERE FOR FURTURE REFERENCE   /////
+////////////////////////////////////////////////////////////////// 
+/*
 // Create a new ROOT file
 TFile* outputFile = new TFile(Form("%s_w_sWeights.root",ofiletree.Data()), "RECREATE");
 // Create a TTree
@@ -2287,7 +2282,7 @@ outputTree->Branch("nMult", &nMult, "Variable9/D");
 outputTree->Branch("Bmass", &Bmass, "Variable9/D");
 outputTree->Branch("sWeight", &sWeight, "sWeight/D");
 
-cout << "num Entries in data before saving TTree w/ sWeights is " << data->numEntries() << endl;
+cout << "num Entries in data before saving TTree w/ sPWeights is " << data->numEntries() << endl;
 // Loop through your RooDataSet and save the data to the TTree
 for (Int_t i = 0; i < data->numEntries(); ++i) {
     // Get the event from the RooDataSet
@@ -2316,24 +2311,35 @@ for (Int_t i = 0; i < data->numEntries(); ++i) {
 outputTree->Write();
 // Close the ROOT file
 outputFile->Close();
+*/
+////////////////////////////////////////////////////////////////// 
+/////  NO LONGER NEEDED, BUT IS HERE FOR FURTURE REFERENCE   /////
+////////////////////////////////////////////////////////////////// 
 
 
 
 
 
 
-  cout << endl <<  "Yield of B+ is "
-       << BpYield->getVal() << ".  From sWeights it is "
-       // << sData->GetYieldFromSWeight("RT_yield") << endl;
-       << sData->GetYieldFromSWeight("n_signal") << endl;
 
-  cout << "Yield of background is "
-       << combYield->getVal() << ".  From sWeights it is "
-       << sData->GetYieldFromSWeight("n_combinatorial") << endl
-       << endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
-  w.import(*data, Rename("dataWithSWeights"));
-  //the reweighted data is saved in the woorkspace 
+
 
 
 
@@ -2412,7 +2418,7 @@ TH1D* make_splot(RooWorkspace& w, int n, TString label){
   }
   ptframe->Draw();
 
-  //get the dataset with sWeights
+  //get the dataset with sPWeights
   RooDataSet* dataW = (RooDataSet*) w.data("dataWithSWeights");
   RooDataSet* dataWBp;
   if( (particle == 2) && (MC == 0) ){dataWBp = new RooDataSet(dataW->GetName(),dataW->GetTitle(),dataW,*dataW->get(),0,"RT_yield_sw");}
