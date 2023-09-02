@@ -206,7 +206,7 @@ void read_samples(RooWorkspace& w, std::vector<TString>, TString fName, TString 
 void build_pdf (RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt, int iy);
 void fit_jpsinp (RooWorkspace& w, std::string choice, const RooArgSet &c_vars, int ipt, int iy, bool inclusive=false, bool includeSignal=true);
 void plot_complete_fit(RooWorkspace& w, RooArgSet &c_vars, TString subname, int iy);
-void do_splot(RooWorkspace& w, RooArgSet &c_vars);
+void do_splot(RooWorkspace& w, RooArgSet &c_vars, int j);
 TH1D* make_splot(RooWorkspace& w, int n, TString label);
 void validate_fit(RooWorkspace* w, RooArgSet &c_vars);
 void get_ratio( std::vector<TH1D*>,  std::vector<TH1D*>,  std::vector<TString>, TString, TString);
@@ -265,7 +265,7 @@ auto BDTnbins = BDTnbins_bp;
 auto indexBDT = iBDT_bp;
 auto BDT_lower_bound = bdt_lower_bound_bp;
 const int nbins = 7;
-const std::array<int, nbins + 1> ptb = { 5, 7, 10, 15, 20, 30, 50, 60};
+int ptb[8] = { 5, 7, 10, 15, 20, 30, 50, 60};
 TString ofiletree = "ntKp";
 
 #elif particle == 1
@@ -275,17 +275,15 @@ auto BDTnbins = BDTnbins_bs;
 auto indexBDT = iBDT_bs;
 auto BDT_lower_bound = bdt_lower_bound_bs;
 const int nbins = 4;
-const std::array<int, nbins + 1> ptb = { 7, 10, 15, 20, 50};
+int ptb[5] = { 7, 10, 15, 20, 50};
 TString ofiletree = "ntphi";
 #endif
 
-
-const std::vector<int> ptlist = {5, 7, 10, 15, 20, 50};
 const std::vector<double> ylist = {0, 1.5, 2.4};
 const std::vector<TString> particleList = {"Bu", "Bs"};
 
-   // for B+, ipt is 0--4
-   // for Bs, ipt is 1--4
+   // for B+, ipt is 0--7
+   // for Bs, ipt is 0--3
 
 void bmesons_new(int ipt = 3, int iy = 1){
 
@@ -311,20 +309,11 @@ void bmesons_new(int ipt = 3, int iy = 1){
       "/eos/user/h/hmarques/work/data/BPMC_nom.root" : "/eos/user/h/hmarques/work/data/BsMC_nom.root";
   } else {
     // Binned pT comparison
-    if (particle == 0) {
-      input_file_data = Form("/eos/user/h/hmarques/work/BPData_noBDT_trk5_%i_%i.root",
-                             ptlist.at(ipt), ptlist.at(ipt+1));
-    } else if(particle == 1) {
-      input_file_data = Form("/eos/user/h/hmarques/work/BsData_noBDT_trk5_%i_%i.root",
-                             ptlist.at(ipt), ptlist.at(ipt+1));
-    }
-    if (particle == 0) {
-      input_file_mc = Form("/eos/user/h/hmarques/work/BPMC_noBDT_trk5_%i_%i.root",
-                           ptlist.at(ipt), ptlist.at(ipt+1));
-    } else if(particle == 1) {
-      input_file_mc = Form("/eos/user/h/hmarques/work/BsMC_noBDT_trk5_%i_%i.root",
-                           ptlist.at(ipt), ptlist.at(ipt+1));
-    }
+    if (particle == 0) {input_file_data = Form("/eos/user/h/hmarques/work/data/BPData_nom_%i_%i.root",ptb[ipt], ptb[ipt+1]);} 
+    else if(particle == 1) {input_file_data = Form("/eos/user/h/hmarques/work/data/BsData_nom_%i_%i.root",ptb[ipt], ptb[ipt+1]);}
+    
+    if (particle == 0) {input_file_mc = Form("/eos/user/h/hmarques/work/data/BPMC_nom_%i_%i.root",ptb[ipt], ptb[ipt+1]);} 
+    else if(particle == 1) {input_file_mc = Form("/eos/user/h/hmarques/work/data/BsMC_nom_%i_%i.root",ptb[ipt], ptb[ipt+1]);}
   }
 
 
@@ -362,11 +351,6 @@ void bmesons_new(int ipt = 3, int iy = 1){
 
   RooArgSet c_vars;
 
-  // use the setting of pT 10-15 for inclusive pT comparison
-  if (inclusive) {
-    ipt = 2;
-    cout << "Using initial values for pT 10-15" << "\n";
-  }
   TString signal_shape = (particle == 0 && ipt == 0)? "sig3gauss" : "nominal";
   // TString signal_shape = "nominal";
   cout << "choice:" << signal_shape << "\n";
@@ -377,27 +361,22 @@ void bmesons_new(int ipt = 3, int iy = 1){
     fit_jpsinp(*ws, "nominal", c_vars, ipt, iy, inclusive);
   }
 
-  TString subname = TString::Format("%i_%i", ptlist.at(ipt), ptlist.at(ipt + 1));
+  TString subname = TString::Format("%i_%i", ptb[ipt], ptb[ipt+1]);
   if (inclusive) {
     subname = "inclusive";
   }
   plot_complete_fit(*ws, c_vars, subname, iy);
-  if (early) {return;}
 
 //validate_fit(ws, c_vars);
 //  return;
-
 
   //SIDEBAND SUBTRACTION (needs to be run after plot_complete_fit)
   histos_sideband_sub = sideband_subtraction(*ws, variables , n_var);
  
   //SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
-  do_splot(*ws,c_vars); 
+  do_splot(*ws,c_vars, ipt); 
 
-
-
-
-return;
+//return;
 
 
 
@@ -426,7 +405,7 @@ return;
   if (inclusive) {
     ptdir += "/inclusive";
   } else {
-    ptdir += Form("/%i_%i", ptlist[ipt], ptlist[ipt + 1]);
+    ptdir += Form("/%i_%i", ptb[ipt], ptb[ipt + 1]);
   }
 gSystem->mkdir(Form("%s/mc_validation_plots", ptdir.Data()) );
 
@@ -678,30 +657,21 @@ gSystem->mkdir(Form("%s/mc_validation_plots", ptdir.Data()) );
 //main function ends
 
 double MC_fit_result(TString input_file, TString inVarName){
-
   TFile* f = new TFile(input_file);
   RooFitResult* fitresult;
   fitresult = (RooFitResult*)f->Get("fitresult_model_data");
   RooRealVar* var = (RooRealVar*)fitresult->floatParsFinal().find(inVarName);
- 
-  return var->getVal();}
+  return var->getVal();
+  }
 
 void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooArgSet &c_pdfs){
-
   TFile* f = new TFile(input_file);
-
   RooFitResult* fitresult;
-
   fitresult = (RooFitResult*)f->Get("fitresult_model_data");
-
   RooRealVar* var = (RooRealVar*)fitresult->floatParsFinal().find(inVarName); 
-
   RooGaussian* gauss_constr = new RooGaussian(Form("gauss_%s",var->GetName()),
                                               Form("gauss_%s",var->GetName()),
-                                              *var,
-                                              RooConst(var->getVal()),
-                                              RooConst(var->getError())
-                                              );
+                                              *var,RooConst(var->getVal()),RooConst(var->getError()));
   c_vars.add(*var);
   c_pdfs.add(*gauss_constr);
 }
@@ -801,6 +771,16 @@ void read_samples(RooWorkspace& w, std::vector<TString> label, TString fName, TS
 
 //build_pdf
 void build_pdf(RooWorkspace& w, TString choice, RooArgSet &c_vars, int ipt=3, int iy=1){
+  // use the setting of pT 10-15 for inclusive pT comparison
+  
+  if (ipt<0) {
+    ipt = 2;
+    cout << "Using initial values for pT 10-15" << "\n";
+  }
+  if (ipt>4) {
+    ipt = 4;
+    cout << "Using initial values for pT 20-50" << "\n";
+  }
 
   RooRealVar Bmass = *(w.var("Bmass"));
   RooDataSet* data = (RooDataSet*)w.data("data");
@@ -985,14 +965,10 @@ if( choice != "scale_factor"){
    p2 = new RooRealVar("p2", "p2", ini_p2[ipt][iy], -15., 15.);
    p3 = new RooRealVar("p3", "p3", ini_p3[ipt][iy], -2., 2.);
 
-  m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale",
-                                     ini_erf_scale[ipt][iy], 0, 0.1);
+  m_nonprompt_scale = new RooRealVar("m_nonprompt_scale", "m_nonprompt_scale",ini_erf_scale[ipt][iy], 0, 0.1);
   m_nonprompt_shift = new RooRealVar("m_nonprompt_shift", "m_nonprompt_shift", 5.14425, 4.5, 6.);
-  RooRealVar jpsipi_to_signal_width_ratio("jpsipi_to_signal_width_ratio",
-                                          "jpsipi_to_signal_width_ratio",
-                                          1 / sigma1->getVal());
-  m_jpsipi_width = new RooProduct("m_jpsipi_width","m_jpsipi_width",
-                                  RooArgList(jpsipi_to_signal_width_ratio, *sigma1));
+  RooRealVar jpsipi_to_signal_width_ratio("jpsipi_to_signal_width_ratio","jpsipi_to_signal_width_ratio",1 / sigma1->getVal());
+  m_jpsipi_width = new RooProduct("m_jpsipi_width","m_jpsipi_width",RooArgList(jpsipi_to_signal_width_ratio, *sigma1));
   m_jpsipi_mean1 = new RooRealVar("m_jpsipi_mean1","m_jpsipi_mean1",5.34693, 5.3, 5.5);
   m_jpsipi_sigma1l = new RooRealVar("m_jpsipi_sigma1l","m_jpsipi_sigma1l",0.0290762,0.010,0.150);
   m_jpsipi_sigma1r = new RooRealVar("m_jpsipi_sigma1r","m_jpsipi_sigma1r",0.0652519,0.010,0.200);
@@ -1006,16 +982,11 @@ if( choice != "scale_factor"){
   // scaled widths
   RooRealVar m_jpsipi_sigma2l("m_jpsipi_sigma2l","m_jpsipi_sigma2l",0.0994712,0.020,0.500);
   RooRealVar m_jpsipi_sigma2r("m_jpsipi_sigma2r","m_jpsipi_sigma2r",0.0994712,0.020,0.500);
-  RooProduct jpsipi_sigma1l("jpsipi_sigma1l", "jpsipi_sigma1l",
-                            RooArgList(*m_jpsipi_width, *m_jpsipi_sigma1l));
-  RooProduct jpsipi_sigma1r("jpsipi_sigma1r", "jpsipi_sigma1r",
-                            RooArgList(*m_jpsipi_width, *m_jpsipi_sigma1r));
-  RooProduct jpsipi_sigma2("jpsipi_sigma2", "jpsipi_sigma2",
-                            RooArgList(*m_jpsipi_width, *m_jpsipi_sigma2));
-  RooProduct jpsipi_sigma2l("jpsipi_sigma2l", "jpsipi_sigma2l",
-                           RooArgList(*m_jpsipi_width, m_jpsipi_sigma2l));
-  RooProduct jpsipi_sigma2r("jpsipi_sigma2r", "jpsipi_sigma2r",
-                           RooArgList(*m_jpsipi_width, m_jpsipi_sigma2r));
+  RooProduct jpsipi_sigma1l("jpsipi_sigma1l", "jpsipi_sigma1l",RooArgList(*m_jpsipi_width, *m_jpsipi_sigma1l));
+  RooProduct jpsipi_sigma1r("jpsipi_sigma1r", "jpsipi_sigma1r",RooArgList(*m_jpsipi_width, *m_jpsipi_sigma1r));
+  RooProduct jpsipi_sigma2("jpsipi_sigma2", "jpsipi_sigma2",RooArgList(*m_jpsipi_width, *m_jpsipi_sigma2));
+  RooProduct jpsipi_sigma2l("jpsipi_sigma2l", "jpsipi_sigma2l",RooArgList(*m_jpsipi_width, m_jpsipi_sigma2l));
+  RooProduct jpsipi_sigma2r("jpsipi_sigma2r", "jpsipi_sigma2r",RooArgList(*m_jpsipi_width, m_jpsipi_sigma2r));
 
 //SIGNAL PDF
 cout << "Defining PDF" << endl;
@@ -1024,8 +995,8 @@ cout << "Defining PDF" << endl;
   RooGaussian* signal2 = new RooGaussian("signal2","signal_gauss2",Bmass,*mean,*sigma2); 
 	// double gaussian
 	RooAddPdf* signal = new RooAddPdf("signal", "signal", RooArgList(*signal1,*signal2),*cofs);
-       // single gaussian
-       // RooGaussian* signal = new RooGaussian(*signal1, "signal");
+      // single gaussian
+      // RooGaussian* signal = new RooGaussian(*signal1, "signal");
       // triple gaussian
   		RooGaussian* signal3 = new RooGaussian("signal3","signal3",Bmass, *mean, *sigma3);
   		RooAddPdf* signal_triple = new RooAddPdf("signal_triple","signal_triple",RooArgList(*signal1,*signal2,*signal3),RooArgList(*cofs,*cofs1));
@@ -1046,8 +1017,7 @@ cout << "Defining PDF" << endl;
 //BACKGROUND//
 
   //error function (for JPsi X peaking background)
-  RooGenericPdf erfn ("erfn", "erfn", "TMath::Erfc((Bmass-m_nonprompt_shift)/m_nonprompt_scale)",
-                      RooArgList(Bmass, *m_nonprompt_scale, *m_nonprompt_shift));
+  RooGenericPdf erfn ("erfn", "erfn", "TMath::Erfc((Bmass-m_nonprompt_shift)/m_nonprompt_scale)",RooArgList(Bmass, *m_nonprompt_scale, *m_nonprompt_shift));
 
   // non-prompt jpsi
   RooRealVar np_p0("np_p0", "np_p0", 100, 0, 2000);
@@ -1060,13 +1030,11 @@ cout << "Defining PDF" << endl;
   RooRealVar np_sigma2("np_sigma2", "np_sigma2", 0.2, 0.05, 0.5);
 
   // For B->Jpsi pi, bifur Gaussian + Gaussian
-  RooBifurGauss m_jpsipi_gaussian1("m_jpsipi_gaussian1", "m_jpsipi_gaussian1", Bmass,
-                                   *m_jpsipi_mean1, jpsipi_sigma1l, jpsipi_sigma1r);
+  RooBifurGauss m_jpsipi_gaussian1("m_jpsipi_gaussian1", "m_jpsipi_gaussian1", Bmass, *m_jpsipi_mean1, jpsipi_sigma1l, jpsipi_sigma1r);
   // RooGaussian* m_jpsipi_gaussian2 =
   //   new RooGaussian("m_jpsipi_gaussian2", "m_jpsipi_gaussian2", Bmass,
   //                   *m_jpsipi_mean1, jpsipi_sigma2);
-  RooBifurGauss m_jpsipi_gaussian2("m_jpsipi_gaussian2", "m_jpsipi_gaussian2", Bmass,
-                                   *m_jpsipi_mean1, jpsipi_sigma2l, jpsipi_sigma2r);
+  RooBifurGauss m_jpsipi_gaussian2("m_jpsipi_gaussian2", "m_jpsipi_gaussian2", Bmass, *m_jpsipi_mean1, jpsipi_sigma2l, jpsipi_sigma2r);
   RooGaussian* m_jpsipi_gaussian3 = new RooGaussian("m_jpsipi_gaussian3","m_jpsipi_gaussian3",Bmass,*m_jpsipi_mean3,*m_jpsipi_sigma3);
   // RooAddPdf* jpsipi = new RooAddPdf("jpsipi","jpsipi",RooArgList(*m_jpsipi_gaussian3,*m_jpsipi_gaussian2,*m_jpsipi_gaussian1),RooArgList(*m_jpsipi_fraction3,*m_jpsipi_fraction2));
   RooAddPdf* jpsipi = new RooAddPdf("jpsipi", "jpsipi", RooArgList(m_jpsipi_gaussian2, m_jpsipi_gaussian1), RooArgList(*m_jpsipi_fraction2));
@@ -1132,7 +1100,6 @@ cout << "Defining PDF" << endl;
 
   // 1st order polynomial (combinatorial background - pdf systematics)
   RooPolynomial* poly_bkg = new RooPolynomial("poly_bkg","poly_bkg",Bmass,*slope);
-
 
   Bmass.setRange("all", Bmass.getMin(),Bmass.getMax());
   Bmass.setRange("right",right,Bmass.getMax());
@@ -1330,8 +1297,8 @@ cout << "Definig B0 model" << endl;
  */
 void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
                 int ipt, int iy, bool inclusive, bool includeSignal) {
-  int pti = ptlist[ipt];
-  int ptf = ptlist[ipt + 1];
+  int pti = ptb[ipt];
+  int ptf = ptb[ipt + 1];
 
   RooAbsPdf*  model_cont = w.pdf("m_jpsinp_cont");
   RooDataSet* fullds = (RooDataSet*) w.data("jpsinp");
@@ -1436,8 +1403,8 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   auto signal_par_list = signal_result->floatParsFinal();
 
   TString signalPlot = "./results/Bu/" +
-    TString::Format("%i_%i/np_gen_signal_pt%i-%i%s.pdf",
-                    pti, ptf, pti, ptf, ystr.Data());
+    TString::Format("%i_%i/np_gen_signal_pt%i-%i%s.pdf",pti, ptf, pti, ptf, ystr.Data());
+
   if (inclusive) {
     signalPlot = "./results/Bu/inclusive/np_gen_signal.pdf";
   }
@@ -2015,8 +1982,15 @@ TLegend *leg = new TLegend (0.7, 0.9, 0.9, 1.0);
 //create_histogram  TO BE USED IN SIDEBAND
 
 //do_splot
-void do_splot(RooWorkspace& w, RooArgSet &c_vars){
-  
+void do_splot(RooWorkspace& w, RooArgSet &c_vars, int j){
+
+  if(j==-1){
+    j=0;
+    int size = sizeof(ptb) / sizeof(ptb[0]);
+    ptb[j+1] = ptb[size - 1];
+    //this way the code works for the inclusive fit as well    
+  }
+
   gSystem->mkdir( "./bck_sub_tests" , true);
   RooDataSet* data = (RooDataSet*) w.data("data");   
   RooAbsPdf* model = w.pdf("model");
@@ -2118,10 +2092,7 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars){
 
     w.import(*data, Rename("dataWithSWeights"));
   //the reweighted data is saved in the woorkspace 
-
   // sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot 
-
-
 
 // Eff. Tests Eff. Tests Eff. Tests Eff. Tests
 //retrieve the sPlot weights
@@ -2132,7 +2103,7 @@ const RooRealVar* bWeightVar = dynamic_cast<const RooRealVar*>(sPWeights.at(1));
 
 TH1D* EFF_signalHist = new TH1D("EFF signalHist", "", 30, 0, 150); //------------> weighted eff comes from the mean of this hist
 TH1D* EFF_backgroundHist = new TH1D("EFF backgroundHist", "", 30, 0, 150);
-TH1D* EFF_Hist = new TH1D("hist eff", "", 30, 0, 150); //-----------------------> nominal eff comes from the mean of this hist
+TH1D* EFF_Hist = new TH1D("hist eff", "", 30, 0, 150); //------------------------> nominal eff comes from the mean of this hist
 EFF_Hist->GetXaxis()->SetTitle("1/Eff"); 
 EFF_signalHist->GetXaxis()->SetTitle("1/Eff"); 
 
@@ -2149,15 +2120,12 @@ RooDataSet * data_bin;
 TH1D* signalHist;
 TH1D* backgroundHist; 
 
-for(int j=0; j< nbins; j++){
-
-data_bin = (RooDataSet*)data->reduce(Form("(Bpt > %i) && (Bpt < %i)", ptb[j], ptb[j+1] ));  
 //signalHist = new TH1D(Form("signalHist %i", j), "", 40, ptb[j], ptb[j+1]);
 //backgroundHist  = new TH1D(Form("backgroundHist %i",j), "", 40, ptb[j], ptb[j+1]);
 //backgroundHist->GetXaxis()->SetTitle("Bpt"); 
 
-for (Int_t i = 0; i < data_bin->numEntries(); ++i) {
-  const RooArgSet* event = data_bin->get(i);
+for (Int_t i = 0; i < data->numEntries(); ++i) {
+  const RooArgSet* event = data->get(i);
   Double_t Bpt_h = event->getRealValue("Bpt");
   Double_t By_h = event->getRealValue("By");
   Double_t B_massa = event->getRealValue("Bmass");
@@ -2227,125 +2195,10 @@ EFF_Hist->Scale(1.0 / EFF_Hist->Integral());
 EFF_Hist->Draw();
 c4->SaveAs(Form("./bck_sub_tests/%s_%i_%i_EFF_hist.png",ofiletree.Data(),ptb[j],ptb[j+1]));
 //Nominal Eff
-}
-
-// Eff. Tests Eff. Tests Eff. Tests Eff. Tests
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////// 
-/////  NO LONGER NEEDED, BUT IS HERE FOR FURTURE REFERENCE   /////
-////////////////////////////////////////////////////////////////// 
-/*
-// Create a new ROOT file
-TFile* outputFile = new TFile(Form("%s_w_sWeights.root",ofiletree.Data()), "RECREATE");
-// Create a TTree
-TTree* outputTree = new TTree(ofiletree.Data(), ofiletree.Data());
-
-Double_t track;
-Double_t Bpt;
-Double_t By;
-Double_t nMult;
-Double_t sWeight;
-Double_t Bmass;
-
-#if particle == 0
-  double BDT_pt_5_7;
-  outputTree->Branch("BDT_pt_5_7", &BDT_pt_5_7, "Variable4/D");
-#endif
-
-  double BDT_pt_7_10;
-  double BDT_pt_10_15; 
-  double BDT_pt_15_20; 
-  double BDT_pt_20_50;
-
-// Link variables to TTree branches
-outputTree->Branch("Bpt", &Bpt, "Variable1/D");
-outputTree->Branch("By", &By, "Variable2/D");
-outputTree->Branch("track", &track, "Variable3/D");
-outputTree->Branch("BDT_pt_7_10", &BDT_pt_7_10, "Variable5/D");
-outputTree->Branch("BDT_pt_10_15", &BDT_pt_10_15, "Variable6/D");
-outputTree->Branch("BDT_pt_15_20", &BDT_pt_15_20, "Variable7/D");
-outputTree->Branch("BDT_pt_20_50", &BDT_pt_20_50, "Variable8/D");
-outputTree->Branch("nMult", &nMult, "Variable9/D");
-outputTree->Branch("Bmass", &Bmass, "Variable9/D");
-outputTree->Branch("sWeight", &sWeight, "sWeight/D");
-
-cout << "num Entries in data before saving TTree w/ sPWeights is " << data->numEntries() << endl;
-// Loop through your RooDataSet and save the data to the TTree
-for (Int_t i = 0; i < data->numEntries(); ++i) {
-    // Get the event from the RooDataSet
-    const RooArgSet* event = data->get(i);
-
-    // Retrieve variables for the event
-    track = event->getRealValue("track");
-    Bpt = event->getRealValue("Bpt");
-    By = event->getRealValue("By");
-    nMult = event->getRealValue("nMult");
-    Bmass = event->getRealValue("Bmass");
-    sWeight = event->getRealValue(sWeightVar->GetName());
-    BDT_pt_7_10 = event->getRealValue("BDT_pt_7_10");
-    BDT_pt_10_15 = event->getRealValue("BDT_pt_10_15");
-    BDT_pt_15_20 = event->getRealValue("BDT_pt_15_20");
-    BDT_pt_20_50 = event->getRealValue("BDT_pt_20_50");
-    #if particle == 0
-      BDT_pt_5_7 = event->getRealValue("BDT_pt_5_7");
-    #endif
-
-    // Fill the TTree
-    outputTree->Fill();
-}
-
-// Write the TTree to the ROOT file
-outputTree->Write();
-// Close the ROOT file
-outputFile->Close();
-*/
-////////////////////////////////////////////////////////////////// 
-/////  NO LONGER NEEDED, BUT IS HERE FOR FURTURE REFERENCE   /////
-////////////////////////////////////////////////////////////////// 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
 
 
 }
 //do_splot ends
-
 
 
 
