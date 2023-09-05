@@ -376,7 +376,7 @@ void bmesons_new(int ipt = 3, int iy = 1){
   //SPLOT (fixes parameters of the fit -> they need to be unfixed for pT analysis) 
   do_splot(*ws,c_vars, ipt); 
 
-//return;
+return;
 
 
 
@@ -669,17 +669,13 @@ void constrainVar(TString input_file, TString inVarName, RooArgSet &c_vars, RooA
   RooFitResult* fitresult;
   fitresult = (RooFitResult*)f->Get("fitresult_model_data");
   RooRealVar* var = (RooRealVar*)fitresult->floatParsFinal().find(inVarName); 
-  RooGaussian* gauss_constr = new RooGaussian(Form("gauss_%s",var->GetName()),
-                                              Form("gauss_%s",var->GetName()),
-                                              *var,RooConst(var->getVal()),RooConst(var->getError()));
+  RooGaussian* gauss_constr = new RooGaussian(Form("gauss_%s",var->GetName()), Form("gauss_%s",var->GetName()), *var,RooConst(var->getVal()),RooConst(var->getError()));
   c_vars.add(*var);
   c_pdfs.add(*gauss_constr);
 }
 
 //get the ratio between the data (splot method) and the MC and save it in a root file
-void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc,
-                std::vector<TString> v_name, TString filename,
-                TString ptdir){
+void get_ratio( std::vector<TH1D*> data, std::vector<TH1D*> mc, std::vector<TString> v_name, TString filename,TString ptdir){
 
   TString dir_name;
   dir_name = ptdir + "/mc_validation_plots/weights/";
@@ -1323,17 +1319,13 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   RooAbsPdf* erf = w.pdf("erf");
   RooAbsPdf* poly = w.pdf("poly_jpsi");
   RooRealVar np_sig_fraction("np_sig_fraction", "np_sig_fraction", 0.1, 0, 1);
-  RooRealVar n_signal("n_signal_np", "n_signal_np",
-                      n_signal_initial[ipt], 0., (ds->sumEntries())*2);
-  RooRealVar n_cont("n_cont_np", "n_cont_np",
-                    n_cont_initial[ipt], 0., (ds->sumEntries())*2);
-  RooRealVar n_erf("n_nonprompt", "n_nonprompt",
-                    n_erf_initial[ipt], 0., (ds->sumEntries())*2);
+  RooRealVar n_signal("n_signal_np", "n_signal_np", n_signal_initial[ipt], 0., (ds->sumEntries())*2);
+  RooRealVar n_cont("n_cont_np", "n_cont_np",n_cont_initial[ipt], 0., (ds->sumEntries())*2);
+  RooRealVar n_erf("n_nonprompt", "n_nonprompt", n_erf_initial[ipt], 0., (ds->sumEntries())*2);
 
   TString ystr = "";
   // get relative yields of Jpsi pi to signal
-  RooRealVar n_jpsipi_ext("n_jpsipi_ext", "n_jpsipi_ext",
-                          0.1 * n_erf.getVal() , 0., (ds->sumEntries())*2);
+  RooRealVar n_jpsipi_ext("n_jpsipi_ext", "n_jpsipi_ext", 0.1 * n_erf.getVal() , 0., (ds->sumEntries())*2);
   RooExtendPdf jpsipi_ext("jpsipi_ext", "extended jpsipi", *jpsipi, n_jpsipi_ext);
   w.import(n_jpsipi_ext);
   RooRealVar Bmass = *(w.var("Bmass"));
@@ -1346,19 +1338,15 @@ void fit_jpsinp(RooWorkspace& w, std::string choice, const RooArgSet &c_vars,
   Bmass.setRange("bjpsipi", 5.22, 5.8);
   auto jpsipi_result = jpsipi_ext.fitTo(*ds_jpsipi, Range("bjpsipi"), Save(), Extended());
   auto jpsipi_par_list = jpsipi_result->floatParsFinal();
-  TString jpsipiPlot = "./results/Bu/" +
-    TString::Format("%i_%i/np_gen_jpsipi_pt_all%s.pdf",
-                    pti, ptf, ystr.Data());
+  TString jpsipiPlot = "./results/Bu/" + TString::Format("%i_%i/np_gen_jpsipi_pt_all%s.pdf", pti, ptf, ystr.Data());
   if (inclusive) {
     cout << "make inclusive plot" << "\n";
-
     gSystem->MakeDirectory("./results/Bu/inclusive" );
     jpsipiPlot = "./results/Bu/inclusive/np_gen_jpsipi_all.pdf";
   }
   plot_mcfit(w, &jpsipi_ext, ds_jpsipi, jpsipiPlot,
              "NP gen-matched B^{+} #rightarrow J/#psi #pi^{+}",
-             RooFit::Name("MCFit"), NormRange("bjpsipi"), LineColor(kRed),
-             LineStyle(1), LineWidth(2));
+             RooFit::Name("MCFit"), NormRange("bjpsipi"), LineColor(kRed),LineStyle(1), LineWidth(2));
   // fix the shape
   fix_parameters(w, jpsipi_par_list);
   double jpsipi_width_allpt = signal_width->getVal();
@@ -2124,6 +2112,9 @@ TH1D* backgroundHist;
 //backgroundHist  = new TH1D(Form("backgroundHist %i",j), "", 40, ptb[j], ptb[j+1]);
 //backgroundHist->GetXaxis()->SetTitle("Bpt"); 
 
+double numerador_média_eff=0;
+int denominador_média_eff = 1;
+
 for (Int_t i = 0; i < data->numEntries(); ++i) {
   const RooArgSet* event = data->get(i);
   Double_t Bpt_h = event->getRealValue("Bpt");
@@ -2144,15 +2135,19 @@ for (Int_t i = 0; i < data->numEntries(); ++i) {
     // Re-weight Eff and fill the histograms
     EFF_signalHist->Fill(BEffInv, signalWeight);
     EFF_backgroundHist->Fill(BEffInv, backgroundWeight);
+    numerador_média_eff += BEffInv;
+    denominador_média_eff += 1;
   }
     // Re-weight Bpt variable and fill the histograms
     //signalHist->Fill(Bpt_h, signalWeight);
     //backgroundHist->Fill(Bpt_h, backgroundWeight);
 }
 
+double Avg_Eff = numerador_média_eff / denominador_média_eff ;
 cout << "1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_Hist->GetMean() << endl;
 cout << "1/Mean of weighted Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_signalHist->GetMean() << endl;
-cout << "relative diff (%): " << abs(1/EFF_Hist->GetMean() - 1/EFF_signalHist->GetMean() ) / (1/EFF_Hist->GetMean() )*100 << endl;
+cout << "relative diff (%): " << abs(1/EFF_Hist->GetMean() - 1/EFF_signalHist->GetMean() ) / (1/EFF_Hist->GetMean())*100 << endl;
+cout << "AVG. 1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/Avg_Eff << endl;
 
 /*
 // sig and back pT Distribution as a check-test
