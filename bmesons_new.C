@@ -2061,6 +2061,22 @@ void do_splot(RooWorkspace& w, RooArgSet &c_vars, int j){
   RooMsgService::instance().setSilentMode(true);
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot sPlot 
   //add sPWeights to dataset based on model and yield variables
   //sPlot class adds a new variable that has the name of the corresponding yield + "_sw".
@@ -2112,8 +2128,10 @@ TH1D* backgroundHist;
 //backgroundHist  = new TH1D(Form("backgroundHist %i",j), "", 40, ptb[j], ptb[j+1]);
 //backgroundHist->GetXaxis()->SetTitle("Bpt"); 
 
-double numerador_média_eff=0;
-int denominador_média_eff = 1;
+double numerador_média_eff= 0;
+int denominador_média_eff = 0;
+double numerador_média_eff_pesos= 0;
+double denominador_média_eff_pesos = 0;
 
 for (Int_t i = 0; i < data->numEntries(); ++i) {
   const RooArgSet* event = data->get(i);
@@ -2137,6 +2155,8 @@ for (Int_t i = 0; i < data->numEntries(); ++i) {
     EFF_backgroundHist->Fill(BEffInv, backgroundWeight);
     numerador_média_eff += BEffInv;
     denominador_média_eff += 1;
+    numerador_média_eff_pesos += BEffInv * signalWeight;
+    denominador_média_eff_pesos += signalWeight ;
   }
     // Re-weight Bpt variable and fill the histograms
     //signalHist->Fill(Bpt_h, signalWeight);
@@ -2144,10 +2164,15 @@ for (Int_t i = 0; i < data->numEntries(); ++i) {
 }
 
 double Avg_Eff = numerador_média_eff / denominador_média_eff ;
+double Avg_Eff_pesos = numerador_média_eff_pesos / denominador_média_eff_pesos ;
+
 cout << "1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_Hist->GetMean() << endl;
 cout << "1/Mean of weighted Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_signalHist->GetMean() << endl;
 cout << "relative diff (%): " << abs(1/EFF_Hist->GetMean() - 1/EFF_signalHist->GetMean() ) / (1/EFF_Hist->GetMean())*100 << endl;
+
 cout << "AVG. 1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/Avg_Eff << endl;
+cout << "AVG. c/ PESOS 1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/Avg_Eff_pesos << endl;
+//cout << "relative diff (%): " << abs(1/EFF_Hist->GetMean() - 1/EFF_signalHist->GetMean() ) / (1/EFF_Hist->GetMean())*100 << endl;
 
 /*
 // sig and back pT Distribution as a check-test
