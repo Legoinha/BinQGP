@@ -2108,6 +2108,7 @@ const RooRealVar* bWeightVar = dynamic_cast<const RooRealVar*>(sPWeights.at(1));
 TH1D* EFF_signalHist = new TH1D("EFF signalHist", "", 30, 0, 150); //------------> weighted eff comes from the mean of this hist
 TH1D* EFF_backgroundHist = new TH1D("EFF backgroundHist", "", 30, 0, 150);
 TH1D* EFF_Hist = new TH1D("hist eff", "", 30, 0, 150); //------------------------> nominal eff comes from the mean of this hist
+
 EFF_Hist->GetXaxis()->SetTitle("1/Eff"); 
 EFF_signalHist->GetXaxis()->SetTitle("1/Eff"); 
 
@@ -2121,17 +2122,19 @@ TH2D * invEff2D = (TH2D *) fin1DEff->Get("invEff2DY");
 int XBin;
 int YBin;
 RooDataSet * data_bin;
-TH1D* signalHist;
-TH1D* backgroundHist; 
-
-//signalHist = new TH1D(Form("signalHist %i", j), "", 40, ptb[j], ptb[j+1]);
-//backgroundHist  = new TH1D(Form("backgroundHist %i",j), "", 40, ptb[j], ptb[j+1]);
-//backgroundHist->GetXaxis()->SetTitle("Bpt"); 
+//TH1D* signalHist;
+//TH1D* backgroundHist; 
+//SignalHist = new TH1D(Form("signalHist %i", j), "", 40, ptb[j], ptb[j+1]);
+//BackgroundHist  = new TH1D(Form("backgroundHist %i",j), "", 40, ptb[j], ptb[j+1]);
+//BackgroundHist->GetXaxis()->SetTitle("Bpt"); 
 
 double numerador_média_eff= 0;
 int denominador_média_eff = 0;
 double numerador_média_eff_pesos= 0;
 double denominador_média_eff_pesos = 0;
+double numerador_média_eff_pesos_sem_Massa = 0;
+double denominador_média_eff_pesos_sem_Massa = 0;
+
 
 for (Int_t i = 0; i < data->numEntries(); ++i) {
   const RooArgSet* event = data->get(i);
@@ -2146,6 +2149,9 @@ for (Int_t i = 0; i < data->numEntries(); ++i) {
   XBin = invEff2D->GetXaxis()->FindBin( Bpt_h);
   YBin = invEff2D->GetYaxis()->FindBin( TMath::Abs(By_h));
   Float_t BEffInv = invEff2D->GetBinContent(XBin,YBin);
+
+  numerador_média_eff_pesos_sem_Massa += BEffInv * signalWeight ;
+  denominador_média_eff_pesos_sem_Massa += signalWeight ;
 
   if( (particle==0 && ((B_massa>5.27932-0.08) && (B_massa<5.27932+0.08))) || (particle == 1 && ((B_massa>5.3663-0.08) && (B_massa<5.3663+0.08))) ){
     // Nominal Eff (from the 2D map)
@@ -2165,14 +2171,21 @@ for (Int_t i = 0; i < data->numEntries(); ++i) {
 
 double Avg_Eff = numerador_média_eff / denominador_média_eff ;
 double Avg_Eff_pesos = numerador_média_eff_pesos / denominador_média_eff_pesos ;
+double Avg_Eff_pesos_sem_massa = numerador_média_eff_pesos_sem_Massa / denominador_média_eff_pesos_sem_Massa ;
 
-cout << "1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_Hist->GetMean() << endl;
-cout << "1/Mean of weighted Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_signalHist->GetMean() << endl;
-cout << "relative diff (%): " << abs(1/EFF_Hist->GetMean() - 1/EFF_signalHist->GetMean() ) / (1/EFF_Hist->GetMean())*100 << endl;
+cout << endl;
+cout << "(Hist) Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_Hist->GetMean() << endl;
+cout << "(Hist) Weighted Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/EFF_signalHist->GetMean() << endl;
+cout << "Relative Diff (%): " << abs(1/EFF_Hist->GetMean() - 1/EFF_signalHist->GetMean() ) / (1/EFF_Hist->GetMean())*100 << endl;
+cout << endl;
+cout << "(AVG.) Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/Avg_Eff << endl;
+cout << "(AVG.) Weighted Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/Avg_Eff_pesos << endl;
+cout << "Relative Diff (%): " << abs(1/Avg_Eff - 1/Avg_Eff_pesos ) / (1/Avg_Eff)*100 << endl;
+cout << endl;
+cout << "(AVG. s/ massa c/ pesos) Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/Avg_Eff_pesos_sem_massa << endl;
+cout << "Relative Diff (%): " << abs(1/Avg_Eff_pesos_sem_massa - 1/Avg_Eff ) / (1/Avg_Eff_pesos_sem_massa)*100 << endl;
+cout << endl;
 
-cout << "AVG. 1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/Avg_Eff << endl;
-cout << "AVG. c/ PESOS 1/Mean of Eff in BIN [" << ptb[j] << "," << ptb[j+1] <<"]:" << 1/Avg_Eff_pesos << endl;
-//cout << "relative diff (%): " << abs(1/EFF_Hist->GetMean() - 1/EFF_signalHist->GetMean() ) / (1/EFF_Hist->GetMean())*100 << endl;
 
 /*
 // sig and back pT Distribution as a check-test
