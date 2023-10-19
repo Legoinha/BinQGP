@@ -2205,6 +2205,10 @@ c1->SaveAs(Form("./bck_sub_tests/%s_%i_%i_Bpt_Distribution.png",ofiletree.Data()
 // sig and back pT Distribution as a check-test
 */
 
+
+
+//sPlot sig and back weighted Eff
+if(false){
 //sPlot sig and back weighted Eff
 TCanvas* c3 = new TCanvas("c3", "EFF sig_back Distribution", 700, 700);
 EFF_signalHist->SetLineColor(kRed);
@@ -2228,6 +2232,82 @@ EFF_Hist->Scale(1.0 / EFF_Hist->Integral());
 EFF_Hist->Draw();
 c4->SaveAs(Form("./bck_sub_tests/%s_%i_%i_EFF_hist.png",ofiletree.Data(),ptb[j],ptb[j+1]));
 //Nominal Eff
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////// 
+/////  NO LONGER NEEDED, BUT IS HERE FOR FURTURE REFERENCE   /////
+////////////////////////////////////////////////////////////////// 
+
+// Create a new ROOT file
+TFile* outputFile = new TFile(Form("%i_%i_%s_w_sWeights.root",ptb[j],ptb[j+1],ofiletree.Data()), "RECREATE");
+// Create a TTree
+TTree* outputTree = new TTree(ofiletree.Data(), ofiletree.Data());
+Double_t track;
+Double_t Bpt;
+Double_t By;
+Double_t nMult;
+Double_t sWeight;
+Double_t Bmass;
+#if particle == 0
+  double BDT_pt_5_7;
+  outputTree->Branch("BDT_pt_5_7", &BDT_pt_5_7, "Variable4/D");
+#endif
+  double BDT_pt_7_10;
+  double BDT_pt_10_15; 
+  double BDT_pt_15_20; 
+  double BDT_pt_20_50;
+// Link variables to TTree branches
+outputTree->Branch("Bpt", &Bpt, "Variable1/D");
+outputTree->Branch("By", &By, "Variable2/D");
+outputTree->Branch("track", &track, "Variable3/D");
+outputTree->Branch("BDT_pt_7_10", &BDT_pt_7_10, "Variable5/D");
+outputTree->Branch("BDT_pt_10_15", &BDT_pt_10_15, "Variable6/D");
+outputTree->Branch("BDT_pt_15_20", &BDT_pt_15_20, "Variable7/D");
+outputTree->Branch("BDT_pt_20_50", &BDT_pt_20_50, "Variable8/D");
+outputTree->Branch("nMult", &nMult, "Variable9/D");
+outputTree->Branch("Bmass", &Bmass, "Variable9/D");
+outputTree->Branch("sWeight", &sWeight, "sWeight/D");
+cout << "num Entries in data to be saved w/ sPWeights is " << data->numEntries() << endl;
+// Loop through your RooDataSet and save the data to the TTree
+for (Int_t i = 0; i < data->numEntries(); ++i) {
+    // Get the event from the RooDataSet
+    const RooArgSet* event = data->get(i);
+    // Retrieve variables for the event
+    track = event->getRealValue("track");
+    Bpt = event->getRealValue("Bpt");
+    By = event->getRealValue("By");
+    nMult = event->getRealValue("nMult");
+    Bmass = event->getRealValue("Bmass");
+    sWeight = event->getRealValue(sWeightVar->GetName());
+    BDT_pt_7_10 = event->getRealValue("BDT_pt_7_10");
+    BDT_pt_10_15 = event->getRealValue("BDT_pt_10_15");
+    BDT_pt_15_20 = event->getRealValue("BDT_pt_15_20");
+    BDT_pt_20_50 = event->getRealValue("BDT_pt_20_50");
+    #if particle == 0
+      BDT_pt_5_7 = event->getRealValue("BDT_pt_5_7");
+    #endif
+    // Fill the TTree
+    outputTree->Fill();
+}
+// Write the TTree to the ROOT file
+outputTree->Write();
+// Close the ROOT file
+outputFile->Close();
+
+////////////////////////////////////////////////////////////////// 
+/////  NO LONGER NEEDED, BUT IS HERE FOR FURTURE REFERENCE   /////
+////////////////////////////////////////////////////////////////// 
+}
+
+
+
+
+
 
 
 }
